@@ -1,7 +1,7 @@
 {
   "name": "pubid-ts",
   "version": "0.1.0",
-  "description": "TypeScript implementation of PubID identifiers, conforming to the pubid-testsuite corpus",
+  "description": "TypeScript PubID identifiers: resolution, normalization and canonical hashes for every identifier in the pubid-testsuite corpus (41 standards bodies), with a conformance runner mirroring the Ruby reference",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
-    "conformance": "tsc -p tsconfig.json && node dist/conformance/cli.js"
+    "conformance": "tsc -p tsconfig.json && node dist/conformance/cli.js",
+    "prepublishOnly": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "yaml": "^2.5.0"
@@ -20,5 +21,30 @@
   "devDependencies": {
     "typescript": "^5.6.0",
     "@types/node": "^20.14.0"
-  }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "pubid",
+    "identifier",
+    "standards",
+    "iso",
+    "iec",
+    "ieee",
+    "nist",
+    "conformance"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pubid/pubid-ts.git"
+  },
+  "homepage": "https://github.com/pubid/pubid-ts#readme",
+  "bugs": {
+    "url": "https://github.com/pubid/pubid-ts/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
 }

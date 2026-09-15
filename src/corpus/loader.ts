@@ -17,9 +17,24 @@ export interface Corpus {
   flavors: Map<string, FlavorPayloads>;
 }
 
+/**
+ * The wire schema uses snake_case for exactly one field
+ * (non_normalized_aliases); the loader is the boundary that normalises
+ * it, so a missed mapping can never silently disable a check.
+ */
 function loadPayload(path: string): CorpusCase[] {
   const doc = parseYaml(readFileSync(path, "utf8"));
-  return Array.isArray(doc) ? (doc as CorpusCase[]) : [];
+  if (!Array.isArray(doc)) return [];
+  return doc.map((row) => {
+    const raw = row as Record<string, unknown> & { non_normalized_aliases?: unknown };
+    if (raw.non_normalized_aliases === undefined) return row as CorpusCase;
+
+    const { non_normalized_aliases, ...rest } = raw;
+    return {
+      ...(rest as object),
+      nonNormalizedAliases: non_normalized_aliases,
+    } as CorpusCase;
+  });
 }
 
 function loadStatus(dir: string): FlavorStatus {

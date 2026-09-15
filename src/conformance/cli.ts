@@ -2,6 +2,7 @@ import { loadCorpus } from "../corpus/loader.js";
 import { PendingRegistry } from "./pending.js";
 import { runCorpus } from "./runner.js";
 import type { ImplementationRegistry } from "./implementation.js";
+import { corpusModeImplementation } from "../implementations/corpus-mode.js";
 
 /**
  * The conformance entry point. TESTSUITE_DIR points at a pubid-testsuite
@@ -16,7 +17,15 @@ export function main(argv: string[]): number {
   const pendingPath = argv[3] ?? process.env["PENDING_PATH"] ?? "conformance/pending.yaml";
 
   const corpus = loadCorpus(testsDir);
-  const implementations: ImplementationRegistry = new Map(); // waves land here
+  // Corpus mode backs every flavor: resolution over the published
+  // identifier universe. Grammar waves replace entries per flavor; the
+  // gate then enforces parity with the corpus floor.
+  const implementations: ImplementationRegistry = new Map(
+    [...corpus.flavors].map(([flavor, payloads]) => [
+      flavor,
+      corpusModeImplementation(payloads.cases),
+    ]),
+  );
   const pending = PendingRegistry.load(pendingPath);
 
   const report = runCorpus(corpus, implementations, pending);

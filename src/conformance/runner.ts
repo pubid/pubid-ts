@@ -120,6 +120,13 @@ export function runFlavor(
   };
 
   if (impl === undefined) {
+    // Unimplemented flavors still report their full corpus footprint so
+    // the report proves corpus-wide operability of the harness itself;
+    // they never gate (waves activate the gate per flavor).
+    report.cases = payloads.cases.filter((c) => c.representations !== undefined).length;
+    report.errors = payloads.negatives.filter(isErrorCase).length;
+    report.reclassified = payloads.negatives.length - report.errors;
+    report.review = payloads.cases.filter(isReview).length;
     report.outcome = "unimplemented";
     return report;
   }
