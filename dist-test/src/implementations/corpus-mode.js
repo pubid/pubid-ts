@@ -1,16 +1,4 @@
-function canonicalKey(hash) {
-    return JSON.stringify(sortKeys(hash));
-}
-function sortKeys(value) {
-    if (Array.isArray(value))
-        return value.map(sortKeys);
-    if (value !== null && typeof value === "object") {
-        return Object.fromEntries(Object.entries(value)
-            .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
-            .map(([k, v]) => [k, sortKeys(v)]));
-    }
-    return value;
-}
+import { canonicalKey } from "../internal/compare.js";
 /** The global hash index: canonical serialized form -> its row. */
 const hashIndex = new Map();
 /**

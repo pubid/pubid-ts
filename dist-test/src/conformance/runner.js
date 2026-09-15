@@ -1,4 +1,5 @@
 import { isErrorCase, isQuarantined, isReview } from "../corpus/types.js";
+import { deepEqual } from "../internal/compare.js";
 /**
  * One corpus case -> its mismatch list (empty == passing). List-shaped
  * for the same reason as the Ruby core: control flow must not depend on
@@ -147,17 +148,4 @@ export function runCorpus(corpus, implementations, pending) {
         flavors.push(report);
     }
     return { flavors, gate };
-}
-function deepEqual(a, b) {
-    return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
-}
-function sortKeys(value) {
-    if (Array.isArray(value))
-        return value.map(sortKeys);
-    if (value !== null && typeof value === "object") {
-        return Object.fromEntries(Object.entries(value)
-            .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
-            .map(([k, v]) => [k, sortKeys(v)]));
-    }
-    return value;
 }

@@ -3,6 +3,7 @@ import { isErrorCase, isQuarantined, isReview } from "../corpus/types.js";
 import type { FlavorPayloads } from "../corpus/loader.js";
 import type { ImplementationRegistry, FlavorImplementation } from "./implementation.js";
 import type { PendingRegistry } from "./pending.js";
+import { deepEqual } from "../internal/compare.js";
 
 export interface FlavorReport {
   flavor: string;
@@ -190,20 +191,4 @@ export function runCorpus(
     flavors.push(report);
   }
   return { flavors, gate };
-}
-
-function deepEqual(a: unknown, b: unknown): boolean {
-  return JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
-}
-
-function sortKeys(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeys);
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
-        .map(([k, v]) => [k, sortKeys(v)]),
-    );
-  }
-  return value;
 }
