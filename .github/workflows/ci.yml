@@ -26,7 +26,7 @@ jobs:
       - run: npm test
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
-      - name: Conformance report (bootstrap: unimplemented flavors report, never gate)
+      - name: Conformance report (bootstrap; unimplemented flavors report, never gate)
         run: npm run conformance -- ../pubid-testsuite/tests conformance/pending.yaml
         working-directory: .
         env:
