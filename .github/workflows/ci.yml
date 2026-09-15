@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
+  # changes always land in pubid (Ruby) PRs first, then this pin bumps.
+  TESTSUITE_REF: dbae3f1ad4fa85380afe34229f90f174f837b04c
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pubid/pubid-testsuite
+          ref: ${{ env.TESTSUITE_REF }}
+          path: pubid-testsuite
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test
+        env:
+          TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+      - name: Conformance report (bootstrap: unimplemented flavors report, never gate)
+        run: npm run conformance -- ../pubid-testsuite/tests conformance/pending.yaml
+        working-directory: .
+        env:
+          TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests

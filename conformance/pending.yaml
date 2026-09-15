@@ -1,0 +1,5 @@
+# Cases this port explicitly cannot handle yet.
+# Rules (mirrored from the Ruby reference): entries need reason + ref;
+# a pending case that passes raises the pending-satisfied alarm and
+# MUST be unmarked.
+---
