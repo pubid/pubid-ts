@@ -167,7 +167,8 @@ function buildRules(): Record<string, P> {
 
   rule("date", () =>
     ref(rules, "edition_portion")
-      .or(ref(rules, "colon").then(ref(rules, "space?"), ref(rules, "year_digits").as("year")))
+      // pubid#403: both sides of the colon are whitespace-tolerant
+      .or(ref(rules, "space?").then(ref(rules, "colon"), ref(rules, "space?"), ref(rules, "year_digits").as("year")))
       .or(ref(rules, "space?").then(ref(rules, "lparen"), ref(rules, "year_digits").as("year"), ref(rules, "rparen"))),
   );
 
