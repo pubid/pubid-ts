@@ -98,7 +98,8 @@ function buildRules() {
         .then(ref(rules, "edition_number").maybe(), ref(rules, "space?"), ref(rules, "edition_text"), ref(rules, "space?"), ref(rules, "year_digits").as("year"))
         .as("edition_format"));
     rule("date", () => ref(rules, "edition_portion")
-        .or(ref(rules, "colon").then(ref(rules, "space?"), ref(rules, "year_digits").as("year")))
+        // pubid#403: both sides of the colon are whitespace-tolerant
+        .or(ref(rules, "space?").then(ref(rules, "colon"), ref(rules, "space?"), ref(rules, "year_digits").as("year")))
         .or(ref(rules, "space?").then(ref(rules, "lparen"), ref(rules, "year_digits").as("year"), ref(rules, "rparen"))));
     rule("stage_iteration", () => match("\\d").repeat(1).then(str("."), match("\\d").repeat(1)).or(match("\\d").repeat(1)).as("iteration"));
     rule("stage_abbr", () => str("WD").or(str("CD")).as("stage"));
