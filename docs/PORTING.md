@@ -32,7 +32,12 @@ not reason from memory, re-run them if in doubt:
 4. **`.repeat`** is greedy and does NOT backtrack a successful
    iteration (parslet: "Expected at least N of ..."). Results are an
    array iff any iteration captured, else a concatenated string.
-5. **`match("[...]")`** matches exactly ONE character.
+5. **`match` has TWO Ruby forms** (pinned empirically): `match("[a-z]")`
+   / `match("\d")` (paren) takes a FULL regex anchored at the position;
+   `match["0-9"]` (bracket indexing) takes a character-class BODY and
+   wraps it in `[...]`. The TS engine implements the paren form — when
+   the Ruby source uses the bracket form, wrap the body yourself:
+   `match["0-9"]` -> `match("[0-9]")`. Both match exactly ONE character.
 6. `parse` must consume the whole input, else ParseFailed.
 
 Check the alternation ORDER — PEG tries in order and a successful

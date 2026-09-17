@@ -1,5 +1,9 @@
 import type { FlavorImplementation } from "../conformance/implementation.js";
 import { oimlGrammarImplementation } from "./oiml/implementation.js";
+import { xsfGrammarImplementation } from "./xsf/index.js";
+import { doiGrammarImplementation } from "./doi/index.js";
+import { ianaGrammarImplementation } from "./iana/index.js";
+import { unGrammarImplementation } from "./un/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -12,6 +16,14 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
   switch (flavor) {
     case "oiml":
       return oimlGrammarImplementation();
+    case "xsf":
+      return xsfGrammarImplementation();
+    case "doi":
+      return doiGrammarImplementation();
+    case "iana":
+      return ianaGrammarImplementation();
+    case "un":
+      return unGrammarImplementation();
     default:
       return undefined;
   }
