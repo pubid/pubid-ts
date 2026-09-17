@@ -1,4 +1,4 @@
-# pubid-ts
+# pubid
 
 The TypeScript implementation of PubID identifiers, conforming to the
 [pubid-testsuite](https://github.com/pubid/pubid-testsuite) corpus.
@@ -31,7 +31,7 @@ plus every attested non-normalized alias. pubid-ts resolves and normalizes
 any identifier IN that universe, and nothing outside it:
 
 ```ts
-import { loadCorpus, corpusModeImplementation } from "pubid-ts";
+import { loadCorpus, corpusModeImplementation } from "pubid";
 
 const corpus = loadCorpus("path/to/pubid-testsuite/tests");
 const oiml = corpusModeImplementation(corpus.flavors.get("oiml")!.cases);
