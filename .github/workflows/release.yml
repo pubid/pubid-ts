@@ -15,11 +15,20 @@ permissions:
   id-token: write
   contents: write
 
+env:
+  # The corpus-backed tests read the pinned testsuite (same ref as ci.yml).
+  TESTSUITE_REF: 69ba7e462ad39d9da76d43ad80a367b0528a2b4e
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: pubid/pubid-testsuite
+          ref: ${{ env.TESTSUITE_REF }}
+          path: pubid-testsuite
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -27,6 +36,8 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+        env:
+          TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
       - name: Set version from workflow input (patch release)
         if: github.event_name == 'workflow_dispatch'
         run: |
