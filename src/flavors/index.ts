@@ -6,6 +6,8 @@ import { ianaGrammarImplementation } from "./iana/index.js";
 import { unGrammarImplementation } from "./un/index.js";
 import { plateauGrammarImplementation } from "./plateau/index.js";
 import { w3cGrammarImplementation } from "./w3c/index.js";
+import { omgGrammarImplementation } from "./omg/index.js";
+import { ogcGrammarImplementation } from "./ogc/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -30,6 +32,10 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return plateauGrammarImplementation();
     case "w3c":
       return w3cGrammarImplementation();
+    case "omg":
+      return omgGrammarImplementation();
+    case "ogc":
+      return ogcGrammarImplementation();
     default:
       return undefined;
   }
