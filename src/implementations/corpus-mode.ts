@@ -15,14 +15,41 @@ interface CorpusRow {
  * "60079-0v7B_DS" vs "60079-0v7b_DS" are distinct documents), so casefold
  * is a FALLBACK tier, consulted only when no exact row matches. The
  * fallback is first-wins in corpus order: deterministic, and it never
- * overrides an exact hit.
+ * overrides an exact hit. Spaces adjacent to a COLON collapse in the
+ * fallback tier too ("R 117-1 : 2019" -> "R 117-1:2019") — the colon is
+ * always a date separator in these identifiers, so the squeeze cannot
+ * merge two distinct rows, while "…: 2004" spellings are established
+ * real-world variance (the testsuite's own _normalization.yaml carries
+ * them). Only the colon: spaces around dashes or dots DO distinguish
+ * rows in some corpora, and are left alone.
  */
 function collapseWs(spelling: string): string {
   return spelling.trim().replace(/\s+/g, " ");
 }
 
 function foldKey(spelling: string): string {
-  return collapseWs(spelling).toLowerCase();
+  return collapseWs(spelling).replace(/\s*:\s*/g, ":").toLowerCase();
+}
+
+/**
+ * Some URN schemes are edition-less (ISO: "ISO/IEC 17025:1999", ":2005"
+ * and ":2017" all serialize to urn:iso:std:iso-iec:17025), so a URN can
+ * key several corpus rows — 40% of iso's. Resolve such a URN to the
+ * LATEST edition (the greatest `year` in the row's hash; rows without a
+ * year rank lowest), which keeps parse(toUrn()) deterministic AND
+ * sensible, and expose the whole candidate set through
+ * parseUrnCandidates for consumers that need it.
+ */
+function latestEditionRow(rows: CorpusRow[]): CorpusRow {
+  return [...rows].sort((a, b) => rowYear(a) - rowYear(b)).at(-1)!;
+}
+
+function rowYear(row: CorpusRow): number {
+  const year = row.hash["year"];
+  const parsed = typeof year === "string" || typeof year === "number"
+    ? Number(year)
+    : Number.NaN;
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 /**
@@ -66,9 +93,16 @@ export class CorpusBackedIdentifier implements Identifier {
  * resolve (case- and whitespace-insensitively) to the same row; unknown
  * spellings are rejected (parse throws).
  */
-export function corpusModeImplementation(cases: CorpusCase[]): FlavorImplementation {
+export function corpusModeImplementation(
+  cases: CorpusCase[],
+): FlavorImplementation & { parseUrnCandidates(input: string): Identifier[] } {
   const bySpelling = new Map<string, CorpusRow>();
   const byFoldedSpelling = new Map<string, CorpusRow>();
+  // A URN keys EVERY row it was serialized from — ISO-style URN schemes
+  // are edition-less, so one URN can carry up to five editions. Singular
+  // storage silently resolved the ambiguity (a different edition than the
+  // one serialized, with no signal) — pubid-ts issue #4.
+  const byUrn = new Map<string, CorpusRow[]>();
   const hashIndex = new Map<string, CorpusRow>();
 
   const resolveHash = (hash: Record<string, unknown>): CorpusRow => {
@@ -95,20 +129,41 @@ export function corpusModeImplementation(cases: CorpusCase[]): FlavorImplementat
     };
     hashIndex.set(canonicalKey(row.hash), row);
     indexSpelling(row.human, row, false);
-    if (row.urn !== undefined) indexSpelling(row.urn, row, true);
+    if (row.urn !== undefined) {
+      const key = foldKey(row.urn);
+      const bucket = byUrn.get(key);
+      if (bucket) bucket.push(row);
+      else byUrn.set(key, [row]);
+    }
     for (const alias of testCase.nonNormalizedAliases ?? []) {
       indexSpelling(alias.spelling, row, true);
     }
   }
-  return {
+
+  const urnRows = (input: string): CorpusRow[] | undefined =>
+    /^urn:/i.test(input.trim()) ? byUrn.get(foldKey(input)) : undefined;
+
+  const urnCandidates = (input: string): CorpusRow[] =>
+    urnRows(input) ?? [];
+
+  const parseInput = (input: string): CorpusRow | undefined => {
+    const rows = urnRows(input);
+    if (rows) return latestEditionRow(rows);
+    return bySpelling.get(collapseWs(input)) ??
+      byFoldedSpelling.get(foldKey(input));
+  };
+
+  const implementation: FlavorImplementation = {
     parse(input: string): Identifier {
-      const row =
-        bySpelling.get(collapseWs(input)) ??
-        byFoldedSpelling.get(foldKey(input));
+      const row = parseInput(input);
       if (row === undefined) {
         throw new Error(`no such identifier in the published corpus: ${input}`);
       }
       return new CorpusBackedIdentifier(row, resolveHash);
     },
   };
+  return Object.assign(implementation, {
+    parseUrnCandidates: (input: string): Identifier[] =>
+      urnCandidates(input).map((row) => new CorpusBackedIdentifier(row, resolveHash)),
+  });
 }

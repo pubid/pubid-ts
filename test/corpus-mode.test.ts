@@ -100,3 +100,54 @@ test("case-significant subfields keep their exact rows", () => {
   assert.ok(row, "corpus carries the case-significant row");
   assert.deepEqual(iec.parse("IECEx TRF 60079-0v7B_DS:2018").toHash(), row.identifier);
 });
+
+test("spaces adjacent to a colon resolve in the fallback tier (issue #5)", () => {
+  const corpus = loadCorpus(TESTSUITE_DIR);
+  const oiml = corpusModeImplementation(corpus.flavors.get("oiml")!.cases);
+  const canonical = oiml.parse("OIML R 117-1:2019").toHuman();
+  for (const variant of [
+    "OIML R 117-1 : 2019",
+    "oiml r 117-1 : 2019",
+    "OIML R  117-1:  2019",
+  ]) {
+    assert.equal(oiml.parse(variant).toHuman(), canonical);
+  }
+  const iso = corpusModeImplementation(corpus.flavors.get("iso")!.cases);
+  // Pick a real iso row (8601 itself is NOT in the corpus - the closed-
+  // universe property of issue #1 - so the tolerance check needs one
+  // that is).
+  const isoRow = corpus.flavors.get("iso")!.cases
+    .find((c) => c.identifier !== undefined && /^\w+ \d+:\d{4}$/.test(c.representations.human))!;
+  assert.ok(isoRow, "corpus carries a plain series:year iso row");
+  const spaced = isoRow.representations.human.replace(/:/, " : ");
+  assert.equal(iso.parse(spaced).toHuman(), isoRow.representations.human);
+});
+
+test("an ambiguous URN resolves to the LATEST edition (issue #4)", () => {
+  const corpus = loadCorpus(TESTSUITE_DIR);
+  const iso = corpusModeImplementation(corpus.flavors.get("iso")!.cases);
+  // urn:iso:std:iso-iec:17025 is edition-less: the 1999, 2005 and 2017
+  // rows all serialize to it. parse(toUrn()) must return the 2017 row.
+  const latest = iso.parse("ISO/IEC 17025:2017");
+  assert.equal(iso.parse(latest.toUrn()!).toHuman(), "ISO/IEC 17025:2017");
+});
+
+test("parseUrnCandidates exposes the full candidate set (issue #4)", () => {
+  const corpus = loadCorpus(TESTSUITE_DIR);
+  const iso = corpusModeImplementation(corpus.flavors.get("iso")!.cases);
+  // The worst fan-in in the corpus: five rows share this URN.
+  const candidates = iso.parseUrnCandidates("urn:iso:std:iso:11681:-2");
+  assert.equal(candidates.length, 5);
+  const years = candidates
+    .map((id) => id.toHash()["year"])
+    .sort();
+  assert.ok(years.length === 5, `expected 5 editions, got ${String(years)}`);
+  // A single-URN fast path returns exactly one candidate.
+  const oiml = corpusModeImplementation(corpus.flavors.get("oiml")!.cases);
+  const row = corpus.flavors.get("oiml")!.cases
+    .find((c) => c.representations.urn === "urn:oiml:r:117-1:2019")!;
+  assert.ok(row, "corpus carries the row");
+  const single = oiml.parseUrnCandidates("urn:oiml:r:117-1:2019");
+  assert.equal(single.length, 1);
+  assert.equal(single[0]!.toHuman(), row.representations.human);
+});
