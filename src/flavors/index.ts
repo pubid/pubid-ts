@@ -8,6 +8,8 @@ import { plateauGrammarImplementation } from "./plateau/index.js";
 import { w3cGrammarImplementation } from "./w3c/index.js";
 import { omgGrammarImplementation } from "./omg/index.js";
 import { ogcGrammarImplementation } from "./ogc/index.js";
+import { isbnGrammarImplementation } from "./isbn/index.js";
+import { eascGrammarImplementation } from "./easc/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -36,6 +38,10 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return omgGrammarImplementation();
     case "ogc":
       return ogcGrammarImplementation();
+    case "isbn":
+      return isbnGrammarImplementation();
+    case "easc":
+      return eascGrammarImplementation();
     default:
       return undefined;
   }
