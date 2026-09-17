@@ -44,8 +44,23 @@ oiml.parse(id.toUrn()!);          // URNs are indexed (round-trips)
 
 Lookup is whitespace-insensitive, case-insensitive as a fallback (exact
 spelling wins first, so case-significant subfields such as IECEx
-`60079-0v7B_DS` keep their rows), and the hash index is per-flavor
+`60079-0v7B_DS` keep their rows), tolerates spaces around the `:`
+date separator (`OIML R 117-1 : 2019`), and the hash index is per-flavor
 implementation — identifiers never leak across flavors.
+
+**URN resolution policy**: some URN schemes are edition-less — ISO's
+`ISO/IEC 17025:1999`, `:2005` and `:2017` all serialize to
+`urn:iso:std:iso-iec:17025`, and 40% of the iso corpus rows share their
+URN with a sibling. `parse(urn)` resolves such a URN to the **latest
+edition** (the greatest year among the candidates; deterministic), and
+`parseUrnCandidates(urn)` exposes the full candidate set when you need
+to choose differently:
+
+```ts
+const iso = corpusModeImplementation(corpus.flavors.get("iso")!.cases);
+iso.parse("urn:iso:std:iso-iec:17025").toHuman(); // "ISO/IEC 17025:2017"
+iso.parseUrnCandidates("urn:iso:std:iso:11681:-2").length; // 5 editions
+```
 
 **Scope caveat**: corpus mode is a conformance surface and a fixture for
 the grammar waves, **not an open-universe runtime parser**. A real-world
