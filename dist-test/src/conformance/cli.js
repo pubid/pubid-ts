@@ -2,6 +2,7 @@ import { loadCorpus } from "../corpus/loader.js";
 import { PendingRegistry } from "./pending.js";
 import { runCorpus } from "./runner.js";
 import { corpusModeImplementation } from "../implementations/corpus-mode.js";
+import { grammarImplementation } from "../flavors/index.js";
 /**
  * The conformance entry point. TESTSUITE_DIR points at a pubid-testsuite
  * checkout's tests/ directory (CI checks it out at the pinned ref).
@@ -19,7 +20,10 @@ export function main(argv) {
     // gate then enforces parity with the corpus floor.
     const implementations = new Map([...corpus.flavors].map(([flavor, payloads]) => [
         flavor,
-        corpusModeImplementation(payloads.cases),
+        // Grammar waves replace corpus mode per flavor: a flavor with a
+        // ported grammar parses open-endedly, and the same gate enforces
+        // parity with the corpus floor.
+        grammarImplementation(flavor) ?? corpusModeImplementation(payloads.cases),
     ]));
     const pending = PendingRegistry.load(pendingPath);
     const report = runCorpus(corpus, implementations, pending);
