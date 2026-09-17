@@ -31,9 +31,12 @@ plus every attested non-normalized alias. pubid-ts resolves and normalizes
 any identifier IN that universe, and nothing outside it:
 
 ```ts
-import { loadCorpus, corpusModeImplementation } from "pubid";
+import { loadBundledCorpus, corpusModeImplementation } from "pubid";
 
-const corpus = loadCorpus("path/to/pubid-testsuite/tests");
+// Zero-checkout path: the corpus ships inside the package (a 1.7 MB
+// gzipped artifact), so there is no testsuite directory to vendor and
+// no yaml dependency at runtime.
+const corpus = loadBundledCorpus();
 const oiml = corpusModeImplementation(corpus.flavors.get("oiml")!.cases);
 const id = oiml.parse("…");       // rejects spellings outside the corpus
 id.toHuman(); id.toUrn();         // canonical forms
@@ -41,6 +44,13 @@ id.toHash();                      // canonical serialized record
 id.fromHash(id.toHash());         // idempotent deserialization
 oiml.parse(id.toUrn()!);          // URNs are indexed (round-trips)
 ```
+
+A filesystem checkout is still the source of truth for conformance runs:
+`loadCorpus("path/to/pubid-testsuite/tests")` reads the testsuite
+directly (that path pulls `yaml` and is Node-only). After a corpus pin
+bump, regenerate the bundled artifact with `npm run artifact
+TESTSUITE_DIR=…` and commit the result together with the `TESTSUITE_REF`
+bump.
 
 Lookup is whitespace-insensitive, case-insensitive as a fallback (exact
 spelling wins first, so case-significant subfields such as IECEx
@@ -67,9 +77,11 @@ the grammar waves, **not an open-universe runtime parser**. A real-world
 identifier absent from the testsuite (a corpus of N cases for a body with
 many times N documents) is rejected by design. Consumers whose identifier
 universe exceeds the corpus — runtime resolution over live catalogues —
-need the grammar waves below. Note also that `loadCorpus` reads a
-pubid-testsuite checkout from the filesystem and pulls `yaml` at runtime,
-so serverless/edge runtimes are out of scope for now.
+need the grammar waves below. `loadCorpus` (the conformance path) reads a
+pubid-testsuite checkout from the filesystem and pulls `yaml` at runtime;
+`loadBundledCorpus` needs neither — the prebuilt artifact ships in the
+package — though it still uses Node's `fs`/`zlib` to read it, so
+browser runtimes remain out of scope.
 
 The conformance gate enforces corpus mode over the whole testsuite on
 every CI run: 42/42 flavors, canonical hash, human form, URN, alias
