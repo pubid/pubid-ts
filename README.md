@@ -31,7 +31,7 @@ plus every attested non-normalized alias. pubid-ts resolves and normalizes
 any identifier IN that universe, and nothing outside it:
 
 ```ts
-import { loadBundledCorpus, corpusModeImplementation } from "pubid";
+import { loadBundledCorpus, corpusModeImplementation } from "@pubid/pubid";
 
 // Zero-checkout path: the corpus ships inside the package (a 1.7 MB
 // gzipped artifact), so there is no testsuite directory to vendor and

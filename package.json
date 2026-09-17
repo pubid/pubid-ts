@@ -1,5 +1,5 @@
 {
-  "name": "pubid",
+  "name": "@pubid/pubid",
   "version": "0.1.2",
   "description": "TypeScript PubID identifiers: resolution, normalization and canonical hashes for every identifier in the pubid-testsuite corpus (41 standards bodies), with a conformance runner mirroring the Ruby reference",
   "type": "module",
