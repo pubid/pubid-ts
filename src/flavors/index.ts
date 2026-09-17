@@ -10,6 +10,8 @@ import { omgGrammarImplementation } from "./omg/index.js";
 import { ogcGrammarImplementation } from "./ogc/index.js";
 import { isbnGrammarImplementation } from "./isbn/index.js";
 import { eascGrammarImplementation } from "./easc/index.js";
+import { ecmaGrammarImplementation } from "./ecma/index.js";
+import { tgppGrammarImplementation } from "./tgpp/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -42,6 +44,10 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return isbnGrammarImplementation();
     case "easc":
       return eascGrammarImplementation();
+    case "ecma":
+      return ecmaGrammarImplementation();
+    case "tgpp":
+      return tgppGrammarImplementation();
     default:
       return undefined;
   }
