@@ -4,6 +4,8 @@ import { xsfGrammarImplementation } from "./xsf/index.js";
 import { doiGrammarImplementation } from "./doi/index.js";
 import { ianaGrammarImplementation } from "./iana/index.js";
 import { unGrammarImplementation } from "./un/index.js";
+import { plateauGrammarImplementation } from "./plateau/index.js";
+import { w3cGrammarImplementation } from "./w3c/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -24,6 +26,10 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return ianaGrammarImplementation();
     case "un":
       return unGrammarImplementation();
+    case "plateau":
+      return plateauGrammarImplementation();
+    case "w3c":
+      return w3cGrammarImplementation();
     default:
       return undefined;
   }
