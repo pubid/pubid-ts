@@ -18,7 +18,16 @@
  * - `.maybe` is special-cased like parslet's Maybe: one attempt, nil on
  *   failure (not an empty array)
  * - `absent?`/`present?` are zero-width lookaheads
- * - `parse` must consume the whole input
+ * - full input consumption is enforced the way parslet 2.0 does it: a
+ *   `consumeAll` flag is threaded down the parse spine — the root starts
+ *   with it, a Sequence hands it ONLY to its last child, Alternatives
+ *   pass it to every branch, and Repetition iterations never get it. An
+ *   atom that succeeds while unconsumed input remains FAILS (parslet
+ *   Base#apply's "Don't know what to do with ..." check). Because that
+ *   failure is an ordinary match failure, an enclosing Alternative
+ *   retries its next branch — so `a | b` DOES re-try `b` when `a`
+ *   matched but left trailing input (pinned against parslet: bare
+ *   "080442957X" reaches ISBN's second body alternative this way).
  */
 
 export class ParseFailed extends Error {
@@ -45,8 +54,8 @@ class Ctx {
 }
 
 export interface Atom {
-  /** Attempt a match at ctx.pos; on failure return undefined. */
-  _match(ctx: Ctx): Tree | undefined;
+  /** Attempt a match at ctx.pos; failure throws Fail. */
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined;
 }
 
 class Fail extends Error {}
@@ -62,6 +71,24 @@ function attempt<T>(ctx: Ctx, fn: () => T): T | undefined {
     }
     throw e;
   }
+}
+
+/**
+ * parslet's Base#apply: run the atom's try, then — when the caller
+ * demanded full consumption and input is left over — rewind and fail.
+ * This is what lets an enclosing Alternative retry after a branch that
+ * matched but did not consume everything.
+ */
+function applyAtom(atom: Atom, ctx: Ctx, consumeAll: boolean): Tree | undefined {
+  const saved = ctx.pos;
+  const result = atom._match(ctx, consumeAll);
+  if (consumeAll && ctx.pos < ctx.input.length) {
+    ctx.pos = saved;
+    throw new Fail(
+      `Don't know what to do with ${JSON.stringify(ctx.input.slice(ctx.pos, ctx.pos + 10))}`,
+    );
+  }
+  return result;
 }
 
 /** Combine two sequence results the way parslet's Sequence does. */
@@ -97,7 +124,7 @@ function flatten(t: Tree): Tree[] {
 
 class Str implements Atom {
   constructor(private readonly s: string) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, _consumeAll: boolean): Tree | undefined {
     if (ctx.input.startsWith(this.s, ctx.pos)) {
       ctx.pos += this.s.length;
       return this.s;
@@ -112,7 +139,7 @@ class Regex implements Atom {
     // parslet anchors the pattern and consumes exactly ONE match
     this.re = new RegExp(`^(?:${pattern})`);
   }
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, _consumeAll: boolean): Tree | undefined {
     const m = this.re.exec(ctx.input.slice(ctx.pos));
     if (!m) throw new Fail(`Expected match on ${this.re.source}`);
     const matched = m[0];
@@ -123,10 +150,12 @@ class Regex implements Atom {
 
 class Seq implements Atom {
   constructor(private readonly parts: Atom[]) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined {
     let acc: Tree = undefined;
-    for (const part of this.parts) {
-      const r = part._match(ctx);
+    for (let i = 0; i < this.parts.length; i++) {
+      // parslet Sequence: only the LAST child inherits the must-consume
+      // obligation.
+      const r = applyAtom(this.parts[i]!, ctx, consumeAll && i === this.parts.length - 1);
       acc = acc === undefined && r === undefined ? undefined : combine(acc, r);
     }
     return acc;
@@ -135,10 +164,10 @@ class Seq implements Atom {
 
 class Alt implements Atom {
   constructor(private readonly options: Atom[]) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined {
     let lastFail = "no alternative matched";
     for (const option of this.options) {
-      const r = attempt(ctx, () => option._match(ctx));
+      const r = attempt(ctx, () => applyAtom(option, ctx, consumeAll));
       if (r !== undefined) return r;
       lastFail = "alternative failed";
     }
@@ -155,11 +184,12 @@ class Repeat implements Atom {
   private get inner(): Atom {
     return this.atom instanceof P ? this.atom.atom : this.atom;
   }
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined {
     const results: Tree[] = [];
     let count = 0;
     while (count < this.max) {
-      const r = attempt(ctx, () => this.inner._match(ctx));
+      // parslet Repetition: iterations never carry the consume-all flag.
+      const r = attempt(ctx, () => applyAtom(this.inner, ctx, false));
       if (r === undefined) break;
       results.push(r);
       count++;
@@ -168,6 +198,13 @@ class Repeat implements Atom {
     if (count < this.min) {
       throw new Fail(`Expected at least ${this.min} of repetition`);
     }
+    // A repetition that stopped on its own inner failure while input
+    // remains and full consumption was demanded fails here (parslet's
+    // post-loop unconsumed check); a repetition that hit its max leaves
+    // that to applyAtom.
+    if (consumeAll && count < this.max && ctx.pos < ctx.input.length) {
+      throw new Fail("Don't know what to do with trailing input after repetition");
+    }
     if (results.some((r) => typeof r === "object")) return results;
     return results.join("");
   }
@@ -175,9 +212,9 @@ class Repeat implements Atom {
 
 class Maybe implements Atom {
   constructor(private readonly atom: P | Atom) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined {
     const inner = this.atom instanceof P ? this.atom.atom : this.atom;
-    const r = attempt(ctx, () => inner._match(ctx));
+    const r = attempt(ctx, () => applyAtom(inner, ctx, consumeAll));
     if (r === undefined || r === "") return undefined;
     return r;
   }
@@ -191,17 +228,17 @@ class As implements Atom {
   private get inner(): Atom {
     return this.atom instanceof P ? this.atom.atom : this.atom;
   }
-  _match(ctx: Ctx): TreeObject | undefined {
-    const r = this.inner._match(ctx);
+  _match(ctx: Ctx, consumeAll: boolean): TreeObject | undefined {
+    const r = this.inner._match(ctx, consumeAll);
     return { [this.key]: r === undefined ? null : r };
   }
 }
 
 class Absent implements Atom {
   constructor(private readonly atom: P | Atom) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, _consumeAll: boolean): Tree | undefined {
     const inner = this.atom instanceof P ? this.atom.atom : this.atom;
-    const r = attempt(ctx, () => inner._match(ctx));
+    const r = attempt(ctx, () => inner._match(ctx, false));
     if (r !== undefined) throw new Fail("unexpectedly matched");
     return "";
   }
@@ -209,9 +246,9 @@ class Absent implements Atom {
 
 class Present implements Atom {
   constructor(private readonly atom: P | Atom) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, _consumeAll: boolean): Tree | undefined {
     const inner = this.atom instanceof P ? this.atom.atom : this.atom;
-    attempt(ctx, () => inner._match(ctx));
+    attempt(ctx, () => inner._match(ctx, false));
     return "";
   }
 }
@@ -222,13 +259,13 @@ class Ref implements Atom {
     private readonly rules: Record<string, P | Atom>,
     private readonly name: string,
   ) {}
-  _match(ctx: Ctx): Tree | undefined {
+  _match(ctx: Ctx, consumeAll: boolean): Tree | undefined {
     if (!this.resolved) {
       const rule = this.rules[this.name];
       if (!rule) throw new Error(`unknown rule :${this.name}`);
       this.resolved = rule instanceof P ? rule.atom : rule;
     }
-    return this.resolved._match(ctx);
+    return this.resolved._match(ctx, consumeAll);
   }
 }
 
@@ -283,13 +320,14 @@ export interface Grammar {
 
 /**
  * Parse the whole input with the grammar's root rule, parslet-style:
- * failure to consume everything raises ParseFailed.
+ * full consumption is enforced by the root's consumeAll flag, so an
+ * Alternative at the spine retries a branch that left trailing input.
  */
 export function parseGrammar(grammar: Grammar, input: string): Tree {
   const ctx = new Ctx(input);
   const root = new Ref(grammar.rules, grammar.root);
-  const result = root._match(ctx);
-  if (result === undefined || ctx.pos !== input.length) {
+  const result = attempt(ctx, () => applyAtom(root, ctx, true));
+  if (result === undefined) {
     throw new ParseFailed(
       `Expected one of [${grammar.root.toUpperCase()}]`,
       ctx.pos,

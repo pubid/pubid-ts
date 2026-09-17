@@ -38,11 +38,20 @@ not reason from memory, re-run them if in doubt:
    wraps it in `[...]`. The TS engine implements the paren form — when
    the Ruby source uses the bracket form, wrap the body yourself:
    `match["0-9"]` -> `match("[0-9]")`. Both match exactly ONE character.
-6. `parse` must consume the whole input, else ParseFailed.
+6. `parse` must consume the whole input, else ParseFailed — enforced
+   the way parslet 2.0 does it: a `consumeAll` flag runs down the parse
+   spine (Sequence hands it ONLY to its last child; Alternatives pass it
+   to every branch; Repetition iterations never get it), and an atom
+   that succeeds with input left over FAILS as an ordinary match failure.
+   Consequence (pinned against parslet 2.0): an Alternative DOES re-try
+   its next branch when an earlier branch matched but left trailing
+   input — e.g. ISBN's bare "080442957X" only parses via the second body
+   alternative. Repetitions stay possessive: they never give back a
+   completed iteration (see 4).
 
-Check the alternation ORDER — PEG tries in order and a successful
-branch is never re-entered (Ruby comments mark load-bearing orderings;
-copy them into the TS rule comments).
+Alternation ORDER still matters: alternatives are tried in order, and a
+branch that consumes the whole input wins outright (Ruby comments mark
+load-bearing orderings; copy them into the TS rule comments).
 
 ## Checklist per flavor
 
