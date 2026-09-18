@@ -53,6 +53,20 @@ the no-behavior-change proof after every batch.
   would pass alone, but the gate requires the whole corpus. Same shape:
   **evs** (embeds the CEN/CENELEC grammar), **idf** (joint ISO/IDF).
 - TODO: cie, iala, bipm (self-contained parsers, clean corpora).
+- **cie porting notes** (corpus shape survey done, 365 rows / 9 types):
+  standard 262 (number[.iteration][-part]:year, `style` wire key =
+  legacy dash vs current colon date separator, `s_prefix` S marker,
+  d_prefix D-series, language before/after date), conference 45
+  (x-prefix, page/conference/variant/amendment_number variants), joint
+  ISO/IEC 23+16 identical (iso_reference) + dual-published
+  (iec_identifier), proceedings 11, corrigendum 2, bundle 1 (ids[]).
+  Parser: ordered code alternation longest-first (part+iteration slash
+  then dash, iteration, part slash, part dash with 4-digit-year
+  lookahead absent?, simple); language formats /E, (DE), (RU-2021)
+  trans-year. Builder 524 lines. START HERE next session: read
+  lib/pubid/cie/builder.rb + identifier.rb key_value, port the 9
+  classes onto BaseIdentifier (style/s_prefix/part_separator are
+  wire keys; the date separator IS the style attribute).
 
 ## Rules
 
