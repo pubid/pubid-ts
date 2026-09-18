@@ -22,6 +22,7 @@ import { etsiGrammarImplementation } from "./etsi/index.js";
 import { jisGrammarImplementation } from "./jis/index.js";
 import { iecGrammarImplementation } from "./iec/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
+import { ietfGrammarImplementation } from "./ietf/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -78,6 +79,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return iecGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
+    case "ietf":
+      return ietfGrammarImplementation();
     default:
       return undefined;
   }
