@@ -1,14 +1,15 @@
 import { Grammar, P, match, str } from "../../grammar/engine.js";
-import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
+import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import type { IdentifierStatic } from "../../model/identifier.js";
+import { extendAttributes, keyValue } from "../../model/attribute.js";
+import { BaseBuilder } from "../../model/builder.js";
 
 /**
- * 1:1 port of lib/pubid/doi/ — DOIs per ISO 26324. Accepts
- * [doi:|DOI:]10.xxxx/suffix and the https://doi.org/ resolver form; the
- * canonical human form is "doi:PREFIX/SUFFIX". The URN is the bare
- * namespace (the Ruby flavor has no urn_generator, so the base emits
- * "urn:doi" for every DOI).
+ * 1:1 port of lib/pubid/doi/ on the unified model. DOIs per ISO 26324;
+ * the Ruby flavor has no urn_generator, so toUrn() resolves to the base
+ * template ("urn:doi" — no attribute hits a template slot).
  */
 
 function buildRules(): Record<string, P> {
@@ -24,7 +25,7 @@ function buildRules(): Record<string, P> {
     str("doi:").or(str("DOI:")).or(str("Doi:")).maybe(),
   );
   const dot = str(".");
-  rule("prefix", () => str("10").then(dot, match("[0-9]").repeat(2, Infinity).as("prefix")));
+  rule("prefix", () => str("10").then(dot, match("[0-9]").repeat(2, Infinity).as("prefix_digits")));
   rule("suffix", () =>
     match("[A-Za-z0-9._\\-/()]").repeat(1, Infinity).as("suffix"),
   );
@@ -48,67 +49,46 @@ export const doiGrammar: Grammar = {
   root: "root",
 };
 
-export interface DoiIdentifier {
-  kind: "resource";
-  prefix: string; // "10." + registrar code
-  suffix: string;
-}
+export class DoiIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:doi:resource";
+  static attributes = extendAttributes(BaseIdentifier, {
+    prefix: { type: "string" },
+    suffix: { type: "string" },
+  });
+  static mappings = keyValue(
+    { wire: "prefix", to: "prefix" },
+    { wire: "suffix", to: "suffix" },
+  );
 
-function isObj(v: Tree): v is TreeObject {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
-export function buildDoiIdentifier(tree: Tree): DoiIdentifier {
-  if (!isObj(tree) || tree["prefix"] === undefined || tree["suffix"] === undefined) {
-    throw new ParseFailed("DOI: unexpected parse tree", 0);
+  render(): string {
+    return `doi:${this.prefix}/${this.suffix}`;
   }
-  return {
-    kind: "resource",
-    prefix: `10.${String(tree["prefix"])}`,
-    suffix: String(tree["suffix"]),
-  };
-}
 
-export function toHash(id: DoiIdentifier): Record<string, unknown> {
-  return { _type: "pubid:doi:resource", prefix: id.prefix, suffix: id.suffix };
+  declare readonly prefix: string;
+  declare readonly suffix: string;
 }
+registerType(DoiIdentifier as unknown as IdentifierStatic);
 
-export function fromHash(hash: Record<string, unknown>): DoiIdentifier {
-  return {
-    kind: "resource",
-    prefix: String(hash["prefix"]),
-    suffix: String(hash["suffix"]),
-  };
-}
-
-export function toHuman(id: DoiIdentifier): string {
-  return `doi:${id.prefix}/${id.suffix}`;
-}
-
-export function toUrn(_id: DoiIdentifier): string {
-  return "urn:doi";
-}
-
-class DoiIdentifierImpl implements Identifier {
-  constructor(private readonly id: DoiIdentifier) {}
-  toHash(): Record<string, unknown> {
-    return toHash(this.id);
+class DoiBuilder extends BaseBuilder {
+  protected defaultIdentifierClass() {
+    return DoiIdentifier as unknown as IdentifierStatic;
   }
-  toHuman(): string {
-    return toHuman(this.id);
-  }
-  toUrn(): string | undefined {
-    return toUrn(this.id);
-  }
-  fromHash(hash: Record<string, unknown>): Identifier {
-    return new DoiIdentifierImpl(fromHash(hash));
+
+  protected cast(key: string, value: unknown): unknown {
+    if (key === "prefix_digits") return { prefix: `10.${String(value)}` };
+    return value;
   }
 }
 
 export function doiGrammarImplementation(): FlavorImplementation {
+  const builder = new DoiBuilder();
   return {
     parse(input: string): Identifier {
-      return new DoiIdentifierImpl(buildDoiIdentifier(parseGrammar(doiGrammar, input)));
+      const tree = parseGrammar(doiGrammar, input);
+      if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
+        throw new ParseFailed("DOI: unexpected parse tree", 0);
+      }
+      return builder.build(tree as Record<string, unknown>) as unknown as Identifier;
     },
   };
 }

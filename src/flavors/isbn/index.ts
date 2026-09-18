@@ -1,15 +1,16 @@
 import { Grammar, P, match, str } from "../../grammar/engine.js";
-import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
+import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import type { IdentifierStatic } from "../../model/identifier.js";
+import { extendAttributes, keyValue } from "../../model/attribute.js";
+import { BaseBuilder } from "../../model/builder.js";
 
 /**
- * 1:1 port of lib/pubid/isbn/ — ISBN-10/ISBN-13 per ISO 2108. The grammar
- * accepts an optional "ISBN " / "ISBN:" / bare body, hyphenated or
- * contiguous; the builder validates length (10 with optional trailing X,
- * or 13 digits) and the ISO 2108 check digit, converting failures into
- * parse errors like the Ruby Builder. Hyphenation is preserved for
- * round-trip rendering; the URN is the bare namespace ("urn:isbn").
+ * 1:1 port of lib/pubid/isbn/ on the unified model. ISBN-10/13 per ISO
+ * 2108; the builder validates length and the ISO 2108 check digit and
+ * surfaces failures as parse errors (Ruby Builder parity). The Ruby
+ * flavor has no urn_generator → the base template emits "urn:isbn".
  */
 
 function buildRules(): Record<string, P> {
@@ -24,17 +25,11 @@ function buildRules(): Record<string, P> {
   const xDigit = digit.or(str("X"));
   const digitGroup = digit.repeat(1, Infinity);
 
-  rule("digit", () => digit);
-  rule("x_digit", () => xDigit);
   rule("isbn_prefix", () =>
     str("ISBN")
       .then(space.or(space.maybe().then(colon, space.maybe())))
       .maybe(),
   );
-  rule("digit_group", () => digitGroup);
-  // Hyphenated body: digit groups joined by hyphens, final group may be
-  // the single "X" check digit — or the contiguous 9-12 digit run with
-  // optional trailing X.
   rule("isbn_body", () =>
     digitGroup
       .then(hyphen.then(digitGroup).repeat(0, Infinity))
@@ -49,15 +44,25 @@ function buildRules(): Record<string, P> {
 
 export const isbnGrammar: Grammar = { rules: buildRules(), root: "root" };
 
-export interface IsbnIdentifier {
-  kind: "book";
-  raw: string;
-  hyphenated?: string;
-}
+export class IsbnIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:isbn:book";
+  static attributes = extendAttributes(BaseIdentifier, {
+    raw: { type: "string" },
+    hyphenated: { type: "string" },
+  });
+  static mappings = keyValue(
+    { wire: "raw", to: "raw" },
+    { wire: "hyphenated", to: "hyphenated" },
+  );
 
-function isObj(v: Tree): v is TreeObject {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
+  declare readonly raw: string;
+  declare readonly hyphenated: string | undefined;
+
+  render(): string {
+    return `ISBN ${this.hyphenated ?? this.raw}`;
+  }
 }
+registerType(IsbnIdentifier as unknown as IdentifierStatic);
 
 const VALID_LENGTH = /^(?:\d{9}[\dX]|\d{13})$/;
 
@@ -79,70 +84,34 @@ function validCheckDigit(full: string): boolean {
   return false;
 }
 
-export function buildIsbnIdentifier(tree: Tree): IsbnIdentifier {
-  if (!isObj(tree) || tree["body"] === undefined || tree["body"] === null) {
-    throw new ParseFailed("ISBN: unexpected parse tree", 0);
+class IsbnBuilder extends BaseBuilder {
+  protected defaultIdentifierClass() {
+    return IsbnIdentifier as unknown as IdentifierStatic;
   }
-  const hyphenatedInput = String(tree["body"]);
-  const raw = hyphenatedInput.replaceAll("-", "");
-  if (!VALID_LENGTH.test(raw)) {
-    throw new ParseFailed(`ISBN must be 10 or 13 digits (got ${raw.length})`, 0);
-  }
-  if (!validCheckDigit(raw)) {
-    throw new ParseFailed(`ISBN check digit invalid for ${raw}`, 0);
-  }
-  const id: IsbnIdentifier = { kind: "book", raw };
-  if (hyphenatedInput.includes("-")) id.hyphenated = hyphenatedInput;
-  return id;
-}
 
-export function toHash(id: IsbnIdentifier): Record<string, unknown> {
-  const hash: Record<string, unknown> = { _type: "pubid:isbn:book", raw: id.raw };
-  if (id.hyphenated !== undefined) hash["hyphenated"] = id.hyphenated;
-  return hash;
-}
-
-export function fromHash(hash: Record<string, unknown>): IsbnIdentifier {
-  if (hash["_type"] !== "pubid:isbn:book") {
-    throw new ParseFailed(`ISBN: unknown _type ${String(hash["_type"])}`, 0);
-  }
-  const id: IsbnIdentifier = { kind: "book", raw: String(hash["raw"]) };
-  if (hash["hyphenated"] !== undefined && hash["hyphenated"] !== null) {
-    id.hyphenated = String(hash["hyphenated"]);
-  }
-  return id;
-}
-
-export function toHuman(id: IsbnIdentifier): string {
-  return `ISBN ${id.hyphenated ?? id.raw}`;
-}
-
-// The Ruby flavor has no urn_generator, so the base generator emits the
-// bare namespace for every ISBN.
-export function toUrn(_id: IsbnIdentifier): string {
-  return "urn:isbn";
-}
-
-class IsbnIdentifierImpl implements Identifier {
-  constructor(private readonly id: IsbnIdentifier) {}
-  toHash(): Record<string, unknown> {
-    return toHash(this.id);
-  }
-  toHuman(): string {
-    return toHuman(this.id);
-  }
-  toUrn(): string | undefined {
-    return toUrn(this.id);
-  }
-  fromHash(hash: Record<string, unknown>): Identifier {
-    return new IsbnIdentifierImpl(fromHash(hash));
+  protected cast(key: string, value: unknown): unknown {
+    if (key !== "body") return value;
+    const hyphenatedInput = String(value);
+    const raw = hyphenatedInput.replaceAll("-", "");
+    if (!VALID_LENGTH.test(raw)) {
+      throw new ParseFailed(`ISBN must be 10 or 13 digits (got ${raw.length})`, 0);
+    }
+    if (!validCheckDigit(raw)) {
+      throw new ParseFailed(`ISBN check digit invalid for ${raw}`, 0);
+    }
+    return hyphenatedInput.includes("-") ? { raw, hyphenated: hyphenatedInput } : { raw };
   }
 }
 
 export function isbnGrammarImplementation(): FlavorImplementation {
+  const builder = new IsbnBuilder();
   return {
     parse(input: string): Identifier {
-      return new IsbnIdentifierImpl(buildIsbnIdentifier(parseGrammar(isbnGrammar, input)));
+      const tree = parseGrammar(isbnGrammar, input);
+      if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
+        throw new ParseFailed("ISBN: unexpected parse tree", 0);
+      }
+      return builder.build(tree as Record<string, unknown>) as unknown as Identifier;
     },
   };
 }
