@@ -71,7 +71,16 @@ function coerceOne(value: unknown, spec: AttributeSpec): unknown {
     return typeof value === "object" && value !== null ? value : String(value);
   }
   if (value instanceof spec.type) return value;
-  if (typeof value === "object" && value !== null) return new (spec.type as ComponentCtor)(value as Record<string, unknown>);
+  if (typeof value === "object" && value !== null) {
+    // Identifier-typed attributes (oiml supplement `base`) dispatch
+    // polymorphically through the registered type map.
+    if (typeof spec.type === "function" && spec.type.prototype instanceof BaseIdentifier) {
+      const idCtor = spec.type as unknown as IdentifierStatic;
+      const v = value as Record<string, unknown>;
+      return "_type" in v ? idCtor.fromHash(v) : idCtor.fromHash({ ...v, _type: idCtor.polymorphicName });
+    }
+    return new (spec.type as ComponentCtor)(value as Record<string, unknown>);
+  }
   return value;
 }
 
@@ -139,8 +148,9 @@ export abstract class BaseIdentifier {
     return (this as Record<string, unknown>)[name];
   }
 
-  /** Serialize one attribute's value (component → toWire; scalars as-is). */
+  /** Serialize one attribute's value (component → toWire, nested identifier → toHash, scalars as-is). */
   protected serializeValue(value: unknown): unknown {
+    if (value instanceof BaseIdentifier) return value.toHash();
     if (value instanceof Component) return value.toWire();
     if (Array.isArray(value)) return value.map((v) => this.serializeValue(v));
     return value;

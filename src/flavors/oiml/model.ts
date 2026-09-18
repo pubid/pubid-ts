@@ -1,20 +1,22 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
-import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
-import { oimlGrammar } from "./grammar.js";
+import { ParseFailed } from "../../grammar/engine.js";
+import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import type { IdentifierStatic } from "../../model/identifier.js";
+import { extendAttributes, keyValue } from "../../model/attribute.js";
+import type { AttributeTable } from "../../model/attribute.js";
+import { BaseUrnGenerator } from "../../model/urn-generator.js";
 
 /**
- * The OIML identifier model, ported from lib/pubid/oiml/{identifier,
- * single_identifier, supplement_identifier, identifiers/*}.rb. A single
- * discriminated union replaces the Ruby class hierarchy; `kind` is the
- * polymorphic `_type` tail ("recommendation", "amendment", ...).
- *
- * toHash mirrors the Ruby key_value serialization under pubid's
- * canonical no-defaults rule: nil/empty values are dropped, booleans
- * whose default is false are dropped, and `parsed_format` is dropped
- * when "short" (its default).
+ * The OIML identifier model on the unified model — one BaseIdentifier
+ * subclass per Ruby class (lib/pubid/oiml/identifiers/*). Attribute
+ * names are snake_case so the default wire mapping matches the Ruby
+ * key_value; parsed_format defaults to "short" (dropped from the hash),
+ * space_suffix/trailing/joined/year_on_base default false (dropped).
+ * Supplements declare a mapping list so supp_year serializes under the
+ * "year" wire key and the nested base round-trips polymorphically.
  */
 
-export type OimlKind =
+type OimlKind =
   | "recommendation"
   | "basic-publication"
   | "document"
@@ -27,34 +29,6 @@ export type OimlKind =
   | "errata"
   | "annex";
 
-export interface OimlIdentifier {
-  kind: OimlKind;
-  publisher: string;
-  language?: string;
-  parsedFormat?: string; // "short" (default, dropped) | "long" | "citation" | "short_with_space"
-  // code-bearing leaves (CodeNumber)
-  number?: string;
-  part?: string;
-  subpart?: string;
-  suffix?: string;
-  spaceSuffix?: boolean;
-  // bulletin locator (the issue is `number`; the sequence is its own column)
-  sequence?: string;
-  // single documents
-  year?: string; // the date component flattened to its year
-  edition?: string;
-  stage?: string;
-  iteration?: string;
-  // supplements
-  base?: OimlIdentifier;
-  suppYear?: string;
-  trailing?: boolean;
-  joined?: boolean;
-  // annex
-  letter?: string;
-  yearOnBase?: boolean;
-}
-
 const KIND_BY_TYPE: Record<string, OimlKind> = {
   B: "basic-publication",
   D: "document",
@@ -65,9 +39,14 @@ const KIND_BY_TYPE: Record<string, OimlKind> = {
   V: "vocabulary",
 };
 
-const SUPPLEMENT_KINDS: Record<string, OimlKind> = {
-  Amendment: "amendment",
-  Errata: "errata",
+const TYPE_STRINGS: Record<string, string> = {
+  "basic-publication": "B",
+  document: "D",
+  "expert-report": "E",
+  guide: "G",
+  recommendation: "R",
+  "seminar-report": "S",
+  vocabulary: "V",
 };
 
 function isObj(v: Tree): v is TreeObject {
@@ -75,30 +54,316 @@ function isObj(v: Tree): v is TreeObject {
 }
 
 function str(v: Tree): string | undefined {
-  if (v === undefined || v === null) return undefined;
-  return String(v);
+  return v === undefined || v === null ? undefined : String(v);
 }
 
-/** Ruby Builder#extract_language: the tree value is {language: code} | null. */
+/** Ruby Builder#extract_language. */
 function extractLanguage(langData: Tree): string | undefined {
-  if (isObj(langData)) {
-    const code = str(langData["language"]);
-    return code;
-  }
+  if (isObj(langData)) return str(langData["language"]);
   return str(langData);
 }
 
-/** Ruby Identifiers::CodeNumber#code: compose the printed code. */
-function composedCode(id: OimlIdentifier): string | undefined {
-  if (id.number === undefined) return undefined;
-  let result = id.number;
-  if (id.part) result += `-${id.part}`;
-  if (id.subpart) result += `-${id.subpart}`;
-  if (id.suffix) result += `${id.spaceSuffix ? " " : "-"}${id.suffix}`;
-  return result;
+/** ---- shared attribute tables (snake_case = default wire names) ---- */
+
+const SINGLE_ATTRS = {
+  publisher: { type: "string" },
+  language: { type: "string" },
+  parsed_format: { type: "string", default: "short" },
+  number: { type: "string" },
+  part: { type: "string" },
+  subpart: { type: "string" },
+  suffix: { type: "string" },
+  space_suffix: { type: "boolean", default: false },
+  year: { type: "string" },
+  edition: { type: "string" },
+  stage: { type: "string" },
+  iteration: { type: "string" },
+} as const;
+
+
+abstract class OimlBase extends BaseIdentifier {
+  declare readonly publisher: string | undefined;
+  declare readonly language: string | undefined;
+  declare readonly parsed_format: string | undefined;
+
+  effectiveFormat(): "long" | "short" {
+    return this.parsed_format === "long" ? "long" : "short";
+  }
 }
 
-export function buildOimlIdentifier(tree: Tree): OimlIdentifier {
+/** ---- single documents (CodeNumber + Bulletin) ---- */
+
+abstract class OimlSingle extends OimlBase {
+  declare readonly number: string | undefined;
+  declare readonly part: string | undefined;
+  declare readonly subpart: string | undefined;
+  declare readonly suffix: string | undefined;
+  declare readonly space_suffix: boolean | undefined;
+  declare readonly year: string | undefined;
+  declare readonly edition: string | undefined;
+  declare readonly stage: string | undefined;
+  declare readonly iteration: string | undefined;
+
+  /** Ruby Identifiers::CodeNumber#code. */
+  composedCode(): string | undefined {
+    if (this.number === undefined) return undefined;
+    let result = this.number;
+    if (this.part) result += `-${this.part}`;
+    if (this.subpart) result += `-${this.subpart}`;
+    if (this.suffix) result += `${this.space_suffix ? " " : "-"}${this.suffix}`;
+    return result;
+  }
+
+  typeString(): string {
+    return TYPE_STRINGS[this.constructor.polymorphicName.slice("pubid:oiml:".length)] ?? "R";
+  }
+
+  /** renderSingle — the formatOverride threads through supplement rendering. */
+  render(formatOverride?: string): string {
+    const format = formatOverride ?? this.effectiveFormat();
+    let result = `${this.publisher} ${this.typeString()} ${this.composedCode()}`;
+    let usingEditionFormat = false;
+
+    if (this.edition && this.year) {
+      result += ` ${this.edition} Edition ${this.year}`;
+      usingEditionFormat = true;
+    } else if (this.edition) {
+      result += ` ${this.edition}`;
+      usingEditionFormat = true;
+    } else if (this.year) {
+      if (format === "long") {
+        result += ` Edition ${this.year}`;
+        usingEditionFormat = true;
+      } else {
+        result += `:${this.year}`;
+      }
+    }
+
+    if (this.stage || this.iteration) {
+      result += " ";
+      if (this.iteration) result += this.iteration;
+      if (this.stage) result += this.stage;
+    }
+
+    if (this.language) {
+      result +=
+        usingEditionFormat || this.parsed_format === "short_with_space"
+          ? ` (${this.language})`
+          : `(${this.language})`;
+    }
+    return result;
+  }
+}
+
+function oimlSingleClass(kind: OimlKind): IdentifierStatic {
+  const isBulletin = kind === "bulletin";
+  class OimlSingleIdentifier extends OimlSingle {
+    static polymorphicName = `pubid:oiml:${kind}`;
+    static attributes = isBulletin
+      ? extendAttributes(BaseIdentifier, { ...SINGLE_ATTRS, sequence: { type: "string" } })
+      : extendAttributes(BaseIdentifier, SINGLE_ATTRS);
+    declare readonly sequence: string | undefined;
+
+    render(formatOverride?: string): string {
+      if (!isBulletin) return super.render(formatOverride);
+      // renderBulletin
+      if (
+        this.parsed_format === "citation" &&
+        this.year &&
+        this.number &&
+        this.sequence
+      ) {
+        return `${this.publisher} Bulletin ${toRoman(Number(this.year) - 1959)}(${Number(this.number)}) ${this.year}${this.number}${this.sequence}`;
+      }
+      let result = `${this.publisher} Bulletin`;
+      if (this.year) {
+        result += ` ${this.year}`;
+        if (this.number) result += `-${this.number}`;
+        if (this.sequence) result += `-${this.sequence}`;
+      }
+      if (this.language) result += ` (${this.language})`;
+      return result;
+    }
+  }
+  registerType(OimlSingleIdentifier as unknown as IdentifierStatic);
+  return OimlSingleIdentifier as unknown as IdentifierStatic;
+}
+
+const SUPP_ATTRS: AttributeTable = {
+  language: { type: "string" },
+  parsed_format: { type: "string", default: "short" },
+  base: { type: OimlSingle as unknown as IdentifierStatic },
+  supp_year: { type: "string" },
+  trailing: { type: "boolean", default: false },
+  joined: { type: "boolean", default: false },
+  letter: { type: "string" },
+  year_on_base: { type: "boolean", default: false },
+} as const;
+
+const SUPP_MAPPINGS = keyValue(
+  { wire: "language", to: "language" },
+  { wire: "parsed_format", to: "parsed_format" },
+  { wire: "base", to: "base" },
+  { wire: "year", to: "supp_year" },
+  { wire: "trailing", to: "trailing" },
+  { wire: "joined", to: "joined" },
+  { wire: "letter", to: "letter" },
+  { wire: "year_on_base", to: "year_on_base" },
+);
+
+/** ---- supplements (Amendment / Errata) and Annex ---- */
+
+abstract class OimlSupplement extends OimlBase {
+  declare readonly base: OimlSingle;
+  declare readonly supp_year: string | undefined;
+  declare readonly trailing: boolean | undefined;
+  declare readonly joined: boolean | undefined;
+  declare readonly letter: string | undefined;
+  declare readonly year_on_base: boolean | undefined;
+
+  supplementType(): string {
+    const kind = this.constructor.polymorphicName.slice("pubid:oiml:".length);
+    if (kind === "annex") return this.letter ? `Annex ${this.letter}` : "Annexes";
+    return kind === "errata" ? "Errata" : "Amendment";
+  }
+
+  render(): string {
+    const kind = this.constructor.polymorphicName.slice("pubid:oiml:".length);
+    if (kind === "annex") return this.renderAnnex();
+    return this.renderSupplement();
+  }
+
+  /** renderSupplement */
+  private renderSupplement(): string {
+    if (this.joined) {
+      let result = `${stripLanguage(this.base.render())}+${this.supplementType()}`;
+      if (this.supp_year) result += `:${this.supp_year}`;
+      if (this.language) result += ` (${this.language})`;
+      return result;
+    }
+
+    if (this.trailing) {
+      let result = `${stripLanguage(this.base.render())} ${this.supplementType()}`;
+      if (this.language) result += ` (${this.language})`;
+      return result;
+    }
+
+    const baseFormat =
+      this.effectiveFormat() !== "short"
+        ? this.effectiveFormat()
+        : this.base.parsed_format === "long"
+          ? "long"
+          : "short";
+    const baseStr = stripLanguage(this.base.render(baseFormat));
+
+    let result = `${this.supplementType()} (${this.supp_year}) to ${baseStr}`;
+    if (this.language) result += ` (${this.language})`;
+    return result;
+  }
+
+  /** renderAnnex */
+  private renderAnnex(): string {
+    if (this.year_on_base) {
+      const marker = this.letter ? `Annex ${this.letter}` : "Annexes";
+      let result = `${stripLanguage(this.base.render())} ${marker}`;
+      if (this.language) result += ` (${this.language})`;
+      return result;
+    }
+
+    const annexFormat = this.effectiveFormat();
+    const baseStr = this.base
+      .render(this.base.parsed_format === "long" ? "long" : "short")
+      .replace(/:.*/, "")
+      .replace(/\s+Edition\s+\d{4}/, "")
+      .replace(/\(.*\)/, "")
+      .trim();
+
+    let result = baseStr;
+    if (this.letter) {
+      result += ` Annex ${this.letter}`;
+      if (this.supp_year) result += ` Edition ${this.supp_year}`;
+    } else {
+      result += " Annexes";
+      if (this.supp_year) {
+        if (annexFormat === "long") {
+          result += ` Edition ${this.supp_year}`;
+        } else {
+          result += `:${this.supp_year}`;
+        }
+      }
+    }
+    if (this.language) result += ` (${this.language})`;
+    return result;
+  }
+}
+
+function oimlSupplementClass(kind: "amendment" | "errata" | "annex"): IdentifierStatic {
+  class OimlSupplementIdentifier extends OimlSupplement {
+    static polymorphicName = `pubid:oiml:${kind}`;
+    static attributes = extendAttributes(BaseIdentifier, SUPP_ATTRS);
+    static mappings = SUPP_MAPPINGS;
+  }
+  registerType(OimlSupplementIdentifier as unknown as IdentifierStatic);
+  return OimlSupplementIdentifier as unknown as IdentifierStatic;
+}
+
+const KIND_CLASSES: Partial<Record<OimlKind, IdentifierStatic>> = {};
+for (const kind of [
+  "recommendation", "basic-publication", "document", "guide", "vocabulary",
+  "expert-report", "seminar-report", "bulletin",
+] as const) {
+  KIND_CLASSES[kind] = oimlSingleClass(kind);
+}
+KIND_CLASSES["amendment"] = oimlSupplementClass("amendment");
+KIND_CLASSES["errata"] = oimlSupplementClass("errata");
+KIND_CLASSES["annex"] = oimlSupplementClass("annex");
+
+/** ---- URN generator (lib/pubid/oiml/urn_generator.rb, all kinds) ---- */
+
+class OimlUrnGenerator extends BaseUrnGenerator<OimlBase> {
+  generate(): string {
+    const id = this.identifier;
+    const kind = id.constructor.polymorphicName.slice("pubid:oiml:".length);
+    if (kind === "bulletin") {
+      const b = id as unknown as OimlSingle & { sequence?: string };
+      const parts = ["urn", "oiml", "bulletin"];
+      if (b.year) {
+        let locator = b.year;
+        if (b.number) locator += `-${b.number}`;
+        if (b.sequence) locator += `-${b.sequence}`;
+        parts.push(locator);
+      }
+      if (id.language) parts.push(id.language.toLowerCase());
+      return parts.join(":");
+    }
+
+    const isSupp = kind === "amendment" || kind === "errata" || kind === "annex";
+    const single = (isSupp ? (id as unknown as OimlSupplement).base : (id as unknown as OimlSingle));
+    const parts = ["urn", "oiml"];
+    // Ruby: `return "r" unless identifier.type` — a supplement has no
+    // type letter, so its URN carries the default "r" (corpus quirk).
+    parts.push(isSupp ? "r" : (TYPE_STRINGS[kind] ?? "r").toLowerCase());
+    // Ruby SupplementIdentifier#code delegates to the wrapped standard.
+    const code = single.composedCode();
+    if (code) parts.push(code);
+    const year = (id as unknown as { year?: string }).year ??
+      (id as unknown as OimlSupplement).supp_year;
+    if (year) parts.push(year);
+    const stage = (id as unknown as { stage?: string }).stage;
+    if (stage) parts.push(stage.toLowerCase());
+    const iteration = (id as unknown as { iteration?: string }).iteration;
+    if (iteration) parts.push(iteration);
+    if (id.language) parts.push(id.language.toLowerCase());
+    return parts.join(":");
+  }
+}
+for (const klass of Object.values(KIND_CLASSES)) {
+  (klass as unknown as Record<string, unknown>).urnGenerator = OimlUrnGenerator;
+}
+
+/** ---- builder (lib/pubid/oiml/builder.rb) ---- */
+
+export function buildOimlIdentifier(tree: Tree): BaseIdentifier {
   if (!isObj(tree)) throw new ParseFailed("OIML: unexpected parse tree", 0);
 
   if (tree["amd_marker"] !== undefined) return buildShortAmendment(tree);
@@ -106,7 +371,7 @@ export function buildOimlIdentifier(tree: Tree): OimlIdentifier {
   return buildBaseDocument(tree);
 }
 
-function buildShortAmendment(tree: TreeObject): OimlIdentifier {
+function buildShortAmendment(tree: TreeObject): BaseIdentifier {
   const baseCode = isObj(tree["base_code"]) ? tree["base_code"] : undefined;
   const base = buildBaseDocument({
     publisher: tree["publisher"],
@@ -114,32 +379,28 @@ function buildShortAmendment(tree: TreeObject): OimlIdentifier {
     number: baseCode?.["number"],
     part: baseCode?.["part"],
     subpart: baseCode?.["subpart"],
-  });
+  }) as unknown as OimlSingle;
 
   const editionFormat = isObj(tree["edition_format"]) ? tree["edition_format"] : undefined;
   const yearValue = editionFormat ? editionFormat["year"] : tree["year"];
 
-  const id: OimlIdentifier = {
-    kind: "amendment",
+  const attrs: Record<string, unknown> = {
     publisher: "OIML",
     base,
-    parsedFormat: editionFormat ? "long" : "short",
+    parsed_format: editionFormat ? "long" : "short",
   };
   const suppYear = str(yearValue);
-  if (suppYear !== undefined) id.suppYear = suppYear;
+  if (suppYear !== undefined) attrs["supp_year"] = suppYear;
   const language = extractLanguage(tree["language"]);
-  if (language !== undefined) id.language = language;
-  for (const key of Object.keys(id) as (keyof OimlIdentifier)[]) {
-    if (id[key] === undefined) delete id[key];
-  }
-  return id;
+  if (language !== undefined) attrs["language"] = language;
+  return new (KIND_CLASSES["amendment"] as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
 }
 
-function buildSupplement(tree: TreeObject): OimlIdentifier {
+function buildSupplement(tree: TreeObject): BaseIdentifier {
   const marker = str(tree["trailing_marker"]);
   const plusMarker = str(tree["plus_marker"]);
 
-  let kind: OimlKind;
+  let kind: "amendment" | "errata" | "annex";
   if (tree["annex_letter"] !== undefined || tree["annex_marker"] !== undefined) {
     kind = "annex";
   } else if (marker === "Errata" || plusMarker === "Errata") {
@@ -148,67 +409,64 @@ function buildSupplement(tree: TreeObject): OimlIdentifier {
     kind = "amendment";
   }
 
-  const base = buildOimlIdentifier(tree["base"]);
+  const base = buildOimlIdentifier(tree["base"]) as unknown as OimlSingle;
 
   const editionFormat = isObj(tree["edition_format"]) ? tree["edition_format"] : undefined;
   const yearValue = editionFormat ? editionFormat["year"] : tree["year"];
 
-  const id: OimlIdentifier = {
-    kind,
+  const attrs: Record<string, unknown> = {
     publisher: "OIML",
     base,
-    parsedFormat: editionFormat ? "long" : "short",
+    parsed_format: editionFormat ? "long" : "short",
   };
   const suppYear = str(yearValue);
-  if (suppYear !== undefined) id.suppYear = suppYear;
+  if (suppYear !== undefined) attrs["supp_year"] = suppYear;
   const language = extractLanguage(tree["language"]);
-  if (language !== undefined) id.language = language;
-  if (marker !== undefined) id.trailing = true;
-  if (plusMarker !== undefined) id.joined = true;
+  if (language !== undefined) attrs["language"] = language;
+  if (marker !== undefined) attrs["trailing"] = true;
+  if (plusMarker !== undefined) attrs["joined"] = true;
   const letter = str(tree["annex_letter"]);
-  if (letter !== undefined) id.letter = letter;
+  if (letter !== undefined) attrs["letter"] = letter;
 
   // Annex with no year of its own but a dated base: the year belongs to
   // the base and must render glued to it.
-  if (kind === "annex" && !yearValue && base.year) id.yearOnBase = true;
+  if (kind === "annex" && !yearValue && base.year) attrs["year_on_base"] = true;
 
-  return id;
+  return new (KIND_CLASSES[kind] as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
 }
 
-function buildBaseDocument(tree: TreeObject): OimlIdentifier {
+function buildBaseDocument(tree: TreeObject): BaseIdentifier {
   const type = str(tree["type"]);
   const kind: OimlKind = type === "Bulletin" ? "bulletin" : KIND_BY_TYPE[type ?? ""] ?? "recommendation";
 
-  const id: OimlIdentifier = {
-    kind,
+  const attrs: Record<string, unknown> = {
     publisher: str(tree["publisher"]) ?? "OIML",
   };
-
   const number = str(tree["number"]);
-  if (number !== undefined) id.number = number;
+  if (number !== undefined) attrs["number"] = number;
   const part = str(tree["part"]);
-  if (part !== undefined) id.part = part;
+  if (part !== undefined) attrs["part"] = part;
   const subpart = str(tree["subpart"]);
-  if (subpart !== undefined) id.subpart = subpart;
+  if (subpart !== undefined) attrs["subpart"] = subpart;
   const codeSuffix = str(tree["code_suffix"]);
-  if (codeSuffix !== undefined) id.suffix = codeSuffix;
-  if ("space_suffix" in tree) id.spaceSuffix = true;
+  if (codeSuffix !== undefined) attrs["suffix"] = codeSuffix;
+  if ("space_suffix" in tree) attrs["space_suffix"] = true;
 
   const editionFormat = isObj(tree["edition_format"]) ? tree["edition_format"] : undefined;
   let yearValue: Tree;
   if (editionFormat) {
     yearValue = editionFormat["year"];
     const edition = str(editionFormat["edition"]);
-    if (edition !== undefined) id.edition = edition;
+    if (edition !== undefined) attrs["edition"] = edition;
   } else {
     yearValue = tree["year"];
   }
   const year = str(yearValue);
-  if (year !== undefined) id.year = year;
+  if (year !== undefined) attrs["year"] = year;
 
-  if (kind === "bulletin") applyBulletinLocator(id, tree);
+  if (kind === "bulletin") applyBulletinLocator(attrs, tree);
 
-  id.parsedFormat = editionFormat
+  attrs["parsed_format"] = editionFormat
     ? "long"
     : tree["space_before_lang"] !== undefined
       ? "short_with_space"
@@ -217,164 +475,33 @@ function buildBaseDocument(tree: TreeObject): OimlIdentifier {
         : "short";
 
   const stage = str(tree["stage"]);
-  if (stage !== undefined) id.stage = stage;
+  if (stage !== undefined) attrs["stage"] = stage;
   const iteration = str(tree["iteration"]);
-  if (iteration !== undefined) id.iteration = iteration;
+  if (iteration !== undefined) attrs["iteration"] = iteration;
   const language = extractLanguage(tree["language"]);
-  if (language !== undefined) id.language = language;
+  if (language !== undefined) attrs["language"] = language;
 
-  // drop undefined fields for a clean object
-  for (const key of Object.keys(id) as (keyof OimlIdentifier)[]) {
-    if (id[key] === undefined) delete id[key];
-  }
-  return id;
+  return new (KIND_CLASSES[kind] as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
 }
 
-function applyBulletinLocator(id: OimlIdentifier, tree: TreeObject): void {
+function applyBulletinLocator(attrs: Record<string, unknown>, tree: TreeObject): void {
   const articleId = str(tree["article_id"]);
   if (articleId) {
-    id.year = articleId.slice(0, 4);
-    id.number = articleId.slice(4, 6);
-    id.sequence = articleId.slice(6, 8);
+    attrs["year"] = articleId.slice(0, 4);
+    attrs["number"] = articleId.slice(4, 6);
+    attrs["sequence"] = articleId.slice(6, 8);
     return;
   }
   const issue = str(tree["issue"]);
-  if (issue !== undefined) id.number = issue;
+  if (issue !== undefined) attrs["number"] = issue;
   const sequence = str(tree["sequence"]);
-  if (sequence !== undefined) id.sequence = sequence;
+  if (sequence !== undefined) attrs["sequence"] = sequence;
 }
 
-/** ---- human rendering: port of lib/pubid/oiml/renderer.rb ---- */
-
-function effectiveFormat(id: OimlIdentifier): string | undefined {
-  return id.parsedFormat === "long" ? "long" : "short";
-}
+/** ---- shared render helpers ---- */
 
 function stripLanguage(s: string): string {
   return s.replace(/\s*\([^)]+\)\s*$/, "").trim();
-}
-
-function renderDateYear(id: OimlIdentifier): string {
-  return id.year ?? "";
-}
-
-function renderSingle(id: OimlIdentifier): string {
-  const format = effectiveFormat(id);
-  let result = `${id.publisher} ${typeString(id)} ${composedCode(id)}`;
-  let usingEditionFormat = false;
-
-  if (id.edition && id.year) {
-    result += ` ${id.edition} Edition ${renderDateYear(id)}`;
-    usingEditionFormat = true;
-  } else if (id.edition) {
-    result += ` ${id.edition}`;
-    usingEditionFormat = true;
-  } else if (id.year) {
-    if (format === "long") {
-      result += ` Edition ${renderDateYear(id)}`;
-      usingEditionFormat = true;
-    } else {
-      result += `:${renderDateYear(id)}`;
-    }
-  }
-
-  if (id.stage || id.iteration) {
-    result += " ";
-    if (id.iteration) result += id.iteration;
-    if (id.stage) result += id.stage;
-  }
-
-  if (id.language) {
-    result +=
-      usingEditionFormat || id.parsedFormat === "short_with_space"
-        ? ` (${id.language})`
-        : `(${id.language})`;
-  }
-  return result;
-}
-
-function renderSupplement(id: OimlIdentifier): string {
-  const format = effectiveFormat(id);
-
-  if (id.joined) {
-    let result = `${stripLanguage(toHuman(id.base!))}+${supplementType(id)}`;
-    if (id.suppYear) result += `:${id.suppYear}`;
-    if (id.language) result += ` (${id.language})`;
-    return result;
-  }
-
-  if (id.trailing) {
-    let result = `${stripLanguage(toHuman(id.base!))} ${supplementType(id)}`;
-    if (id.language) result += ` (${id.language})`;
-    return result;
-  }
-
-  const baseFormat =
-    format && format !== "short"
-      ? format
-      : id.base!.parsedFormat === "long"
-        ? "long"
-        : "short";
-  const baseStr = stripLanguage(toHuman(id.base!, baseFormat));
-
-  let result = `${supplementType(id)} (${id.suppYear}) to ${baseStr}`;
-  if (id.language) result += ` (${id.language})`;
-  return result;
-}
-
-function renderAnnex(id: OimlIdentifier): string {
-  const format = effectiveFormat(id);
-
-  if (id.yearOnBase) {
-    const baseStr = stripLanguage(toHuman(id.base!));
-    const marker = id.letter ? `Annex ${id.letter}` : "Annexes";
-    let result = `${baseStr} ${marker}`;
-    if (id.language) result += ` (${id.language})`;
-    return result;
-  }
-
-  const baseFormat = id.base!.parsedFormat === "long" ? "long" : "short";
-  const annexFormat = format ?? (id.parsedFormat === "long" ? "long" : "short");
-
-  let baseStr = toHuman(id.base!, baseFormat);
-  baseStr = baseStr
-    .replace(/:.*/, "")
-    .replace(/\s+Edition\s+\d{4}/, "")
-    .replace(/\(.*\)/, "")
-    .trim();
-
-  let result = baseStr;
-  if (id.letter) {
-    result += ` Annex ${id.letter}`;
-    if (id.suppYear) result += ` Edition ${id.suppYear}`;
-  } else {
-    result += " Annexes";
-    if (id.suppYear) {
-      if (annexFormat === "long") {
-        result += ` Edition ${id.suppYear}`;
-      } else {
-        result += `:${id.suppYear}`;
-      }
-    }
-  }
-  if (id.language) result += ` (${id.language})`;
-  return result;
-}
-
-function renderBulletin(id: OimlIdentifier): string {
-  const citation =
-    id.parsedFormat === "citation" && id.year && id.number && id.sequence;
-  if (citation) {
-    return `${id.publisher} Bulletin ${toRoman(Number(id.year) - 1959)}(${Number(id.number)}) ${id.year}${id.number}${id.sequence}`;
-  }
-  let result = `${id.publisher} Bulletin`;
-  if (id.year) {
-    result += ` ${id.year}`;
-    if (id.number) result += `-${id.number}`;
-    if (id.sequence) result += `-${id.sequence}`;
-  }
-  if (id.language) result += ` (${id.language})`;
-  return result;
 }
 
 function toRoman(n: number): string {
@@ -392,146 +519,3 @@ function toRoman(n: number): string {
   }
   return out;
 }
-
-function typeString(id: OimlIdentifier): string {
-  const map: Record<string, string> = {
-    "basic-publication": "B",
-    document: "D",
-    "expert-report": "E",
-    guide: "G",
-    recommendation: "R",
-    "seminar-report": "S",
-    vocabulary: "V",
-  };
-  return map[id.kind] ?? id.kind;
-}
-
-function supplementType(id: OimlIdentifier): string {
-  if (id.kind === "annex") return id.letter ? `Annex ${id.letter}` : "Annexes";
-  return id.kind === "errata" ? "Errata" : "Amendment";
-}
-
-export function toHuman(id: OimlIdentifier, format?: string): string {
-  switch (id.kind) {
-    case "annex":
-      return renderAnnex(id);
-    case "bulletin":
-      return format === "citation" ? renderBulletin(id) : renderBulletin(id);
-    case "amendment":
-    case "errata":
-      return renderSupplement(id);
-    default:
-      return renderSingle({ ...id, parsedFormat: format ?? id.parsedFormat ?? "short" });
-  }
-}
-
-/** ---- canonical hash: the key_value maps under no-defaults ---- */
-
-export function toHash(id: OimlIdentifier): Record<string, unknown> {
-  const hash: Record<string, unknown> = {
-    _type: `pubid:oiml:${id.kind}`,
-  };
-  if (id.language) hash["language"] = id.language;
-  if (id.parsedFormat && id.parsedFormat !== "short") {
-    hash["parsed_format"] = id.parsedFormat;
-  }
-
-  if (id.kind === "amendment" || id.kind === "errata" || id.kind === "annex") {
-    hash["base"] = toHash(id.base!);
-    if (id.suppYear) hash["year"] = id.suppYear;
-    if (id.trailing) hash["trailing"] = true;
-    if (id.joined) hash["joined"] = true;
-    if (id.kind === "annex") {
-      if (id.letter) hash["letter"] = id.letter;
-      if (id.yearOnBase) hash["year_on_base"] = true;
-    }
-    return hash;
-  }
-
-  hash["publisher"] = id.publisher;
-  if (id.number) hash["number"] = id.number;
-  if (id.part) hash["part"] = id.part;
-  if (id.subpart) hash["subpart"] = id.subpart;
-  if (id.suffix) hash["suffix"] = id.suffix;
-  if (id.spaceSuffix) hash["space_suffix"] = true;
-  if (id.year) hash["year"] = id.year;
-  if (id.edition) hash["edition"] = id.edition;
-  if (id.stage) hash["stage"] = id.stage;
-  if (id.iteration) hash["iteration"] = id.iteration;
-  if (id.kind === "bulletin" && id.sequence) hash["sequence"] = id.sequence;
-  return hash;
-}
-
-export function fromHash(hash: Record<string, unknown>): OimlIdentifier {
-  const kind = String(hash["_type"]).split(":").pop() as OimlKind;
-  const id: OimlIdentifier = { kind, publisher: "OIML" };
-  const s = (key: string): string | undefined =>
-    hash[key] === undefined || hash[key] === null ? undefined : String(hash[key]);
-
-  const assign = (key: keyof OimlIdentifier, value: unknown): void => {
-    if (value !== undefined) (id as unknown as Record<string, unknown>)[key] = value;
-  };
-  if (kind === "amendment" || kind === "errata" || kind === "annex") {
-    id.base = fromHash(hash["base"] as Record<string, unknown>);
-    assign("suppYear", s("year"));
-    if (hash["trailing"] === true) id.trailing = true;
-    if (hash["joined"] === true) id.joined = true;
-    assign("letter", s("letter"));
-    if (hash["year_on_base"] === true) id.yearOnBase = true;
-  } else {
-    assign("number", s("number"));
-    assign("part", s("part"));
-    assign("subpart", s("subpart"));
-    assign("suffix", s("suffix"));
-    if (hash["space_suffix"] === true) id.spaceSuffix = true;
-    assign("year", s("year"));
-    assign("edition", s("edition"));
-    assign("stage", s("stage"));
-    assign("iteration", s("iteration"));
-    if (kind === "bulletin") assign("sequence", s("sequence"));
-  }
-  const language = s("language");
-  if (language !== undefined) id.language = language;
-  const pf = s("parsed_format");
-  if (pf !== undefined) id.parsedFormat = pf;
-  for (const key of Object.keys(id) as (keyof OimlIdentifier)[]) {
-    if (id[key] === undefined) delete id[key];
-  }
-  return id;
-}
-
-/** ---- URN: port of lib/pubid/oiml/urn_generator.rb ---- */
-
-export function toUrn(id: OimlIdentifier): string {
-  if (id.kind === "bulletin") {
-    const parts = ["urn", "oiml", "bulletin"];
-    if (id.year) {
-      let locator = id.year;
-      if (id.number) locator += `-${id.number}`;
-      if (id.sequence) locator += `-${id.sequence}`;
-      parts.push(locator);
-    }
-    if (id.language) parts.push(id.language.toLowerCase());
-    return parts.join(":");
-  }
-
-  const parts = ["urn", "oiml"];
-  // Ruby: `return "r" unless identifier.type` - a supplement has no type
-  // letter, so its URN carries the default "r" (corpus-recorded quirk).
-  parts.push(id.kind === "amendment" || id.kind === "errata" || id.kind === "annex"
-    ? "r"
-    : typeString(id).toLowerCase());
-  // Ruby SupplementIdentifier#code delegates to the wrapped standard.
-  const code = id.kind === "amendment" || id.kind === "errata" || id.kind === "annex"
-    ? composedCode(id.base!)
-    : composedCode(id);
-  if (code) parts.push(code);
-  const year = id.year ?? id.suppYear;
-  if (year) parts.push(year);
-  if (id.stage) parts.push(id.stage.toLowerCase());
-  if (id.iteration) parts.push(id.iteration);
-  if (id.language) parts.push(id.language.toLowerCase());
-  return parts.join(":");
-}
-
-export { parseGrammar };
