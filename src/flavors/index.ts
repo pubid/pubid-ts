@@ -20,6 +20,7 @@ import { gbGrammarImplementation } from "./gb/index.js";
 import { jcgmGrammarImplementation } from "./jcgm/index.js";
 import { etsiGrammarImplementation } from "./etsi/index.js";
 import { jisGrammarImplementation } from "./jis/index.js";
+import { iecGrammarImplementation } from "./iec/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -72,6 +73,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return etsiGrammarImplementation();
     case "jis":
       return jisGrammarImplementation();
+    case "iec":
+      return iecGrammarImplementation();
     default:
       return undefined;
   }
