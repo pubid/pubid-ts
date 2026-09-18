@@ -132,7 +132,7 @@ export class Language extends Component {
   constructor(attrs: Record<string, unknown>) {
     super();
     this.code = attrs["code"] as string;
-    this.originalCode = attrs["originalCode"] as string | undefined;
+    this.originalCode = (attrs["originalCode"] ?? attrs["original_code"]) as string | undefined;
   }
 
   render(context?: RenderContext): string {
