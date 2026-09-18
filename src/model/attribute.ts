@@ -15,7 +15,7 @@ export type ScalarType = "string" | "integer" | "boolean";
 
 export type ComponentCtor = new (attrs: Record<string, unknown>) => Component;
 
-export type AttributeType = ScalarType | ComponentCtor;
+export type AttributeType = ScalarType | ComponentCtor | (new (...args: never[]) => unknown);
 
 export interface AttributeSpec {
   type: AttributeType;
