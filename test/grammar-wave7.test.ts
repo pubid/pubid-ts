@@ -5,23 +5,27 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// Grammar wave 7: ansi — full port of the Ruby flavor, gated through
-// the same conformance checks as corpus mode.
+// Grammar wave 7: ansi, oasis — full ports of the Ruby flavors, gated
+// through the same conformance checks as corpus mode.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
 
-test("every ansi corpus case passes through the grammar", () => {
-  const corpus = loadCorpus(TESTSUITE_DIR);
-  const payloads = corpus.flavors.get("ansi")!;
-  const impl = grammarImplementation("ansi")!;
-  assert.ok(impl, "ansi is grammar-backed");
-  const report = runFlavor("ansi", payloads, impl, new PendingRegistry());
-  assert.equal(report.failures.length, 0, report.failures.join("; "));
-  assert.equal(report.outcome, "pass");
-  assert.equal(report.cases, payloads.cases.length);
-  assert.ok(report.cases > 0);
-});
+const WAVE = ["ansi", "oasis"] as const;
+
+for (const flavor of WAVE) {
+  test(`every ${flavor} corpus case passes through the grammar`, () => {
+    const corpus = loadCorpus(TESTSUITE_DIR);
+    const payloads = corpus.flavors.get(flavor)!;
+    const impl = grammarImplementation(flavor)!;
+    assert.ok(impl, `${flavor} is grammar-backed`);
+    const report = runFlavor(flavor, payloads, impl, new PendingRegistry());
+    assert.equal(report.failures.length, 0, report.failures.join("; "));
+    assert.equal(report.outcome, "pass");
+    assert.equal(report.cases, payloads.cases.length);
+    assert.ok(report.cases > 0);
+  });
+}
 
 test("ansi parses open-ended beyond the corpus", () => {
   const impl = grammarImplementation("ansi")!;
@@ -47,4 +51,29 @@ test("ansi rejects non-identifiers", () => {
   assert.throws(() => impl.parse("ANSI X3.4:20"));
   assert.throws(() => impl.parse("ISO 9899"));
   assert.throws(() => impl.parse("ANSI/XX 802.3"));
+});
+
+test("oasis decomposes open-ended slugs beyond the corpus", () => {
+  const impl = grammarImplementation("oasis")!;
+  // Lowercase "ps01" is not a stage token (case-sensitive as in Ruby),
+  // and with no recognized fragment the whole slug is the number.
+  assert.deepEqual(impl.parse("OASIS CSDL-ps01").toHash(), {
+    _type: "pubid:oasis:standard",
+    original: "CSDL-ps01",
+    number: "CSDL-ps01",
+  });
+  // URN echoes the slug verbatim; malformed-record characters encode.
+  assert.equal(impl.parse("OASIS x-y-2.0-WD-Pt3-Spec").toUrn(),
+    "urn:oasis:x-y-2.0-WD-Pt3-Spec");
+  assert.equal(impl.parse("OASIS CTAS-v3.0]-PS01").toUrn(),
+    "urn:oasis:CTAS-v3.0%5D-PS01");
+  assert.equal(impl.parse("OASIS x-y-2.0-WD-Pt3-Spec").toHuman(),
+    "OASIS x-y-2.0-WD-Pt3-Spec");
+});
+
+test("oasis rejects non-identifiers", () => {
+  const impl = grammarImplementation("oasis")!;
+  assert.throws(() => impl.parse("OASIS"));
+  assert.throws(() => impl.parse("OASIS "));
+  assert.throws(() => impl.parse("oasis amqp-core"));
 });
