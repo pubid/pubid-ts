@@ -19,6 +19,7 @@ import { calconnectGrammarImplementation } from "./calconnect/index.js";
 import { gbGrammarImplementation } from "./gb/index.js";
 import { jcgmGrammarImplementation } from "./jcgm/index.js";
 import { etsiGrammarImplementation } from "./etsi/index.js";
+import { jisGrammarImplementation } from "./jis/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -69,6 +70,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return jcgmGrammarImplementation();
     case "etsi":
       return etsiGrammarImplementation();
+    case "jis":
+      return jisGrammarImplementation();
     default:
       return undefined;
   }
