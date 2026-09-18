@@ -31,12 +31,18 @@ the no-behavior-change proof after every batch.
 
 ## Batches (gate after each: `npm test` + `npm run conformance`)
 
-- **A** (base-generator flavors first — they prove the URN template):
-  doi, isbn, omg, un, iana, xsf
-- **B**: ogc, w3c, plateau, easc
-- **C**: ecma, tgpp, ansi (Builder::Base cast pattern)
-- **D**: oasis, iho, calconnect (new flavor, ported fresh on the model)
-- **E**: oiml (three-file flavor; migrate model.ts onto BaseIdentifier)
+- **A** DONE (base-generator flavors first — they prove the URN
+  template): doi, isbn, omg, un, iana, xsf
+- **B** DONE: ogc, w3c, plateau, easc
+- **C** DONE: ecma, tgpp, ansi (Builder::Base cast pattern)
+- **D** DONE: oasis, iho migrated; calconnect ported FRESH on the model
+  (the first flavor written declarations-first; corpus 189/189)
+- **E** PENDING: oiml — the last hand-rolled flavor. 11 Ruby classes
+  (7 typed documents + bulletin + 2 supplements + annex) become 11
+  BaseIdentifier subclasses with per-class whitelist mappings;
+  supplements hold a nested `base` (serializeValue must delegate
+  toHash to nested BaseIdentifier values). Its grammar.ts is unchanged;
+  model.ts's discriminated union is replaced. Gate after: oiml 69/69 + open-ended.
 
 ## Rules
 
