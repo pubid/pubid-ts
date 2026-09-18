@@ -53,47 +53,59 @@ Alternation ORDER still matters: alternatives are tried in order, and a
 branch that consumes the whole input wins outright (Ruby comments mark
 load-bearing orderings; copy them into the TS rule comments).
 
+## The unified model (src/model/) — port this FIRST
+
+pubid flavors are thin over a shared model (Pubid::Identifier +
+Components + Renderers/UrnGenerator/Builder bases). The TS mirror lives
+in src/model/ with the semantics pinned in TODO.unified/01-study-pubid-core.md.
+NEVER hand-roll toHash/fromHash in a flavor — declare and derive:
+
+```ts
+export class CalconnectIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:calconnect:standard";
+  static attributes = extendAttributes(BaseIdentifier, {
+    series: { type: "string" },
+    number: { type: "string" },
+  });
+  static mappings = keyValue(...);          // whitelist; converters only where Ruby uses `with:`
+  static urnGenerator = CalconnectUrnGenerator; // subclass of BaseUrnGenerator; omit when Ruby has no urn_generator
+  render(): string { ... }                  // the human renderer (the one required method)
+}
+registerType(CalconnectIdentifier);
+```
+
+Model invariants (all pinned against Ruby; see TODO.unified/01):
+1. `toHash` emits `_type` (polymorphicName), then mapped attributes — an
+   explicit mapping list is a WHITELIST (un's runtime `date` never
+   serializes); nil/empty/default-valued attributes drop.
+2. Degenerate single-field components flatten (`edition` → its number;
+   `date` → RENAMED `year`), collections of degenerates → scalar lists;
+   guarded against emitted keys and declared-attribute collisions.
+3. `fromHash` dispatches on `_type` through registerType, re-inflates
+   flat scalars (except converter keys / declared-name collisions).
+4. `toUrn` resolves the class's urnGenerator, else BaseUrnGenerator —
+   the template reads DECLARED attributes only (maybe()), so doi →
+   "urn:doi" and omg → "urn:omg:-PDF" derive with zero per-flavor URN code.
+5. Builders subclass BaseBuilder: selectClass / cast / handleKey
+   overrides; unknown tree keys never reach the model; shared helpers
+   parseDate / parseLanguages / parseNumberWithPart / roman conversion.
+6. Components (PubidDate, Publisher, Language, Edition, Iteration)
+   carry the human/urn render seam (urn lowercases; date renders
+   year-only under urn, "YYYY-MM-DD" human, "--" undated).
+
 ## Checklist per flavor
 
-1. **Read the whole Ruby flavor first**: parser.rb, builder.rb,
-   identifier.rb (+ single/supplement bases), identifiers/*.rb,
-   renderer.rb, urn_generator.rb, components/. The Ruby builders read
-   parse TREES — your builder must read the same tree shape.
-2. **grammar.ts**: translate every `rule(:name)` 1:1, same names. Keep
-   the Ruby comments about ordering/guards. Reference rules with
-   `ref(rules, "name")` (lazy — grammars recurse).
-3. **model.ts**:
-   - Model the identifier as a discriminated union on `kind` (the
-     `_type` tail) rather than a class hierarchy.
-   - `build*(tree)`: port builder.rb branch by branch. Watch the Ruby
-     idioms: `parsed_hash[:x].to_s if parsed_hash[:x]` (drop when
-     absent), `edition_format.is_a?(Hash) ? ... : ...`, recursion into
-     `:base`.
-   - `toHash`: the key_value maps **under pubid's canonical
-     no-defaults rule** — drop nil/empty, drop booleans whose default
-     is false, drop attrs equal to their declared default (e.g.
-     `parsed_format` default "short" is dropped when "short"). The
-     corpus `identifier` payload IS this hash; the gate compares it.
-   - `toHuman`: port renderer.rb; respect `requested_format`/
-     `parsed_format` precedence exactly.
-   - `toUrn`: port urn_generator.rb; note the base-class fallbacks
-     (`urn_type` returns "r" when the identifier has no type letter —
-     supplements lean on this; `urn_year` falls back to the `year`
-     attribute).
-4. **implementation.ts**: `parse(input)` = `build(parseGrammar(oimlGrammar, input))`
-   wrapped in the FlavorImplementation interface.
-5. **Register** the flavor in `src/flavors/index.ts`.
-6. **Test** (`test/grammar-<flavor>.test.ts`):
-   - registry entry present; unrelated flavors still undefined;
-   - the headline OPEN-ENDED parse (a real-world identifier absent
-     from the corpus — the whole point of the wave);
-   - run the FULL flavor corpus slice through `runFlavor` with the
-     grammar implementation: zero failures;
-   - non-identifiers raise (parse, never nil).
-
-## Verification
-
-`npm run conformance` — the ported flavor must stay `pass` with
-`fail=0` (the gate now exercises the grammar, not corpus mode), and
-`npm test` keeps 18+ tests green. A wave may never regress below the
-corpus floor.
+1. Read the whole Ruby flavor first: parser.rb, builder.rb,
+   identifier.rb (+ bases), identifiers/*.rb, renderer.rb,
+   urn_generator.rb (+ key_value maps!). Get ground truth by RUNNING
+   the gem (to_hash / to_urn on representative inputs, plus the corpus
+   yaml slices) — never from memory.
+2. Declare the model (attributes + mappings + polymorphicName), port
+   the grammar 1:1 (engine invariants above still apply), subclass
+   BaseBuilder for the builder, write render() and (when Ruby has one)
+   a BaseUrnGenerator subclass.
+3. Register in src/flavors/index.ts; wave test = corpus loop +
+   open-ended parsing + rejections (check the flavor's _negative.yaml).
+4. npm test + npm run conformance; branch grammar/waveN-<flavors> off
+   origin/main, stage explicit paths, PR with --body-file, rebase-merge
+   after green CI.
