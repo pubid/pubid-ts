@@ -44,6 +44,16 @@ the no-behavior-change proof after every batch.
   toHash to nested BaseIdentifier values). Its grammar.ts is unchanged;
   model.ts's discriminated union is replaced. Gate after: oiml 69/69 + open-ended.
 
+## Clean-flavor port campaign (post-model)
+
+- DONE: gb (10/10), jcgm (29/29) — wave 9.
+- BLOCKED: **gost** — harmonized/identical-adoption cases embed foreign
+  identifiers parsed by OTHER flavors (pubid:iso:*, pubid:astm:*), and
+  iso/astm are ledgered upstream. The interstate/national 143 cases
+  would pass alone, but the gate requires the whole corpus. Same shape:
+  **evs** (embeds the CEN/CENELEC grammar), **idf** (joint ISO/IDF).
+- TODO: cie, iala, bipm (self-contained parsers, clean corpora).
+
 ## Rules
 
 1. NO per-flavor `toHash`/`fromHash` bodies. Wire shapes come from
