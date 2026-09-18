@@ -15,6 +15,7 @@ import { tgppGrammarImplementation } from "./tgpp/index.js";
 import { ansiGrammarImplementation } from "./ansi/index.js";
 import { oasisGrammarImplementation } from "./oasis/index.js";
 import { ihoGrammarImplementation } from "./iho/index.js";
+import { calconnectGrammarImplementation } from "./calconnect/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -57,6 +58,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return oasisGrammarImplementation();
     case "iho":
       return ihoGrammarImplementation();
+    case "calconnect":
+      return calconnectGrammarImplementation();
     default:
       return undefined;
   }

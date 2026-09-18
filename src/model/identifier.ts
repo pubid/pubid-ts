@@ -247,7 +247,8 @@ export abstract class BaseIdentifier {
     const out = { ...data };
     for (const m of mappings) {
       if (m.fromWire && m.wire in out) {
-        out[m.to] = m.fromWire(out);
+        const value = m.fromWire(out);
+        if (value !== undefined && value !== null) out[m.to] = value;
       } else if (m.wire !== m.to && m.wire in out) {
         out[m.to] = out[m.wire];
         delete out[m.wire];
