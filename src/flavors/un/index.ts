@@ -1,13 +1,19 @@
 import { Grammar, P, match, str } from "../../grammar/engine.js";
-import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
+import type { Tree } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
+import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import type { IdentifierStatic } from "../../model/identifier.js";
+import { extendAttributes, keyValue } from "../../model/attribute.js";
+import { BaseBuilder } from "../../model/builder.js";
+import { PubidDate } from "../../model/component.js";
 
 /**
- * 1:1 port of lib/pubid/un/ — UN document symbols ("A/RES/78/1"). Slash-
- * separated tokens; the LAST is the number, a 4-digit token in the path
- * is the date year. The URN falls through to the base generator shape:
- * urn:un:<number>[:<year>].
+ * 1:1 port of lib/pubid/un/ on the unified model. The builder derives a
+ * runtime `date` (a 4-digit path token) exactly like Ruby; un's key_value
+ * maps ONLY path/number, so the date never serializes (the mapping
+ * whitelist) while the base URN generator still reads it: the year-only
+ * render of a degenerate PubidDate yields "urn:un:<number>[:<year>]".
  */
 
 function buildRules(): Record<string, P> {
@@ -17,8 +23,6 @@ function buildRules(): Record<string, P> {
   };
   const slash = str("/");
   const token = match("[A-Z0-9.]").repeat(1, Infinity);
-  rule("slash", () => slash);
-  rule("token", () => token);
   rule("un_prefix", () => str("UN").then(str(" ")).maybe());
   rule("identifier", () =>
     rules["un_prefix"]!
@@ -33,96 +37,77 @@ function buildRules(): Record<string, P> {
 
 export const unGrammar: Grammar = { rules: buildRules(), root: "root" };
 
-export interface UnIdentifier {
-  kind: "document";
-  path: string[];
-  number: string;
-  year?: string;
-}
+export class UnIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:un:document";
+  static attributes = extendAttributes(BaseIdentifier, {
+    path: { type: "string", collection: true, default: [] },
+    number: { type: "string" },
+  });
+  static mappings = keyValue(
+    { wire: "path", to: "path" },
+    { wire: "number", to: "number" },
+  );
 
-function isObj(v: Tree): v is TreeObject {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
+  declare readonly path: string[];
+  declare readonly number: string;
 
-function extractTokens(tree: TreeObject): string[] {
-  const raw = tree["token"];
-  if (Array.isArray(raw)) {
-    return raw.map((t) => (isObj(t) && t["token"] !== undefined ? String(t["token"]) : String(t)));
+  render(): string {
+    return [...this.path, this.number].join("/");
   }
-  if (raw !== undefined && raw !== null) return [String(raw)];
-  return [];
 }
+registerType(UnIdentifier as unknown as IdentifierStatic);
 
-export function buildUnIdentifier(tree: Tree): UnIdentifier {
-  // Ruby's tree is an ARRAY (sequence of captures + repeat-of-captures
-  // combine into one array) — extract_tokens handles both shapes.
-  const tokens = Array.isArray(tree)
-    ? tree.map((t) => (isObj(t) && t["token"] !== undefined ? String(t["token"]) : String(t)))
-    : isObj(tree)
-      ? extractTokens(tree)
-      : [];
-  if (tokens.length === 0) throw new ParseFailed("UN identifier has no tokens", 0);
-
-  const number = tokens[tokens.length - 1]!;
-  const path = tokens.slice(0, -1);
-  const id: UnIdentifier = { kind: "document", path, number };
-  const yearToken = [...path].reverse().find((t) => /^\d{4}$/.test(t));
-  if (yearToken) id.year = yearToken;
-  return id;
-}
-
-export function toHash(id: UnIdentifier): Record<string, unknown> {
-  // The Ruby key_value maps only _type/path/number — the date built from
-  // the year token is runtime-only (never serialized); the URN reads it.
-  return {
-    _type: "pubid:un:document",
-    path: id.path,
-    number: id.number,
-  };
-}
-
-export function fromHash(hash: Record<string, unknown>): UnIdentifier {
-  const path = (hash["path"] as string[]) ?? [];
-  const id: UnIdentifier = {
-    kind: "document",
-    path,
-    number: String(hash["number"]),
-  };
-  const yearToken = [...path].reverse().find((t) => /^\d{4}$/.test(t));
-  if (yearToken) id.year = yearToken;
-  return id;
-}
-
-export function toHuman(id: UnIdentifier): string {
-  return [...id.path, id.number].join("/");
-}
-
-export function toUrn(id: UnIdentifier): string {
-  const parts = ["urn", "un", id.number];
-  if (id.year) parts.push(id.year);
-  return parts.join(":");
-}
-
-class UnIdentifierImpl implements Identifier {
-  constructor(private readonly id: UnIdentifier) {}
-  toHash(): Record<string, unknown> {
-    return toHash(this.id);
+class UnBuilder extends BaseBuilder {
+  protected defaultIdentifierClass() {
+    return UnIdentifier as unknown as IdentifierStatic;
   }
-  toHuman(): string {
-    return toHuman(this.id);
+
+  protected cast(key: string, value: unknown): unknown {
+    if (key !== "token") return value;
+    void value;
+    return null; // handled in handleKey below (needs the full token list)
   }
-  toUrn(): string | undefined {
-    return toUrn(this.id);
+
+  protected handleKey(_identifier: BaseIdentifier, key: string, value: unknown): boolean {
+    return key === "token";
   }
-  fromHash(hash: Record<string, unknown>): Identifier {
-    return new UnIdentifierImpl(fromHash(hash));
+
+  build(data: Record<string, unknown> | Record<string, unknown>[] | Tree): BaseIdentifier {
+    // The parslet tree is a top-level ARRAY of {token: …} hashes (the
+    // repeat-of-captures shape); extract directly — merging would
+    // collide the repeated key (Ruby's builder iterates the array too).
+    const tokens = this.extractTokens(Array.isArray(data) ? data : (data as Record<string, unknown>)["token"]);
+    if (tokens.length === 0) throw new ParseFailed("UN identifier has no tokens", 0);
+    const path = tokens.slice(0, -1);
+    // Only a PATH token is the date year ("TRADE/WP.4/1068" has none —
+    // a 4-digit NUMBER is not a year).
+    const yearToken = [...path].reverse().find((t) => /^\d{4}$/.test(t));
+    const attrs: Record<string, unknown> = {
+      number: tokens[tokens.length - 1]!,
+      path,
+    };
+    if (yearToken) attrs["date"] = new PubidDate({ year: yearToken });
+    return new UnIdentifier(attrs);
+  }
+
+  private extractTokens(raw: unknown): string[] {
+    const toStrings = (v: unknown): string[] =>
+      Array.isArray(v)
+        ? v.flatMap(toStrings)
+        : typeof v === "object" && v !== null
+          ? toStrings((v as Record<string, unknown>)["token"])
+          : v === undefined || v === null
+            ? []
+            : [String(v)];
+    return toStrings(raw);
   }
 }
 
 export function unGrammarImplementation(): FlavorImplementation {
+  const builder = new UnBuilder();
   return {
     parse(input: string): Identifier {
-      return new UnIdentifierImpl(buildUnIdentifier(parseGrammar(unGrammar, input)));
+      return builder.build(parseGrammar(unGrammar, input)) as unknown as Identifier;
     },
   };
 }
