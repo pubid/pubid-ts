@@ -16,6 +16,7 @@ import { ansiGrammarImplementation } from "./ansi/index.js";
 import { oasisGrammarImplementation } from "./oasis/index.js";
 import { ihoGrammarImplementation } from "./iho/index.js";
 import { calconnectGrammarImplementation } from "./calconnect/index.js";
+import { gbGrammarImplementation } from "./gb/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -60,6 +61,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return ihoGrammarImplementation();
     case "calconnect":
       return calconnectGrammarImplementation();
+    case "gb":
+      return gbGrammarImplementation();
     default:
       return undefined;
   }
