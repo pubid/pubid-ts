@@ -11,7 +11,7 @@ import { grammarImplementation } from "../src/flavors/index.js";
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
 
-const WAVE = ["gb"] as const;
+const WAVE = ["gb", "jcgm"] as const;
 
 for (const flavor of WAVE) {
   test(`every ${flavor} corpus case passes through the grammar`, () => {
@@ -54,4 +54,33 @@ test("gb rejects non-identifiers", () => {
   assert.throws(() => impl.parse("GB"));
   assert.throws(() => impl.parse("GB 12-20"));
   assert.throws(() => impl.parse("gb/T 12-2010"));
+});
+
+test("jcgm parses open-ended beyond the corpus", () => {
+  const impl = grammarImplementation("jcgm")!;
+  // Numbered corrigendum with a partial date.
+  assert.equal(impl.parse("JCGM 101:2008/Cor 1").toHuman(),
+    "JCGM 101:2008/Cor 1");
+  assert.equal(impl.parse("JCGM 101:2008/Cor 1:2009").toUrn(),
+    "urn:jcgm:101:2008:corrigendum:1:2009");
+  // A dated guide with the multi-language portion.
+  assert.deepEqual(impl.parse("JCGM 200:2012(E/F)").toHash(), {
+    _type: "pubid:jcgm:guide",
+    number: "200",
+    year: "2012",
+    languages: [
+      { code: "en", original_code: "E" },
+      { code: "fr", original_code: "F" },
+    ],
+  });
+  // GUM-guide full date stays flat in the hash.
+  assert.equal(impl.parse("JCGM GUM-2:2023").toUrn(), "urn:jcgm:gum.2:2023");
+});
+
+test("jcgm rejects non-identifiers", () => {
+  const impl = grammarImplementation("jcgm")!;
+  assert.throws(() => impl.parse("JCGM"));
+  assert.throws(() => impl.parse("JCGM 100:20"));
+  assert.throws(() => impl.parse("JCGM 100/Amd X"));
+  assert.throws(() => impl.parse("JCGM 100/Amd"));
 });

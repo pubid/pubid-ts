@@ -33,8 +33,6 @@ export interface IdentifierStatic {
   compactHash?: (model: BaseIdentifier, hash: Record<string, unknown>) => void;
   /** Additional flat-scalar entries for this class. */
   flatScalarComponents?: Record<string, string>;
-  /** The field each additional flat-scalar component degenerates to. */
-  flatScalarFields?: Record<string, string>;
   fromHash(hash: Record<string, unknown>): BaseIdentifier;
   /** The flavor's URN generator; undefined = the base template (Ruby resolve_urn_generator fallback). */
   urnGenerator?: UrnGeneratorCtor;
@@ -196,7 +194,7 @@ export abstract class BaseIdentifier {
       const key = attrName in hash ? attrName : undefined;
       if (key === undefined) continue;
       const value = hash[key]!;
-      const field = FLAT_SCALAR_FIELDS[attrName] ?? this.constructor.flatScalarFields?.[attrName];
+      const field = FLAT_SCALAR_FIELDS[attrName];
       if (field === undefined) continue;
       const model = this.attrValue(attrName);
       if (Array.isArray(value) && Array.isArray(model)) {
