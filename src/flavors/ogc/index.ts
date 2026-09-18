@@ -1,14 +1,17 @@
 import { Grammar, P, match, str } from "../../grammar/engine.js";
-import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
+import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import type { IdentifierStatic } from "../../model/identifier.js";
+import { extendAttributes, keyValue } from "../../model/attribute.js";
+import { BaseUrnGenerator } from "../../model/urn-generator.js";
+import { BaseBuilder } from "../../model/builder.js";
 
 /**
- * 1:1 port of lib/pubid/ogc/. OGC document numbers "<yy>-<nnn>[<revision>]"
- * ("24-032r1", "04-095c1"). The printed form carries no publisher token;
- * an optional leading "OGC " is accepted leniently and dropped. Everything
- * is kept as a string to preserve zero-padding; the revision suffix is
- * normalized to lower case ("R1" -> "r1").
+ * 1:1 port of lib/pubid/ogc/ on the unified model. "<yy>-<nnn>[<revision>]"
+ * with no publisher token in the printed form; strings preserve zero
+ * padding; the revision normalizes to lower case. URN:
+ * urn:ogc:<year>:<number>[:<revision>] (the Ruby flavor's generator).
  */
 
 function buildRules(): Record<string, P> {
@@ -18,14 +21,9 @@ function buildRules(): Record<string, P> {
   };
   const space = match("[\\s]").repeat(1, Infinity);
   const digits = match("[0-9]").repeat(1, Infinity);
-  // The numeric part greedily consumes all digits, so a revision suffix
-  // always begins with its separator letter.
   const revision = match("[A-Za-z0-9]").repeat(1, Infinity).as("revision");
 
-  rule("space", () => space);
-  rule("digits", () => digits);
   rule("publisher", () => str("OGC").then(space).maybe());
-  rule("revision", () => revision);
   rule("identifier", () =>
     rules["publisher"]!
       .then(digits.as("year"), str("-"), digits.as("number"))
@@ -38,97 +36,61 @@ function buildRules(): Record<string, P> {
 
 export const ogcGrammar: Grammar = { rules: buildRules(), root: "root" };
 
-export interface OgcIdentifier {
-  kind: "document";
-  year: string;
-  number: string;
-  revision?: string;
+class OgcUrnGenerator extends BaseUrnGenerator<OgcIdentifier> {
+  generate(): string {
+    const parts = ["urn", "ogc", this.identifier.year, this.identifier.number];
+    if (this.identifier.revision !== undefined) parts.push(this.identifier.revision);
+    return parts.join(":");
+  }
 }
 
-function isObj(v: Tree): v is TreeObject {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
+export class OgcIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:ogc:document";
+  static attributes = extendAttributes(BaseIdentifier, {
+    year: { type: "string" },
+    number: { type: "string" },
+    revision: { type: "string" },
+  });
+  static mappings = keyValue(
+    { wire: "year", to: "year" },
+    { wire: "number", to: "number" },
+    { wire: "revision", to: "revision" },
+  );
+  static urnGenerator = OgcUrnGenerator;
 
-export function buildOgcIdentifier(tree: Tree): OgcIdentifier {
-  if (
-    !isObj(tree) ||
-    tree["year"] === undefined ||
-    tree["year"] === null ||
-    tree["number"] === undefined ||
-    tree["number"] === null
-  ) {
-    throw new ParseFailed("OGC: unexpected parse tree", 0);
-  }
-  const id: OgcIdentifier = {
-    kind: "document",
-    year: String(tree["year"]),
-    number: String(tree["number"]),
-  };
-  const revision = tree["revision"];
-  if (revision !== undefined && revision !== null) {
-    const normalized = String(revision).trim().toLowerCase();
-    if (normalized !== "") id.revision = normalized;
-  }
-  return id;
-}
+  declare readonly year: string;
+  declare readonly number: string;
+  declare readonly revision: string | undefined;
 
-export function toHash(id: OgcIdentifier): Record<string, unknown> {
-  const hash: Record<string, unknown> = {
-    _type: "pubid:ogc:document",
-    year: id.year,
-    number: id.number,
-  };
-  if (id.revision !== undefined) hash["revision"] = id.revision;
-  return hash;
+  render(): string {
+    return `${this.year}-${this.number}${this.revision ?? ""}`;
+  }
 }
+registerType(OgcIdentifier as unknown as IdentifierStatic);
 
-export function fromHash(hash: Record<string, unknown>): OgcIdentifier {
-  if (hash["_type"] !== "pubid:ogc:document") {
-    throw new ParseFailed(`OGC: unknown _type ${String(hash["_type"])}`, 0);
+class OgcBuilder extends BaseBuilder {
+  protected defaultIdentifierClass() {
+    return OgcIdentifier as unknown as IdentifierStatic;
   }
-  const id: OgcIdentifier = {
-    kind: "document",
-    year: String(hash["year"]),
-    number: String(hash["number"]),
-  };
-  if (hash["revision"] !== undefined && hash["revision"] !== null) {
-    id.revision = String(hash["revision"]);
-  }
-  return id;
-}
 
-export function toHuman(id: OgcIdentifier): string {
-  let result = `${id.year}-${id.number}`;
-  if (id.revision !== undefined) result += id.revision;
-  return result;
-}
-
-export function toUrn(id: OgcIdentifier): string {
-  const parts = ["urn", "ogc", id.year, id.number];
-  if (id.revision !== undefined) parts.push(id.revision);
-  return parts.join(":");
-}
-
-class OgcIdentifierImpl implements Identifier {
-  constructor(private readonly id: OgcIdentifier) {}
-  toHash(): Record<string, unknown> {
-    return toHash(this.id);
-  }
-  toHuman(): string {
-    return toHuman(this.id);
-  }
-  toUrn(): string | undefined {
-    return toUrn(this.id);
-  }
-  fromHash(hash: Record<string, unknown>): Identifier {
-    return new OgcIdentifierImpl(fromHash(hash));
+  protected cast(key: string, value: unknown): unknown {
+    if (key === "revision") {
+      const normalized = String(value).trim().toLowerCase();
+      return normalized === "" ? null : { revision: normalized };
+    }
+    return value;
   }
 }
 
 export function ogcGrammarImplementation(): FlavorImplementation {
+  const builder = new OgcBuilder();
   return {
     parse(input: string): Identifier {
-      return new OgcIdentifierImpl(buildOgcIdentifier(parseGrammar(ogcGrammar, input)));
+      const tree = parseGrammar(ogcGrammar, input);
+      if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
+        throw new ParseFailed("OGC: unexpected parse tree", 0);
+      }
+      return builder.build(tree as Record<string, unknown>) as unknown as Identifier;
     },
   };
 }
