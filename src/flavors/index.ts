@@ -24,6 +24,7 @@ import { iecGrammarImplementation } from "./iec/index.js";
 import { cieGrammarImplementation } from "./cie/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
+import { ialaGrammarImplementation } from "./iala/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -84,6 +85,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return ituGrammarImplementation();
     case "ietf":
       return ietfGrammarImplementation();
+    case "iala":
+      return ialaGrammarImplementation();
     default:
       return undefined;
   }
