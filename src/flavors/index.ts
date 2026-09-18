@@ -22,6 +22,7 @@ import { etsiGrammarImplementation } from "./etsi/index.js";
 import { jisGrammarImplementation } from "./jis/index.js";
 import { iecGrammarImplementation } from "./iec/index.js";
 import { cieGrammarImplementation } from "./cie/index.js";
+import { bipmGrammarImplementation } from "./bipm/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -81,6 +82,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return iecGrammarImplementation();
     case "cie":
       return cieGrammarImplementation();
+    case "bipm":
+      return bipmGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
