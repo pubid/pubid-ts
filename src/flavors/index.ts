@@ -14,6 +14,7 @@ import { ecmaGrammarImplementation } from "./ecma/index.js";
 import { tgppGrammarImplementation } from "./tgpp/index.js";
 import { ansiGrammarImplementation } from "./ansi/index.js";
 import { oasisGrammarImplementation } from "./oasis/index.js";
+import { ihoGrammarImplementation } from "./iho/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -54,6 +55,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return ansiGrammarImplementation();
     case "oasis":
       return oasisGrammarImplementation();
+    case "iho":
+      return ihoGrammarImplementation();
     default:
       return undefined;
   }
