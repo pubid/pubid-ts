@@ -5,13 +5,13 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// Grammar wave 7: ansi, oasis — full ports of the Ruby flavors, gated
+// Grammar wave 7: ansi, oasis, iho — full ports of the Ruby flavors, gated
 // through the same conformance checks as corpus mode.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
 
-const WAVE = ["ansi", "oasis"] as const;
+const WAVE = ["ansi", "oasis", "iho"] as const;
 
 for (const flavor of WAVE) {
   test(`every ${flavor} corpus case passes through the grammar`, () => {
@@ -76,4 +76,26 @@ test("oasis rejects non-identifiers", () => {
   assert.throws(() => impl.parse("OASIS"));
   assert.throws(() => impl.parse("OASIS "));
   assert.throws(() => impl.parse("oasis amqp-core"));
+});
+
+test("iho parses open-ended beyond the corpus", () => {
+  const impl = grammarImplementation("iho")!;
+  // Prefix-less form parses; renders with the IHO prefix.
+  assert.equal(impl.parse("S-44 5.0.0").toHuman(), "IHO S-44 5.0.0");
+  // Number suffix spellings.
+  assert.equal(impl.parse("IHO P-1/21 1.0.0").toUrn(), "urn:iho:p:1/21:1.0.0");
+  assert.equal(impl.parse("IHO C-16:2 1.0.0").toHuman(), "IHO C-16:2 1.0.0");
+  // Appendix + part + annex + supplement combine.
+  assert.equal(impl.parse("IHO S-65 Ap. A-2 Part 4a Annex B Suppl 3 2.1.0").toUrn(),
+    "urn:iho:s:65:ap.A-2:part.4a:annex.B:suppl.3:2.1.0");
+  // "Appendix" spelled out renders as the canonical "Ap.".
+  assert.equal(impl.parse("IHO S-53 Appendix 1 1.0.0").toHuman(),
+    "IHO S-53 Ap. 1 1.0.0");
+});
+
+test("iho rejects non-identifiers", () => {
+  const impl = grammarImplementation("iho")!;
+  assert.throws(() => impl.parse("IHO X-1"));
+  assert.throws(() => impl.parse("IHO S-"));
+  assert.throws(() => impl.parse("IHO S-1 Part"));
 });
