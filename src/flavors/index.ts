@@ -28,6 +28,7 @@ import { nistGrammarImplementation } from "./nist/index.js";
 import { ieeeGrammarImplementation } from "./ieee/index.js";
 import { cenCenelecGrammarImplementation } from "./cen_cenelec/index.js";
 import { astmGrammarImplementation } from "./astm/index.js";
+import { idfGrammarImplementation } from "./idf/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -99,6 +100,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return cenCenelecGrammarImplementation();
     case "astm":
       return astmGrammarImplementation();
+    case "idf":
+      return idfGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
