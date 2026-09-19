@@ -35,6 +35,7 @@ import { ashraeGrammarImplementation } from "./ashrae/index.js";
 import { bsiGrammarImplementation } from "./bsi/index.js";
 import { csaGrammarImplementation } from "./csa/index.js";
 import { asmeGrammarImplementation } from "./asme/index.js";
+import { amcaGrammarImplementation } from "./amca/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -120,6 +121,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return csaGrammarImplementation();
     case "asme":
       return asmeGrammarImplementation();
+    case "amca":
+      return amcaGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
