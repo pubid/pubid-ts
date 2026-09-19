@@ -3,3 +3,21 @@
 # a pending case that passes raises the pending-satisfied alarm and
 # MUST be unmarked.
 ---
+iso.bundled_identifier.6823:
+  reason: >-
+    Ruby main rejects the printed date "2016-05-05-05" (a triple-dashed
+    supplement date); one of the testsuite ledger's four known iso
+    reference defects that must re-land as standalone implementation
+    PRs.
+  ref: tests/iso/_status.yaml known_mismatches
+iso.corrigendum.6412:
+  reason: >-
+    The alias spelling "Amd 5:2010" renders with the parsed casing while
+    the row human preserves the primary "AMD" spelling; Ruby main has
+    the same divergence (known reference defect).
+  ref: tests/iso/_status.yaml known_mismatches
+iso.corrigendum.6509:
+  reason: >-
+    Same Amd/AMD alias-spelling divergence as iso.corrigendum.6412
+    (known reference defect on Ruby main).
+  ref: tests/iso/_status.yaml known_mismatches

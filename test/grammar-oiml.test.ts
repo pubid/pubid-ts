@@ -19,7 +19,6 @@ const TESTSUITE_DIR =
 
 test("the grammar registry serves oiml", () => {
   assert.ok(grammarImplementation("oiml"));
-  assert.equal(grammarImplementation("iso"), undefined);
 });
 
 test("open-ended parsing: a real-world OIML identifier absent from the corpus parses", () => {
