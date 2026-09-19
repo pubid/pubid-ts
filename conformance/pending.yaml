@@ -4118,3 +4118,69 @@ asme.standard.0619:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
   ref: tests/asme/_status.yaml known_mismatches
+
+# amca ledger: gem-known mismatches reproduced one-for-one (verify loop /tmp/verify-amca.rb).
+amca.interpretation.0001:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.interpretation.0002:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.interpretation.0003:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.interpretation.0004:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.interpretation.0005:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0006:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0007:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0008:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0009:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0010:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0011:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0012:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.publication.0013:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.standard.0014:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.standard.0015:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
+amca.standard.0016:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/amca/_status.yaml known_mismatches
