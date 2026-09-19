@@ -35,20 +35,18 @@ const SUBTYPE_MAP: Record<string, string> = {
 const NUMBER_YEAR_SPLIT = /^(.+?)\s*[-—–]\s*(\d{2}|\d{4})$/;
 
 // The gem's try_each_flavor iterates Registry.flavor_names.sort; this
-// mirrors that order over the TS grammar registry. The unported flavors
-// (adobe, amca, api, ashrae, asme, bsi, csa, sae, cen) are skipped,
-// except bsi, whose slot substitutes [iso, iec]: bsi's grammar parses
-// bare ISO/IEC/IEEE references (adopted inside BS documents) and returns
-// the owning flavor's identifier — that is what routes the joint
-// "ISO/IEC …" adoptions to the ISO flavor ahead of IEC. When bsi is
-// ported, replace the substitution with the real flavor.
+// mirrors that order over the TS grammar registry (the still-unported
+// flavors are skipped). bsi's grammar parses bare ISO/IEC/IEEE
+// references (adopted inside BS documents) and returns the owning
+// flavor's identifier — that is what routes the joint "ISO/IEC …"
+// adoptions to the ISO flavor ahead of IEC.
 const FOREIGN_FALLBACK_ORDER = [
   "tgpp", "ansi", "astm", "bipm",
-  "iso", "iec",
+  "bsi",
   "calconnect", "ccsds", "cen_cenelec", "cie", "doi", "easc", "ecma",
-  "etsi", "gb", "iala", "iana", "idf", "ieee", "ietf", "iho", "isbn",
-  "itu", "jcgm", "jis", "nist", "oasis", "ogc", "oiml", "omg",
-  "plateau", "un", "w3c", "xsf",
+  "etsi", "gb", "iala", "iana", "idf", "iec", "ieee", "ietf", "iho",
+  "isbn", "iso", "itu", "jcgm", "jis", "nist", "oasis", "ogc", "oiml",
+  "omg", "plateau", "un", "w3c", "xsf",
 ];
 
 const str = (v: unknown): string | undefined => {
