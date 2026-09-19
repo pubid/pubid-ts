@@ -101,11 +101,13 @@ function combine(a: Tree, b: Tree): Tree {
   if (typeof b === "string" && typeof a === "object") return a;
   if (typeof a === "object" && typeof b === "object") {
     if (!Array.isArray(a) && !Array.isArray(b)) {
+      // parslet merge on duplicate keys: warn and keep the LATTER value
+      // (astm's dual unit relies on this — the second :letter wins).
       const out: TreeObject = { ...a };
       for (const [k, v] of Object.entries(b)) {
         if (k in out) {
-          throw new Error(
-            `Duplicate subtrees while merging result of sequence (keys: :${k})`,
+          console.warn(
+            `Duplicate subtrees while merging result of sequence (keys: :${k}); only the values of the latter will be kept.`,
           );
         }
         out[k] = v;

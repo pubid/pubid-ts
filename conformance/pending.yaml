@@ -2609,3 +2609,20 @@ cen_cenelec.fragment.0129:
     the fragment grammar expects the "AMD1 FRAG2" spelling while the
     ledger canonical prints "/A1 FRAG2" (known reference defect).
   ref: tests/cen_cenelec/_status.yaml known_mismatches
+
+astm.data_series.0051:
+  reason: >-
+    "ASTM DS55S-S1-EB" raises ParseFailed; Ruby main rejects it too —
+    the data-series grammar reads subseries without the glued "S"
+    suffix (known reference defect).
+  ref: tests/astm/_status.yaml known_mismatches
+astm.data_series.0052:
+  reason: >-
+    "ASTM DS55S-S10-EB" raises ParseFailed; Ruby main rejects it too
+    (same glued-S data-series defect as astm.data_series.0051).
+  ref: tests/astm/_status.yaml known_mismatches
+astm.data_series.0053:
+  reason: >-
+    "ASTM DS55S-S4-EB" raises ParseFailed; Ruby main rejects it too
+    (same glued-S data-series defect as astm.data_series.0051).
+  ref: tests/astm/_status.yaml known_mismatches
