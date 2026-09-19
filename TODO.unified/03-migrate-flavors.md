@@ -37,12 +37,7 @@ the no-behavior-change proof after every batch.
 - **C** DONE: ecma, tgpp, ansi (Builder::Base cast pattern)
 - **D** DONE: oasis, iho migrated; calconnect ported FRESH on the model
   (the first flavor written declarations-first; corpus 189/189)
-- **E** PENDING: oiml — the last hand-rolled flavor. 11 Ruby classes
-  (7 typed documents + bulletin + 2 supplements + annex) become 11
-  BaseIdentifier subclasses with per-class whitelist mappings;
-  supplements hold a nested `base` (serializeValue must delegate
-  toHash to nested BaseIdentifier values). Its grammar.ts is unchanged;
-  model.ts's discriminated union is replaced. Gate after: oiml 69/69 + open-ended.
+- **E** DONE: oiml migrated (69/69).
 
 ## Clean-flavor port campaign (post-model)
 
@@ -52,7 +47,11 @@ the no-behavior-change proof after every batch.
   iso/astm are ledgered upstream. The interstate/national 143 cases
   would pass alone, but the gate requires the whole corpus. Same shape:
   **evs** (embeds the CEN/CENELEC grammar), **idf** (joint ISO/IDF).
-- TODO: cie, iala, bipm (self-contained parsers, clean corpora).
+- DONE: cie (365/365, PR #28), iala (702/702 incl. MRN URN aliases,
+  PR #29), bipm (90/90 + 5 negatives, PR #30). The clean-flavor
+  campaign is COMPLETE: 29/42 flavors grammar-backed; the remaining
+  13 are the 11 ledger flavors + gost/evs/idf (blocked on upstream
+  iso/astm/cen fixes).
 - **cie porting notes** (corpus shape survey done, 365 rows / 9 types):
   standard 262 (number[.iteration][-part]:year, `style` wire key =
   legacy dash vs current colon date separator, `s_prefix` S marker,
