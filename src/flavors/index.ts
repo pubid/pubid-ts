@@ -32,6 +32,7 @@ import { idfGrammarImplementation } from "./idf/index.js";
 import { gostGrammarImplementation } from "./gost/index.js";
 import { evsGrammarImplementation } from "./evs/index.js";
 import { ashraeGrammarImplementation } from "./ashrae/index.js";
+import { bsiGrammarImplementation } from "./bsi/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -111,6 +112,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return evsGrammarImplementation();
     case "ashrae":
       return ashraeGrammarImplementation();
+    case "bsi":
+      return bsiGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
