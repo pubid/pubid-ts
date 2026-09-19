@@ -292,6 +292,11 @@ class CenBuilder {
 
 import { PubidDate as PubidDateRef } from "../../model/component.js";
 
+/** The tree → identifier pipeline, shared with composed flavors (evs). */
+export function buildCenIdentifier(tree: Tree): Identifier {
+  return new CenBuilder().build(tree);
+}
+
 export function cenCenelecGrammarImplementation(): FlavorImplementation {
   const builder = new CenBuilder();
   return {

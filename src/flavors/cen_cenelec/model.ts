@@ -246,8 +246,14 @@ const ISO_TYPE_SEGMENT: Record<string, string> = {
 function mrFromHash(hash: Record<string, unknown>): string {
   const type = String(hash["_type"] ?? "");
   const segments: string[] = [];
-  if (type.startsWith("pubid:iso")) segments.push("iso");
-  else if (type.startsWith("pubid:iec")) segments.push("iec");
+  if (type.startsWith("pubid:iso")) {
+    // ISO's MR string dashes copublishers onto the publisher slot
+    // ("iso-iec.27017.2026"); IEC's does not.
+    const copubs = Array.isArray(hash["copublishers"]) ? hash["copublishers"].map(String) : [];
+    segments.push(["iso", ...copubs.map((c) => c.toLowerCase())].join("-"));
+  } else if (type.startsWith("pubid:iec")) {
+    segments.push("iec");
+  }
   const typeSuffix = type.split(":")[2] ?? "";
   const typeSegment = ISO_TYPE_SEGMENT[typeSuffix];
   if (typeSegment !== undefined) segments.push(typeSegment);
