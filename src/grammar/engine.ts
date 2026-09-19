@@ -248,7 +248,19 @@ class Present implements Atom {
   constructor(private readonly atom: P | Atom) {}
   _match(ctx: Ctx, _consumeAll: boolean): Tree | undefined {
     const inner = this.atom instanceof P ? this.atom.atom : this.atom;
-    attempt(ctx, () => inner._match(ctx, false));
+    // A true lookahead that NEVER consumes input, and fails exactly when
+    // the probe fails (parslet's present?): the position is restored in
+    // both cases, but a non-match re-raises the ordinary failure so an
+    // enclosing Alternative retries its next branch.
+    const saved = ctx.pos;
+    try {
+      inner._match(ctx, false);
+    } catch (e) {
+      if (!(e instanceof Fail)) throw e;
+      ctx.pos = saved;
+      throw new Fail("present? probe did not match");
+    }
+    ctx.pos = saved;
     return "";
   }
 }
