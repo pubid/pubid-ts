@@ -30,6 +30,7 @@ import { cenCenelecGrammarImplementation } from "./cen_cenelec/index.js";
 import { astmGrammarImplementation } from "./astm/index.js";
 import { idfGrammarImplementation } from "./idf/index.js";
 import { gostGrammarImplementation } from "./gost/index.js";
+import { evsGrammarImplementation } from "./evs/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -105,6 +106,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return idfGrammarImplementation();
     case "gost":
       return gostGrammarImplementation();
+    case "evs":
+      return evsGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
