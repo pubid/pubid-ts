@@ -73,6 +73,10 @@ function coerceOne(value: unknown, spec: AttributeSpec): unknown {
     return typeof value === "object" && value !== null ? value : String(value);
   }
   if (value instanceof spec.type) return value;
+  // A cross-flavor identifier instance (e.g. an IEC id nested in an IEEE
+  // adoption) is complete already; coercing through the declared flavor's
+  // fromHash would rebuild it as the wrong (abstract) class.
+  if (value instanceof BaseIdentifier) return value;
   if (typeof value === "object" && value !== null) {
     // Identifier-typed attributes (oiml supplement `base`) dispatch
     // polymorphically through the registered type map.
