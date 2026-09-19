@@ -56,9 +56,8 @@ export function buildAmcaIdentifier(tree: Tree): Identifier {
   if (root["publication"] !== undefined || root["publication_keyword"] !== undefined || root["revision"] !== undefined) {
     const parsed = (isObj(root["publication"]) ? root["publication"] : root) as Record<string, unknown>;
     const attributes = extractAttributes(parsed);
-    // The revision subtree flattens into the publication dict.
-    const revisionYear = strv(parsed["revision_year"]);
-    if (revisionYear !== undefined) attributes["revision"] = revisionYear;
+    // The gem's revision subtree never reaches the model (its capture
+    // is dropped); the renderer never prints it — matched 1:1.
     return new (PublicationClass as unknown as Ctor)(attributes);
   }
 
