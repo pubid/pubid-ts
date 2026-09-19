@@ -4006,3 +4006,61 @@ bsi.value_added_publication.0562:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
   ref: tests/bsi/_status.yaml known_mismatches
+
+# csa ledger: gem-known mismatches reproduced one-for-one (verify loop /tmp/verify-csa.rb).
+csa.canadian_adopted.0465:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0582:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0585:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0588:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0589:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0593:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0594:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0595:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0608:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0610:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0612:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0615:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0618:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
+csa.cec.0619:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
+  ref: tests/csa/_status.yaml known_mismatches
