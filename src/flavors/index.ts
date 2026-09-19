@@ -36,6 +36,7 @@ import { bsiGrammarImplementation } from "./bsi/index.js";
 import { csaGrammarImplementation } from "./csa/index.js";
 import { asmeGrammarImplementation } from "./asme/index.js";
 import { amcaGrammarImplementation } from "./amca/index.js";
+import { apiGrammarImplementation } from "./api/index.js";
 import { ituGrammarImplementation } from "./itu/index.js";
 import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
@@ -123,6 +124,8 @@ export function grammarImplementation(flavor: string): FlavorImplementation | un
       return asmeGrammarImplementation();
     case "amca":
       return amcaGrammarImplementation();
+    case "api":
+      return apiGrammarImplementation();
     case "itu":
       return ituGrammarImplementation();
     case "ietf":
