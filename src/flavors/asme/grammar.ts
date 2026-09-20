@@ -44,36 +44,45 @@ function buildRules(): Record<string, P> {
                 .then(ref(rules, "bpvc_letter_code").as("case_code")),
             )
             .or(
-              ref(rules, "dot")
-                .then(
-                  str("SSC")
+              ref(rules, "dot").then(
+                // SSC with complex subdivision: BPVC.SSC.XI.II.V.IX,
+                // or the bare catalogue form BPVC.SSC.
+                str("SSC")
+                  .then(
+                    (ref(rules, "dot")
+                      .then(
+                        ref(rules, "roman_numeral")
+                          .then((ref(rules, "dot").then(ref(rules, "roman_numeral"))).repeat(0, Infinity))
+                          .as("ssc_sections"),
+                      )).maybe(),
+                  )
+                  .then(ref(rules, "dot").maybe())
+                  .as("ssc_code")
+                // CC = Case Code: BPVC.CC.BPV or BPVC.CC.NC.XI; the
+                // catalogue prints the sub-code with its own leading
+                // dot (BPVC.CC.BPV..I)
+                .or(
+                  str("CC").then(ref(rules, "dot"))
+                    .then(ref(rules, "bpvc_letter_code").as("case_code"))
                     .then(
-                      (ref(rules, "dot").then(ref(rules, "roman_numeral"))).repeat(1, Infinity).as("ssc_sections"),
-                    )
-                    .as("ssc_code")
-                    .or(
-                      str("CC").then(ref(rules, "dot"))
-                        .then(ref(rules, "bpvc_letter_code").as("case_code"))
-                        .then(
-                          (ref(rules, "dot")
-                            .then(ref(rules, "roman_numeral").or(ref(rules, "bpvc_letter_code")))).maybe().as("case_sub"),
-                        )
-                    )
-                    .or(
-                      ref(rules, "roman_numeral").as("section")
-                        .then(
-                          (ref(rules, "dot")
-                            .then((ref(rules, "digits").or(ref(rules, "bpvc_letter_code"))).as("subsection"))).maybe(),
-                        )
-                        .then(
-                          (ref(rules, "dot").then(ref(rules, "bpvc_letter_code").as("sub_subsection"))).maybe(),
-                        )
-                        .then(
-                          (ref(rules, "underscore").then(ref(rules, "letters").as("lang_suffix"))).maybe(),
-                        ),
+                      (ref(rules, "dot").then(ref(rules, "dot").maybe())
+                        .then(ref(rules, "roman_numeral").or(ref(rules, "bpvc_letter_code")).as("case_sub"))).maybe(),
                     ),
                 )
-                .as("subdivision"),
+                .or(
+                  ref(rules, "roman_numeral").as("section")
+                    .then(
+                      (ref(rules, "dot")
+                        .then((ref(rules, "digits").or(ref(rules, "bpvc_letter_code"))).as("subsection"))).maybe(),
+                    )
+                    .then(
+                      (ref(rules, "dot").then(ref(rules, "bpvc_letter_code").as("sub_subsection"))).maybe(),
+                    )
+                    .then(
+                      (ref(rules, "underscore").then(ref(rules, "letters").as("lang_suffix"))).maybe(),
+                    ),
+                ),
+              ).as("subdivision"),
             )
         ).as("bpvc_code"),
       ),
@@ -109,7 +118,7 @@ function buildRules(): Record<string, P> {
   rule("ans_publisher", () => str("ANS"));
 
   rule("iso_asme_publisher", () =>
-    str("ISO/ASME").as("joint_publisher").then(ref(rules, "space")),
+    str("ISO/ASME").as("joint_publisher").then(ref(rules, "space").maybe()),
   );
 
   rule("asme_ans_publisher", () =>
@@ -120,6 +129,7 @@ function buildRules(): Record<string, P> {
     ref(rules, "csa_publisher").as("first_publisher")
       .then(ref(rules, "space"))
       .then(match("[A-Z0-9.]").repeat(1, Infinity).as("first_code"))
+      .then(ref(rules, "space").maybe())
       .then(ref(rules, "slash"))
       .then(ref(rules, "asme_publisher").as("second_publisher"))
       .then(ref(rules, "space")),
@@ -129,6 +139,7 @@ function buildRules(): Record<string, P> {
     ref(rules, "api_publisher").as("first_publisher")
       .then(ref(rules, "space"))
       .then(match("[0-9-]").repeat(1, Infinity).as("first_code"))
+      .then(ref(rules, "space").maybe())
       .then(ref(rules, "slash"))
       .then(ref(rules, "asme_publisher").as("second_publisher"))
       .then(ref(rules, "space")),
@@ -148,6 +159,21 @@ function buildRules(): Record<string, P> {
     ).as("designator"),
   );
 
+  // A trailing edition year ("-2021", "-20XX") and nothing after it.
+  // `number_part` must not read it as a dash-separated number: a
+  // designator with no number ("BPVC.I-2021", "BPE-2012") then stored
+  // the year as its number, and the year itself was lost.
+  rule("trailing_year", () =>
+    ref(rules, "dash")
+      .then(
+        str("20XX").or(str("202X"))
+          .or(str("20").then(ref(rules, "digit")).then(str("X")))
+          .or(ref(rules, "digit").repeat(4, 4)),
+      )
+      .then(match("[0-9A-Z.]").absent()),
+  );
+
+  // Number part - can start with dot (NM.1), be dotted (16.5), OR dash-separated (BTH-1)
   rule("number_part", () =>
     (
       (
@@ -155,7 +181,8 @@ function buildRules(): Record<string, P> {
           .then((ref(rules, "dot").then(match("[0-9A-Z]").repeat(1, Infinity))).repeat(0, Infinity))
       )
         .or(
-          ref(rules, "dash").then(match("[0-9A-Z]").repeat(1, Infinity))
+          ref(rules, "trailing_year").absent()
+            .then(ref(rules, "dash")).then(match("[0-9A-Z]").repeat(1, Infinity))
             .then((ref(rules, "dot").then(match("[0-9A-Z]").repeat(1, Infinity))).repeat(0, Infinity)),
         )
         .or(
@@ -165,8 +192,11 @@ function buildRules(): Record<string, P> {
     ).as("number"),
   );
 
+  // PTC special: space-separated number with optional suffix; the
+  // renderer glues the designator to the number (PTC 19.3 TW and
+  // PTC19.3 TW are the same document)
   rule("ptc_number", () =>
-    ref(rules, "space")
+    ref(rules, "space").maybe()
       .then(
         match("[0-9]").repeat(1, Infinity)
           .then((ref(rules, "dot").then(match("[0-9]").repeat(1, Infinity))).repeat(0, Infinity))
@@ -177,8 +207,10 @@ function buildRules(): Record<string, P> {
       ),
   );
 
+  // TR special: space-separated number (like "ASME TR A17.1-8.4-2013");
+  // the rendered form glues the designator (TRA17.1-8.4)
   rule("tr_number", () =>
-    ref(rules, "space")
+    ref(rules, "space").maybe()
       .then(
         match("[A-Z0-9]").repeat(1, Infinity)
           .then((ref(rules, "dot").then(match("[0-9A-Z]").repeat(1, Infinity))).repeat(0, Infinity))
@@ -257,7 +289,7 @@ function buildRules(): Record<string, P> {
 
   rule("iso_asme_identifier", () =>
     ref(rules, "iso_asme_publisher")
-      .then(ref(rules, "number_part"))
+      .then(ref(rules, "number_part").maybe())
       .then(yearSuffix())
       .then(trailingTails()),
   );

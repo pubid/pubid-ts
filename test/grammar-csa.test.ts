@@ -5,9 +5,11 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// csa — 830 corpus rows, a LEDGER flavor (14 known mismatches in
-// _status.yaml; the testsuite verify loop reports 14 failing case
-// ids). Those are pended one-for-one; everything else must pass.
+// csa — 830 corpus rows, clean: the reaffirmation spacing follows the
+// PRINTED year and the bare "CSA IWA …" / "CAN/CSA-IWA …" adoption
+// spellings resolve to the same ISO IWA base. The unparsed
+// ground-truth fixture debt rows are reference defects tracked in
+// tests/csa/_debt.yaml, not pends.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,14 +22,10 @@ test("every csa corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("csa", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(
-    report.cases + report.pending,
-    payloads.cases.length - report.errors,
-  );
-  // The ledger's gem-known mismatches (generated from the testsuite
-  // verify loop over the gem, /tmp/verify-csa.rb).
-  assert.equal(report.pending, 14);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
+  assert.equal(report.pending, 0);
+  // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
 
@@ -54,6 +52,20 @@ test("csa parses open-ended beyond the corpus", () => {
   // Series and reaffirmations round-trip with their printed widths.
   assert.equal(impl.parse("CAN/CSA-Z240 MH SERIES:16").toHuman(), "CAN/CSA-Z240 MH SERIES:16");
   assert.equal(impl.parse("CAN/CSA-A123.2-03 (R2023)").toHuman(), "CAN/CSA-A123.2-03 (R2023)");
+  // A CEC year prints 2-digit, so its reaffirmation takes the space
+  // even when the input spelled the year 4-digit; a base identifier
+  // printing a 4-digit year keeps it glued.
+  assert.equal(
+    impl.parse("CSA C22.2 NO. 125-M1984 (R2004)").toHuman(),
+    "CSA C22.2 NO. 125-M84 (R2004)",
+  );
+  assert.equal(impl.parse("CSA C108.1.2-M1981(R2013)").toHuman(), "CSA C108.1.2-M1981(R2013)");
+  // The bare IWA adoption spelling resolves to the same ISO IWA base.
+  const iwa = impl.parse("CAN/CSA-IWA 18:17 (R2022)");
+  assert.equal(iwa.toHuman(), "CAN/CSA-IWA 18:17 (R2022)");
+  const iwaWire = iwa.toHash()["base"] as Record<string, unknown>;
+  const iwaBase = iwaWire["base"] as Record<string, unknown>;
+  assert.equal(iwaBase["_type"], "pubid:iso:international-workshop-agreement");
   // Packages carry their materials.
   assert.equal(
     impl.parse("CSA Z662:23 PACKAGE INCLUDES: +1 (PDF & ESA)").toHuman(),
