@@ -145,16 +145,25 @@ function wrapWithConsolidated(base: BsiIdentifier, supplementsData: SuppData[]):
       separator: supp.separator,
     });
   });
-  return new (ctor(ConsolidatedIdentifierClass))({
+  const wrapper = new (ctor(ConsolidatedIdentifierClass))({
     identifiers: [base, ...supplementIds],
   });
+  // The gem serializes the FIRST member's typed stage onto the
+  // consolidated wrapper itself.
+  (wrapper as unknown as Record<string, unknown>)["typedStage"] =
+    (base as unknown as Record<string, unknown>)["typedStage"];
+  return wrapper;
 }
 
 function wrapWithExpertCommentary(baseId: BsiIdentifier, original: TreeObject): BsiIdentifier {
+  // The grammar nests the topic/full flags under an "expert_commentary"
+  // subtree.
+  const ec = isObj(original["expert_commentary"]) ? (original["expert_commentary"] as TreeObject) : {};
+  const flags = { ...ec, ...original };
   let format = "abbr";
-  if (original["expert_commentary_full"] !== undefined) format = "full";
-  else if (original["expert_commentary_topic"] !== undefined) format = "abbr_with_topic";
-  const topic = strv(original["expert_commentary_topic"]);
+  if (flags["expert_commentary_full"] !== undefined) format = "full";
+  else if (flags["expert_commentary_topic"] !== undefined) format = "abbr_with_topic";
+  const topic = strv(flags["expert_commentary_topic"]);
   return new (ctor(ExpertCommentaryClass))({ base: baseId, format, topic });
 }
 
@@ -568,13 +577,17 @@ function iterationOf(v: unknown): string | undefined {
 
 function buildSupplementDocument(data: TreeObject): Identifier {
   const publisherVal = strv(data["publisher"]);
-  const parts = partsToAttrs(data["parts"]);
+  // The grammar nests the parts under a "parts" key inside the parts
+  // subtree; unwrap before extracting part/subpart.
+  const suppPartsRaw = data["parts"];
+  const suppPartsVal = isObj(suppPartsRaw) && (suppPartsRaw as TreeObject)["parts"] !== undefined
+    ? (suppPartsRaw as TreeObject)["parts"]
+    : suppPartsRaw;
   const baseData: Record<string, unknown> = {
     ...(publisherVal !== undefined ? { publisher: publisherVal } : {}),
     number: numv(data["number"]),
     ...(iterationOf(data["iteration"]) !== undefined ? { iteration: iterationOf(data["iteration"]) } : {}),
-    ...(parts.part !== undefined ? { part: parts.part } : {}),
-    ...(parts.subpart !== undefined ? { subpart: parts.subpart } : {}),
+    ...(suppPartsVal !== undefined ? { parts: suppPartsVal } : {}),
     ...(data["flex_prefix"] !== undefined ? { flex_prefix: strv(data["flex_prefix"]) } : {}),
   };
   const reverseFormat = data["supplement_number"] !== undefined

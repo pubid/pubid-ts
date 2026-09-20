@@ -80,7 +80,8 @@ function locateTypeClass(typeCode: string): IdentifierStatic | undefined {
 function deepIdentity(id: unknown, seen = 0): unknown {
   if (seen > 6 || id === null || typeof id !== "object") return undefined;
   const rec = id as Record<string, unknown>;
-  if (rec["number"] !== undefined) return id;
+  // Root semantics: a wrapper's own number never wins over the base
+  // chain (an AMD/FRAG wrapper keys its URN off the BASE document).
   for (const key of ["base", "adopted"]) {
     const next = rec[key];
     if (next !== null && typeof next === "object") {
@@ -88,6 +89,12 @@ function deepIdentity(id: unknown, seen = 0): unknown {
       if (found !== undefined) return found;
     }
   }
+  // Bundled identifiers key their identity off the first member.
+  const members = rec["identifiers"];
+  if (Array.isArray(members) && members.length > 0) {
+    return deepIdentity(members[0], seen + 1);
+  }
+  if (rec["number"] !== undefined) return id;
   return undefined;
 }
 
@@ -229,6 +236,19 @@ export class BsiIdentifier extends BaseIdentifier {
         if (code === undefined || code === null || typeof code === "string") return undefined;
         const entry = (code as Record<string, unknown>)["code"];
         return TYPED_STAGES_REGISTRY.find((t) => t.code === entry);
+      },
+      toWire: () => undefined,
+    },
+    {
+      // The consolidated wrapper carries only the `type` block; its
+      // typed stage derives from the type_code.
+      wire: "type",
+      to: "typedStage",
+      fromWire: (h) => {
+        const t = h["type"];
+        if (t === undefined || t === null || typeof t !== "object") return undefined;
+        const tc = (t as Record<string, unknown>)["type_code"];
+        return tc === undefined ? undefined : TYPED_STAGES_REGISTRY.find((x) => x.typeCode === tc);
       },
       toWire: () => undefined,
     },
@@ -980,6 +1000,14 @@ export const ConsolidatedIdentifierClass = bsiClassWith(
       .replace(/ - TC$/, "")
       .replace(/ PDF$/, "")
       .replace(/ \([A-Z][a-z]+\)$/, "");
+// The gem serializes only the `type` block onto the consolidated
+// wrapper (the members carry their own full typed-stage trio).
+(ConsolidatedIdentifierClass as unknown as { compactHash: unknown }).compactHash =
+  (model: BaseIdentifier, hash: Record<string, unknown>): void => {
+    const ts = (model as unknown as { typedStage?: BsiTypedStage }).typedStage;
+    if (ts === undefined || ts.code === "pubbs") return;
+    hash["type"] = { name: ts.name, abbr: ts.abbr[0], type_code: ts.typeCode };
+  };
     for (const supp of supplements) {
       if (supp instanceof Amendment) {
         if (supp.amd_suffix_form) {

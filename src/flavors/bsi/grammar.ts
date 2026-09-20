@@ -816,10 +816,13 @@ function buildRules(): Record<string, P> {
           .then(ref(rules, "year"))
           .as("disc_identifier"),
       )
-      .or(ref(rules, "supplement_document_reverse").as("supplement_document"))
+      // The reverse rule already .as-wraps itself; an outer wrap would
+      // nest supplement_document twice and the builder sees empty keys.
+      .or(ref(rules, "supplement_document_reverse"))
       .or(ref(rules, "supplement_document_forward"))
       .or(ref(rules, "addendum_document"))
-      .or(ref(rules, "set_identifier").as("set"))
+      // set_identifier already .as-wraps as "set"; an outer wrap nests twice.
+      .or(ref(rules, "set_identifier"))
       .or(ref(rules, "bundled_identifier"))
       .or(ref(rules, "bare_adopted").as("adopted_string"))
       .or(
