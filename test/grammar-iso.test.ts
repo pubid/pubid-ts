@@ -5,10 +5,11 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// iso — 7,630 corpus rows, the largest single flavor. The corpus is a
-// LEDGER flavor (4 known reference defects on Ruby main); the three
-// that reproduce here are pended in conformance/pending.yaml, and the
-// fourth already matches this port.
+// iso — 7,630 corpus rows, the largest single flavor. Clean: the
+// subgroup scalar and the supplement context propagation mirror the
+// gem, and the remaining unparsed-fixture debt rows (CEN/TS 15370-1,
+// EN 12643, ISO/IEC Directives JTC 1 Supplement) are reference defects
+// tracked in tests/iso/_debt.yaml, not pends.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -21,10 +22,10 @@ test("every iso corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("iso", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(report.cases + report.pending, payloads.cases.length - report.errors);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
   assert.ok(report.cases > 7500);
-  assert.equal(report.pending, 3);
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
@@ -61,6 +62,17 @@ test("iso parses open-ended beyond the corpus", () => {
   });
   // Legacy slash parts normalize to dashes.
   assert.equal(impl.parse("ISO 5843/6").toHuman(), "ISO 5843-6");
+  // The supplement renderer propagates its stage format to the base:
+  // a nested amendment renders the short "AMD" under a staged "CD Cor"
+  // top, the long "Amd" under an unstaged "Cor" top (mirrors Ruby).
+  assert.equal(
+    impl.parse("ISO/IEC 15938-7:2003/Amd 5:2010/CD Cor 1").toHuman(),
+    "ISO/IEC 15938-7:2003/AMD 5:2010/CD Cor 1",
+  );
+  assert.equal(
+    impl.parse("ISO/IEC 13818-1:2015/Amd 3:2016/Cor 1:2017").toHuman(),
+    "ISO/IEC 13818-1:2015/Amd 3:2016/Cor 1:2017",
+  );
 });
 
 test("iso rejects non-identifiers", () => {
