@@ -87,7 +87,13 @@ function buildRules(): Record<string, P> {
       str("HOL").as("hol_suffix")
         .or(
           ref(rules, "data_series_suffix")
-            .then(ref(rules, "data_series_subseries_no_dash").maybe()),
+            .then(
+              // A letter suffix may carry its subseries with the dash
+              // spelled out too ("DS55S-S1"), not only glued ("DS55S1").
+              ref(rules, "data_series_subseries_no_dash")
+                .or(ref(rules, "data_series_subseries_with_dash"))
+                .maybe(),
+            ),
         )
         .or(ref(rules, "data_series_subseries_with_dash"))
         .maybe(),

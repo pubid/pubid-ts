@@ -5,9 +5,9 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// astm — 248 corpus rows, a ledger flavor with 3 known mismatches (the
-// glued-S data-series spellings "DS55S-S1-EB" the grammar rejects; Ruby
-// main rejects them too).
+// astm — 248 corpus rows, clean (the dashed data-series subseries
+// "DS55S-S1-EB" parses since the grammar accepts the dash after a
+// letter suffix, matching pubid main).
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,9 +20,9 @@ test("every astm corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("astm", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(report.cases + report.pending, payloads.cases.length - report.errors);
-  assert.equal(report.pending, 3);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
@@ -58,11 +58,12 @@ test("astm parses open-ended beyond the corpus", () => {
     impl.parse("ISO/ASTMTR52905-EB").toUrn(),
     "urn:iso/astm:std:52905",
   );
+  // The dashed data-series subseries parses (mirrors pubid).
+  assert.equal(impl.parse("ASTM DS55S-S1-EB").toHuman(), "ASTM DS55S-S1-EB");
 });
 
 test("astm rejects non-identifiers", () => {
   const impl = grammarImplementation("astm")!;
   assert.throws(() => impl.parse("ASTM"));
-  assert.throws(() => impl.parse("DS55S-S1-EB"));
   assert.throws(() => impl.parse("NIST SP 800-53"));
 });
