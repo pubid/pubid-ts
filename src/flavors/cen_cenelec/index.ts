@@ -205,6 +205,7 @@ class CenBuilder {
     const impl = grammarImplementation("iec");
     if (impl === undefined) return undefined;
     return new AdoptedEuropeanNormClass({
+      publisher: "EN",
       adopted: impl.parse(`IEC ${numStr}`),
     } as unknown as Record<string, unknown>) as unknown as CenIdentifier;
   }

@@ -5,9 +5,10 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// bsi — 939 corpus rows, a LEDGER flavor (22 known mismatches in
-// _status.yaml; the testsuite verify loop reports 108 failing case
-// ids). Those are pended one-for-one; everything else must pass.
+// bsi — 1,500 corpus rows, clean: the port mirrors the gem's
+// typed-stage wire (the full registry trio on documents, the type
+// block on consolidated wrappers), the addendum/supplement render
+// seams, and the adopted-base URN walks.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,14 +21,9 @@ test("every bsi corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("bsi", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(
-    report.cases + report.pending,
-    payloads.cases.length - report.errors,
-  );
-  // The ledger's gem-known mismatches (generated from the testsuite
-  // verify loop over the gem, /tmp/verify-bsi.rb).
-  assert.equal(report.pending, 108);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
+  assert.equal(report.pending, 0);
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
 
