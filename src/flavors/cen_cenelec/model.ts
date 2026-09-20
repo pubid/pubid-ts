@@ -410,7 +410,7 @@ function documentClass(spec: DocSpec): IdentifierStatic {
           .join(":");
         return `urn:cen:${body}`;
       }
-      
+
       return super.toUrn();
     }
 
