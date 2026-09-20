@@ -166,6 +166,14 @@ const BASE_MAPPINGS = keyValue(
 
 export abstract class IecIdentifier extends BaseIdentifier {
   declare readonly number: string | undefined;
+
+  /** Walk the supplement chain to the base document (BSI's URN
+   * generator reaches the root identity of adopted bases). */
+  root(): IecIdentifier {
+    const base = (this as unknown as Record<string, unknown>)["base"];
+    return base instanceof IecIdentifier ? base.root() : this;
+  }
+
   declare readonly part: string | undefined;
   declare readonly subpart: string | undefined;
   declare readonly date: PubidDate | undefined;

@@ -405,19 +405,21 @@ function buildRules(): Record<string, P> {
       .then(ref(rules, "iteration").as("iteration"))
       .then(ref(rules, "parts").as("parts"));
 
+  // The renderer prints "Addendum"/"Supplement" + (" No.")? + TWO
+  // spaces before the number; both seams accept one-or-more spaces.
   const supplementTail = (word: string, sepKey: string, noKey: string, numKey: string, yearKey: string) =>
     (ref(rules, "colon").or(ref(rules, "space"))).as(sepKey)
       .then(str(word))
-      .then(ref(rules, "space"))
+      .then(ref(rules, "space").repeat(1, Infinity))
       .then(str("No.").as(noKey))
-      .then(ref(rules, "space"))
+      .then(ref(rules, "space").repeat(1, Infinity))
       .then(ref(rules, "digits").as(numKey))
       .then(ref(rules, "colon"))
       .then(ref(rules, "digit").repeat(4, 4).as(yearKey))
       .or(
         (ref(rules, "colon").or(ref(rules, "space"))).as(sepKey)
           .then(str(word))
-          .then(ref(rules, "space"))
+          .then(ref(rules, "space").repeat(1, Infinity))
           .then(ref(rules, "digits").as(numKey))
           .then(ref(rules, "colon"))
           .then(ref(rules, "digit").repeat(4, 4).as(yearKey)),
@@ -492,9 +494,9 @@ function buildRules(): Record<string, P> {
           .then(ref(rules, "base_year"))
           .then(ref(rules, "space").as("add_sep"))
           .then(str("Addendum"))
-          .then(ref(rules, "space"))
+          .then(ref(rules, "space").repeat(1, Infinity))
           .then(str("No.").as("add_no_prefix"))
-          .then(ref(rules, "space"))
+          .then(ref(rules, "space").repeat(1, Infinity))
           .then(ref(rules, "digits").as("addendum_number"))
           .then(ref(rules, "colon"))
           .then(ref(rules, "digit").repeat(4, 4).as("addendum_year"))
@@ -505,9 +507,9 @@ function buildRules(): Record<string, P> {
           .then(ref(rules, "base_year"))
           .then(ref(rules, "colon").as("add_sep"))
           .then(str("Addendum"))
-          .then(ref(rules, "space"))
+          .then(ref(rules, "space").repeat(1, Infinity))
           .then(str("No.").as("add_no_prefix"))
-          .then(ref(rules, "space"))
+          .then(ref(rules, "space").repeat(1, Infinity))
           .then(ref(rules, "digits").as("addendum_number"))
           .then(ref(rules, "colon"))
           .then(ref(rules, "digit").repeat(4, 4).as("addendum_year"))

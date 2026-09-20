@@ -36,27 +36,29 @@ export interface BsiTypedStage {
   stageCode: string;
   typeCode: string;
   abbr: string[];
+  name: string;
+  harmonizedStages: string[];
 }
 
 export const TYPED_STAGES_REGISTRY: BsiTypedStage[] = [
-  { code: "pubbs", stageCode: "published", typeCode: "bs", abbr: ["BS"] },
-  { code: "drbs", stageCode: "draft", typeCode: "bs", abbr: ["Draft BS", "DBS"] },
-  { code: "pubpd", stageCode: "published", typeCode: "pd", abbr: ["PD"] },
-  { code: "pubpas", stageCode: "published", typeCode: "pas", abbr: ["PAS"] },
-  { code: "pubna", stageCode: "published", typeCode: "na", abbr: ["NA"] },
-  { code: "pubdd", stageCode: "published", typeCode: "dd", abbr: ["DD"] },
-  { code: "pubflex", stageCode: "published", typeCode: "flex", abbr: ["Flex", "BSI Flex"] },
-  { code: "pubhb", stageCode: "published", typeCode: "handbook", abbr: ["Handbook", "HB"] },
-  { code: "pubpp", stageCode: "published", typeCode: "pp", abbr: ["PP"] },
-  { code: "pubbip", stageCode: "published", typeCode: "bip", abbr: ["BIP"] },
-  { code: "pubas", stageCode: "published", typeCode: "aerospace", abbr: ["BS A", "BS AU", "BS C", "BS M", "BS S", "BS L", "BS TA", "BS MA", "BS PL", "BS QC", "BS G", "BS HC", "BS F", "BS X", "BS B"] },
-  { code: "pubidx", stageCode: "published", typeCode: "index", abbr: ["Index"] },
-  { code: "pubmet", stageCode: "published", typeCode: "method", abbr: ["Method", "Methods"] },
-  { code: "pubsec", stageCode: "published", typeCode: "section", abbr: ["Section"] },
-  { code: "pubdisc", stageCode: "published", typeCode: "disc", abbr: ["DISC"] },
-  { code: "pubds", stageCode: "published", typeCode: "detailed_specification", abbr: ["DETAILED SPEC"] },
-  { code: "pubamd", stageCode: "published", typeCode: "amendment", abbr: ["AMD"] },
-  { code: "pubts", stageCode: "published", typeCode: "ts", abbr: ["TS"] },
+  { code: "pubbs", stageCode: "published", typeCode: "bs", abbr: ["BS"], name: "British Standard", harmonizedStages: ["60.00", "60.60"] },
+  { code: "drbs", stageCode: "draft", typeCode: "bs", abbr: ["Draft BS", "DBS"], name: "Draft British Standard", harmonizedStages: ["30.00", "30.20", "30.60", "40.00", "40.20", "40.60"] },
+  { code: "pubpd", stageCode: "published", typeCode: "pd", abbr: ["PD"], name: "Published Document", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubpas", stageCode: "published", typeCode: "pas", abbr: ["PAS"], name: "Publicly Available Specification", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubna", stageCode: "published", typeCode: "na", abbr: ["NA"], name: "National Annex", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubdd", stageCode: "published", typeCode: "dd", abbr: ["DD"], name: "Draft Document", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubflex", stageCode: "published", typeCode: "flex", abbr: ["Flex", "BSI Flex"], name: "BSI Flex", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubhandbook", stageCode: "published", typeCode: "handbook", abbr: ["Handbook", "HB"], name: "BSI Handbook", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubpp", stageCode: "published", typeCode: "pp", abbr: ["PP"], name: "Published Practice", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubbip", stageCode: "published", typeCode: "bip", abbr: ["BIP"], name: "British Industrial Practice", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubaerospace", stageCode: "published", typeCode: "aerospace", abbr: ["BS A", "BS AU", "BS C", "BS M", "BS S", "BS L", "BS TA", "BS MA", "BS PL", "BS QC", "BS G", "BS HC", "BS F", "BS X", "BS B"], name: "Aerospace/Specialized British Standard", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubindex", stageCode: "published", typeCode: "index", abbr: ["Index"], name: "BSI Index", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubmethod", stageCode: "published", typeCode: "method", abbr: ["Method", "Methods"], name: "BSI Method", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubsection", stageCode: "published", typeCode: "section", abbr: ["Section"], name: "BSI Section", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubdisc", stageCode: "published", typeCode: "disc", abbr: ["DISC"], name: "DISC", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubdetailed_spec", stageCode: "published", typeCode: "detailed_specification", abbr: ["DETAILED SPEC"], name: "Detailed Specification", harmonizedStages: ["60.00", "60.60"] },
+  { code: "standalone_amendment", stageCode: "published", typeCode: "amendment", abbr: ["AMD"], name: "Amendment", harmonizedStages: ["60.00", "60.60"] },
+  { code: "pubts", stageCode: "published", typeCode: "ts", abbr: ["TS"], name: "Technical Specification", harmonizedStages: ["60.00", "60.60"] },
 ];
 
 export const DEFAULT_TYPED_STAGE = TYPED_STAGES_REGISTRY[0]!;
@@ -72,6 +74,43 @@ function locateTypeClass(typeCode: string): IdentifierStatic | undefined {
   return TYPE_CLASSES[typeCode];
 }
 
+/** The wrapped document's identity: walks base/adopted chains (CEN
+ * adopted wrappers hold the foreign id under `adopted`) until a node
+ * carries a number. */
+function deepIdentity(id: unknown, seen = 0): unknown {
+  if (seen > 6 || id === null || typeof id !== "object") return undefined;
+  const rec = id as Record<string, unknown>;
+  if (rec["number"] !== undefined) return id;
+  for (const key of ["base", "adopted"]) {
+    const next = rec[key];
+    if (next !== null && typeof next === "object") {
+      const found = deepIdentity(next, seen + 1);
+      if (found !== undefined) return found;
+    }
+  }
+  return undefined;
+}
+
+/** Wraps a registry entry so the attribute machinery can coerce the
+ * wire's typed_stage block back into the runtime state. */
+export class BsiTypedStageRef {
+  readonly code: string;
+  readonly stageCode: string;
+  readonly typeCode: string;
+  readonly abbr: string[];
+  readonly name: string;
+  readonly harmonizedStages: string[];
+  constructor(attrs: Record<string, unknown>) {
+    const e = attrs as unknown as BsiTypedStage;
+    this.code = e.code;
+    this.stageCode = e.stageCode;
+    this.typeCode = e.typeCode;
+    this.abbr = e.abbr;
+    this.name = e.name;
+    this.harmonizedStages = e.harmonizedStages;
+  }
+}
+
 class BsiUrnGenerator extends BaseUrnGenerator<BsiIdentifier> {
   generate(): string {
     const id = this.identifier;
@@ -85,10 +124,12 @@ class BsiUrnGenerator extends BaseUrnGenerator<BsiIdentifier> {
     if (id.prefix !== undefined) parts.push(id.prefix.toLowerCase());
     if (id.flex_prefix !== undefined) parts.push(id.flex_prefix.toLowerCase());
 
-    // Identity reads walk to the wrapped document (root) when the
-    // wrapper has none of its own.
-    const root = id.root();
-    const urnNumber = id.number ?? (root !== id ? root.number : undefined);
+    // Identity reads walk to the wrapped document when the wrapper has
+    // none of its own; adopted foreign chains (CEN adopted wrappers)
+    // are walked through both the `base` and `adopted` keys.
+    const rootRecord = deepIdentity(id) as ({ number?: string; part?: string; subpart?: string; date?: PubidDate; year?: string } | undefined);
+    const root = rootRecord;
+    const urnNumber = id.number ?? (rootRecord !== undefined ? rootRecord.number : undefined);
     if (urnNumber !== undefined) {
       let number = urnNumber;
       if (id.iteration !== undefined && id.iteration !== "") {
@@ -97,19 +138,19 @@ class BsiUrnGenerator extends BaseUrnGenerator<BsiIdentifier> {
       parts.push(number);
     }
 
-    const urnPart = id.part ?? (root !== id ? root.part : undefined);
+    const urnPart = id.part ?? (root !== undefined && rootRecord !== undefined && rootRecord !== (id as unknown) ? rootRecord.part : undefined);
     if (urnPart !== undefined) parts.push(`-${urnPart}`);
-    const urnSubpart = id.subpart ?? (root !== id ? root.subpart : undefined);
+    const urnSubpart = id.subpart ?? (root !== undefined && rootRecord !== undefined && rootRecord !== (id as unknown) ? rootRecord.subpart : undefined);
     if (urnSubpart !== undefined) parts.push(`-${urnSubpart}`);
 
     if (id.second_number !== undefined) parts.push(`/${id.second_number.render()}`);
 
-    const urnDate = id.date ?? (root !== id ? root.date : undefined);
+    const urnDate = id.date ?? (root !== undefined && rootRecord !== undefined && rootRecord !== (id as unknown) ? rootRecord.date : undefined);
     if (urnDate?.present()) {
       parts.push(urnDate.render("urn")!);
     } else {
       const urnYear = (id as unknown as { year?: string }).year
-        ?? (root !== id ? (root as unknown as { year?: string }).year : undefined);
+        ?? (root !== undefined && rootRecord !== undefined && rootRecord !== (id as unknown) ? rootRecord.year : undefined);
       if (urnYear !== undefined) parts.push(urnYear);
     }
 
@@ -118,11 +159,9 @@ class BsiUrnGenerator extends BaseUrnGenerator<BsiIdentifier> {
     if (id.translation_lang !== undefined) parts.push(id.translation_lang.toLowerCase());
     else if (id.translation_upper !== undefined) parts.push(id.translation_upper.toLowerCase());
 
-    const type = (id as unknown as { typeAbbr?: string }).typeAbbr;
-    if (type !== undefined && type !== "BS") parts.push(type.toLowerCase());
-
     const typedStage = (id as unknown as { typedStage?: BsiTypedStage }).typedStage;
-    if (typedStage !== undefined && typedStage.stageCode !== "published") {
+    if (typedStage !== undefined && typedStage.code !== "pubbs") {
+      parts.push(typedStage.typeCode);
       parts.push(`stage.${typedStage.stageCode}`);
     }
 
@@ -152,8 +191,19 @@ export class BsiIdentifier extends BaseIdentifier {
     explicit_prefix: { type: "boolean", default: false },
     explicit_publisher: { type: "boolean", default: false },
     space_separated_part: { type: "boolean", default: false },
+    typedStage: { type: BsiTypedStageRef },
   });
-  // type/stage/typed_stage/original_abbr are runtime-only (never wire).
+
+  /** The gem serializes the full typed-stage registry entry (type,
+   * stage, typed_stage blocks) for every non-default typed stage. */
+  static compactHash = (model: BaseIdentifier, hash: Record<string, unknown>): void => {
+    const ts = (model as unknown as { typedStage?: BsiTypedStage }).typedStage;
+    if (ts === undefined || ts.code === "pubbs") return;
+    hash["type"] = { name: ts.name, abbr: ts.abbr[0], type_code: ts.typeCode };
+    hash["stage"] = { name: ts.name, stage_code: ts.stageCode, harmonized_stages: ts.harmonizedStages, abbr: ts.abbr[0] };
+    hash["typed_stage"] = { name: ts.name, code: ts.code, type_code: ts.typeCode, stage_code: ts.stageCode, abbr: ts.abbr, harmonized_stages: ts.harmonizedStages };
+  };
+
   static mappings: FieldMapping[] = keyValue(
     { wire: "publisher", to: "publisher" },
     { wire: "prefix", to: "prefix" },
@@ -171,6 +221,17 @@ export class BsiIdentifier extends BaseIdentifier {
     { wire: "explicit_prefix", to: "explicit_prefix" },
     { wire: "explicit_publisher", to: "explicit_publisher" },
     { wire: "space_separated_part", to: "space_separated_part" },
+    {
+      wire: "typed_stage",
+      to: "typedStage",
+      fromWire: (h) => {
+        const code = h["typed_stage"];
+        if (code === undefined || code === null || typeof code === "string") return undefined;
+        const entry = (code as Record<string, unknown>)["code"];
+        return TYPED_STAGES_REGISTRY.find((t) => t.code === entry);
+      },
+      toWire: () => undefined,
+    },
   );
 
   declare readonly publisher: Publisher | undefined;
@@ -601,6 +662,7 @@ export class Amendment extends BsiIdentifier {
     return `${base}${compact}`;
   }
 }
+registerType(Amendment as unknown as IdentifierStatic);
 
 export class Corrigendum extends BsiIdentifier {
   static polymorphicName = "pubid:bsi:corrigendum";
@@ -633,6 +695,7 @@ export class Corrigendum extends BsiIdentifier {
     return result;
   }
 }
+registerType(Corrigendum as unknown as IdentifierStatic);
 
 interface SuppDocLike extends BsiIdentifier {
   base: BsiIdentifier | undefined;
@@ -690,7 +753,9 @@ export const AddendumDocumentClass = bsiClassWith(
         ? " "
         : id.separator ?? ":";
     const no = id.addendum_type === "" ? "" : ` ${id.addendum_type}`;
-    return `${baseStr}${sep}Addendum${no} ${id.addendum_number}:${id.addendum_year ?? ""}`;
+    // The renderer prints two spaces before the addendum number (the
+    // gem joins " " + " "); the printed form is the recorded canonical.
+    return `${baseStr}${sep}Addendum${no}  ${id.addendum_number}:${id.addendum_year ?? ""}`;
   },
 );
 

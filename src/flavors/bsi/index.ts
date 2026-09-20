@@ -34,7 +34,9 @@ import {
   TestMethodClass,
   ValueAddedPublicationClass,
   locateStage,
+  DEFAULT_TYPED_STAGE,
   TYPE_CLASSES,
+  type BsiTypedStage,
 } from "./model.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 
@@ -186,8 +188,15 @@ function locateKlass(parsedHash: TreeObject): IdentifierStatic {
   const typeStr = strv(parsedHash["type"]) ?? strv(parsedHash["stage"]) ?? "";
   // Unknown abbreviations fall back to the DEFAULT_TYPED_STAGE (a
   // published British Standard).
-  const stage = locateStage(typeStr.toUpperCase()) ?? { typeCode: "bs" };
+  const stage = locateStage(typeStr.toUpperCase()) ?? DEFAULT_TYPED_STAGE;
   return TYPE_CLASSES[stage.typeCode] ?? BritishStandardClass;
+}
+
+/** The registry entry the parse selected (stashed on the instance;
+ * the wire serializes it for non-default typed stages). */
+function selectedStage(parsedHash: TreeObject): BsiTypedStage {
+  const typeStr = strv(parsedHash["type"]) ?? strv(parsedHash["stage"]) ?? "";
+  return locateStage(typeStr.toUpperCase()) ?? DEFAULT_TYPED_STAGE;
 }
 
 function assignAttributes(data: TreeObject): Record<string, unknown> {
@@ -294,7 +303,9 @@ function buildTree(data: TreeObject): Identifier {
     if (adopted !== undefined) return adopted;
   }
 
+  const stageEntry = selectedStage(data);
   let identifier = new (ctor(locateKlass(data)))(assignAttributes(data));
+  (identifier as unknown as Record<string, unknown>)["typedStage"] = stageEntry;
   void identifier;
 
   if (supplementsData.length > 0) {
@@ -596,13 +607,17 @@ function buildSupplementDocument(data: TreeObject): Identifier {
 
 function buildAddendumDocument(data: TreeObject): Identifier {
   const publisherVal = strv(data["publisher"]);
-  const parts = partsToAttrs(data["parts"]);
+  // The grammar nests the parts under a "parts" key inside the
+  // "parts" subtree; unwrap before extracting part/subpart.
+  const partsRaw = data["parts"];
+  const partsVal = isObj(partsRaw) && (partsRaw as TreeObject)["parts"] !== undefined
+    ? (partsRaw as TreeObject)["parts"]
+    : partsRaw;
   const baseData: Record<string, unknown> = {
     ...(publisherVal !== undefined ? { publisher: publisherVal } : {}),
     number: numv(data["number"]),
     ...(iterationOf(data["iteration"]) !== undefined ? { iteration: iterationOf(data["iteration"]) } : {}),
-    ...(parts.part !== undefined ? { part: parts.part } : {}),
-    ...(parts.subpart !== undefined ? { subpart: parts.subpart } : {}),
+    ...(partsVal !== undefined ? { parts: partsVal } : {}),
     ...(data["flex_prefix"] !== undefined ? { flex_prefix: strv(data["flex_prefix"]) } : {}),
   };
   if (data["base_year"] !== undefined) baseData["year"] = data["base_year"];
@@ -614,12 +629,16 @@ function buildAddendumDocument(data: TreeObject): Identifier {
       ? strv(data["add_no_prefix"])!
       : "";
 
+  // strv() trims, so a captured space separator must be read raw.
+  const sepRaw = data["add_sep"];
+  const separator = sepRaw === " " ? " " : strv(sepRaw) ?? ":";
+
   return new (ctor(AddendumDocumentClass))({
     base: baseId as BsiIdentifier,
     addendum_number: strv(data["addendum_number"]),
     addendum_year: data["addendum_year"] !== undefined ? Number(strv(data["addendum_year"])) : undefined,
     addendum_type: addType,
-    separator: strv(data["add_sep"]) ?? ":",
+    separator,
   }) as unknown as Identifier;
 }
 
