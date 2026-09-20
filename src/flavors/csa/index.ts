@@ -436,6 +436,12 @@ function parseExternalStandard(input: string): Identifier | undefined {
   if (/^(ISO\/IEC|ISO|IEC|CEI|CEI\/IEC)\s/.test(input)) {
     return tryForeign("iso", input.replace(/^CEI\/IEC/, "IEC"));
   }
+  // The catalogue also prints the IWA designation without the ISO
+  // keyword ("CAN/CSA-IWA 18:17" beside "CAN/CSA-ISO IWA 18:17"); the
+  // ISO parser wants the ISO/ prefix.
+  if (/^IWA\s/.test(input)) {
+    return tryForeign("iso", input.replace(/^IWA\s/, "ISO/IWA "));
+  }
   if (/^CISPR\s/.test(input)) {
     return tryForeign("iec", input);
   }
@@ -529,8 +535,9 @@ function parseCsa(input: string): Identifier {
     }) as unknown as Identifier;
   }
 
-  // CSA adoption of international standards.
-  if (/^CSA (ISO\/IEC|CEI\/IEC|CISPR|IEC|CEI|ISO)\s/.test(input)) {
+  // CSA adoption of international standards. The catalogue also drops
+  // the ISO keyword from the IWA designation ("CSA IWA 18:17").
+  if (/^CSA (ISO\/IEC|CEI\/IEC|CISPR|IEC|CEI|ISO|IWA)\s/.test(input)) {
     let wrapped = input.replace(/^CSA\s+/, "");
     const { year: reaffirmYear, rest: stripped } = extractReaffirmation(wrapped);
     wrapped = stripped;

@@ -103,8 +103,7 @@ function yearPortion(id: CsaSingleIdentifier): string {
   return part + displayYear(id);
 }
 
-function renderReaffirmation(id: CsaSingleIdentifier): string {
-  const yearWas2digit = id.original_year_4digit !== true;
+function renderReaffirmation(id: CsaSingleIdentifier, yearPrints4digit = false): string {
   const reaffirmationWas4digit = id.original_reaffirmation_4digit === true;
   const value = id.reaffirmation ?? "";
   const reaffirmationStr = reaffirmationWas4digit
@@ -112,9 +111,12 @@ function renderReaffirmation(id: CsaSingleIdentifier): string {
     : value.length === 4 && (value.startsWith("19") || value.startsWith("20"))
       ? value.slice(2)
       : value;
-  return yearWas2digit && reaffirmationWas4digit
-    ? ` (R${reaffirmationStr})`
-    : `(R${reaffirmationStr})`;
+  // The spacing follows the PRINTED year, not the parsed spelling: a
+  // 4-digit printed year glues ("C108.1.2-M1981(R2013)"), a 2-digit
+  // printed year takes a space ("C22.2 NO. 125-M84 (R2004)").
+  return yearPrints4digit || !reaffirmationWas4digit
+    ? `(R${reaffirmationStr})`
+    : ` (R${reaffirmationStr})`;
 }
 
 function renderBase(id: CsaSingleIdentifier): string {
@@ -140,7 +142,7 @@ function renderBase(id: CsaSingleIdentifier): string {
     result = parts.join(" ");
   }
   if (id.reaffirmation !== undefined && id.reaffirmation !== "") {
-    result += renderReaffirmation(id);
+    result += renderReaffirmation(id, id.original_year_4digit === true);
   }
   if (id.package !== undefined) result += id.package;
   return result;

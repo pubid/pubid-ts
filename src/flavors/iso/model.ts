@@ -333,8 +333,11 @@ export abstract class IsoSingleIdentifier extends IsoIdentifier {
 
   constructor(attrs: Record<string, unknown> = {}) {
     super(attrs);
-    if ((this as unknown as Record<string, unknown>)["publisher"] === undefined) {
-      (this as unknown as Record<string, unknown>)["publisher"] = new IsoPublisher({});
+    // The gem's default_publisher is nil on the IWA leaf ("IWA 1",
+    // not "ISO IWA 1"), so no publisher is materialized there.
+    const self = this as unknown as Record<string, unknown>;
+    if (self["publisher"] === undefined && this.typeKey() !== "iwa") {
+      self["publisher"] = new IsoPublisher({});
     }
   }
 
@@ -372,13 +375,33 @@ interface LeafSpec {
   bundled?: boolean;
 }
 
+// IWA identifiers have no implied publisher ("IWA 1", not "ISO IWA
+// 1"), so an explicitly parsed "ISO" still emits on the wire — the
+// leaf's default publisher is nil on the Ruby side. Built lazily:
+// SINGLE_MAPPINGS is declared below.
+let iwaMappings: FieldMapping[] | undefined;
+
 function isoClass(spec: LeafSpec): IdentifierStatic {
   const base = spec.supplement === true ? IsoSupplementIdentifier : spec.bundled === true ? IsoBundledBase : IsoSingleIdentifier;
   class IsoConcrete extends base {
     static polymorphicName = `pubid:iso:${spec.kind}`;
     static typeKey = spec.typeKey;
     static attributes = extendAttributes(base, {});
-    static mappings = spec.supplement === true ? SUPPLEMENT_MAPPINGS : SINGLE_MAPPINGS;
+    static mappings = spec.typeKey === "iwa"
+      ? (iwaMappings ??= SINGLE_MAPPINGS.map((m) => {
+        if (m.wire !== "publisher") return m;
+        return {
+          wire: "publisher",
+          to: "publisher",
+          toWire: (mm: Record<string, unknown>) => (mm["publisher"] as IsoPublisher | undefined)?.publisher,
+          fromWire: (h: Record<string, unknown>) => {
+            if ((h["publisher"] === undefined || h["publisher"] === null) && h["copublishers"] === undefined) return undefined;
+            const cps = Array.isArray(h["copublishers"]) ? h["copublishers"].map(String) : [];
+            return new IsoPublisher({ publisher: h["publisher"] === undefined || h["publisher"] === null ? "ISO" : String(h["publisher"]), copublisher: cps });
+          },
+        };
+      }))
+      : (spec.supplement === true ? SUPPLEMENT_MAPPINGS : SINGLE_MAPPINGS);
     static urnGenerator = IsoUrnGenerator;
   }
   registerType(IsoConcrete as unknown as IdentifierStatic);

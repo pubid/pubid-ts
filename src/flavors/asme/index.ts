@@ -36,11 +36,15 @@ function buildCode(parsed: Record<string, unknown>): string {
 
       const subdivision = isObj(bpvc["subdivision"]) ? (bpvc["subdivision"] as Record<string, unknown>) : undefined;
       if (subdivision !== undefined && subdivision["ssc_code"] !== undefined) {
-        const sections = subdivision["ssc_sections"];
+        // BPVC.SSC.XI.II.V.IX pattern. The sections sit under
+        // `ssc_code`; a bare "BPVC.SSC." parses with no inner capture,
+        // so `ssc_code` is the matched string.
+        const sscCode = subdivision["ssc_code"];
+        const sections = isObj(sscCode) ? (sscCode as Record<string, unknown>)["ssc_sections"] : undefined;
         const sectionsStr = Array.isArray(sections)
           ? sections.flat(10).map(String).join(".")
           : String(sections ?? "");
-        return `BPVC.SSC.${sectionsStr}`;
+        return sectionsStr === "" ? "BPVC.SSC." : `BPVC.SSC.${sectionsStr}`;
       }
       if (subdivision !== undefined && subdivision["case_code"] !== undefined) {
         const cc = strv(subdivision["case_code"]) ?? "";
