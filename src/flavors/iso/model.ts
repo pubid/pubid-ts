@@ -175,6 +175,15 @@ export abstract class IsoIdentifier extends BaseIdentifier {
     return result;
   }
 
+  /** Ruby SupplementRenderer renders the base with the wrapper's
+   * detected context (stage_format_long propagates down the chain;
+   * with_date being non-nil pins it against re-detection — a nested
+   * amendment renders "AMD" under a "CD Cor" top but "Amd" under a
+   * "Cor." top). */
+  renderAsSupplementBase(long: boolean): string {
+    return this.renderWithFormat(long);
+  }
+
   private stageStringFor(formatLong: boolean): string {
     const ts = this.typedStageState;
     if (ts === undefined) return "";
@@ -612,13 +621,18 @@ export abstract class IsoSupplementIdentifier extends IsoSingleIdentifier {
   declare readonly base: IsoIdentifier | undefined;
 
   render(): string {
+    return this.renderSupplement(this.stageFormatLong());
+  }
+
+  renderAsSupplementBase(long: boolean): string {
+    return this.renderSupplement(long);
+  }
+
+  private renderSupplement(long: boolean): string {
     const base = this.base;
-    // SupplementRenderer passes its context down, but Ruby's false is
-    // falsy in build_rendering_context's guard — a false flag makes the
-    // base RE-DETECT its own format. Only a true flag would propagate,
-    // which no corpus row exercises; mirror the re-detection.
-    const baseStr = base === undefined ? "" : base.toHuman();
-    const stage = this.stageString();
+    const baseStr = base === undefined ? "" : base.renderAsSupplementBase(long);
+    const ts = this.typedStageState;
+    const stage = ts === undefined ? "" : stageAbbr(ts.entry, long, ts.originalAbbr);
     let result = `${baseStr}/${stage}`;
     const num = this.numberPortion(true);
     if (num !== "") {
@@ -670,11 +684,13 @@ export class IsoDirectives extends IsoSingleIdentifier {
     {
       wire: "subgroup",
       to: "subgroup",
-      toWire: (m) => (m["subgroup"] === undefined ? undefined : { value: m["subgroup"] }),
       fromWire: (h) => {
         const v = h["subgroup"];
         if (v === undefined || v === null) return undefined;
-        return String((v as Record<string, unknown>)["value"] ?? v);
+        // The wire is a flat scalar since the gem flattened the
+        // { value: X } nesting; keep reading the old shape defensively.
+        if (typeof v === "object") return String((v as Record<string, unknown>)["value"] ?? "");
+        return String(v);
       },
     },
   );
