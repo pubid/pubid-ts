@@ -47,6 +47,10 @@ const UPDATE_CODE_LINES: Record<string, string> = {
   "NBS LC 1088sp": "NBS LC 1088 spa",
   "NIST SP 955 Suppl.": "NIST SP 955sup",
   "NIST SP 800-38e": "NIST SP 800-38E",
+  "NBS.CIRC.supJun1925-Jun1926": "NBS CIRC 24e7sup2",
+  "NBS.CIRC.supJun1925-Jun1927": "NBS CIRC 24e7sup3",
+  "NIST.TN.2150-upd": "NIST.TN.2150-upd1-202102",
+  "NIST.SP.955.Suppl": "NIST.SP.955-S.uppl",
   "NIST SP 782-1995-96": "NIST SP 782-1995",
   "NIST FIPS 54-Jan15": "NIST FIPS 54",
   "NBS report ;": "NBS RPT",
@@ -79,9 +83,9 @@ const UPDATE_CODE_LINES: Record<string, string> = {
   "NIST IR 8413-upd1": "NIST IR 8413/Upd1-202207",
   "NIST IR 85-3273-37-upd1": "NIST IR 85-3273-37/Upd1-202205",
   "NIST.AMS.300-8r1/upd": "NIST.AMS.300-8r1-upd1",
-  "NIST.hb.150-1-2017": "NIST HB 105-1r2017",
-  "nbs.tn.671": "NBS TN 671",
-  "NIST.TN.1648_2009": "NIST TN 1648-2009",
+  "NIST.hb.150-1-2017": "NIST.HB.105-1r2017",
+  "nbs.tn.671": "NBS.TN.671",
+  "NIST.TN.1648_2009": "NIST.TN.1648e2009",
   "NBS NSRDS": "NSRDS-NBS",
   "nist ir": "NIST IR",
 };
@@ -125,6 +129,20 @@ export function preprocessNist(input: string): PreprocessorResult {
     cleaned = cleaned.replace(pattern, replacement);
   }
 
+  // The format describes the string the parser will see: freeze it
+  // right after the update-codes remap, before the stages' cosmetic
+  // spacing (a dotted catalogue alias that remaps to the space form
+  // renders short; the dotted originals stay mr).
+  const format: "mr" | "short" = cleaned.includes(".") && !/\s/.test(cleaned) ? "mr" : "short";
+
+  // Short-form "supprev" is the catalogue spelling of the plain
+  // supplement ("NBS CIRC 154supprev" is "NBS CIRC 154sup"); the
+  // revision-bearing identity stays the mr spelling. Must run before
+  // the digit+suprev typo fix below.
+  if (format === "short") {
+    cleaned = cleaned.replace(/supprev/g, "sup");
+  }
+
   // normalize_spurious_u_suffix
   cleaned = cleaned.replace(/(\d)U([a-z])/g, "$1$2");
 
@@ -159,6 +177,10 @@ export function preprocessNist(input: string): PreprocessorResult {
 
   // normalize_letter_suffix_casing
   cleaned = cleaned.replace(/(\d)-([a-z])$/, (_m, d: string, l: string) => `${d}-${l.toUpperCase()}`);
+  // Same letter when an addendum tail follows ("-add", " Add.");
+  // part digits ("800-85a-1") and update/translation codes never match.
+  cleaned = cleaned.replace(/(\d)-([a-z])(?=\s*[-.\s]\s*[aA]dd)/, (_m, d: string, l: string) => `${d}-${l.toUpperCase()}`);
+  cleaned = cleaned.replace(/(\d)([a-qs-z])(?=\s*[-.\s]\s*[aA]dd)/, (_m, d: string, l: string) => `${d}${l.toUpperCase()}`);
   cleaned = cleaned.replace(/(\d)([a-qs-z])$/, (_m, d: string, l: string) => `${d}${l.toUpperCase()}`);
   cleaned = cleaned.replace(/(\d)(r)(\d+)([a-z])$/, (_m, d: string, r: string, n: string, l: string) => `${d}${r}${n}${l.toUpperCase()}`);
   cleaned = cleaned.replace(/(\d)([a-z])(r\d)/g, (_m, d: string, l: string, r: string) => `${d}${l.toUpperCase()}${r}`);
@@ -271,6 +293,27 @@ export function preprocessNist(input: string): PreprocessorResult {
   cleaned = cleaned.replace(/\breport\s*;\s*/g, "RPT ");
   cleaned = cleaned.replace(/\breport\b/g, "RPT");
 
-  const format: "mr" | "short" = input.includes(".") && !/\s/.test(input) ? "mr" : "short";
+  // normalize_legacy_corpus_spellings: catalogue forms the grammar and
+  // the renderers cannot round-trip on their own. Each rule mirrors an
+  // already-parseable spelling of the same document.
+  // The mr renderer prints the translation code with its own leading
+  // dot ("955-S..uppl"); the grammar wants one dot.
+  cleaned = cleaned.replace(/\.\./g, ".");
+  // Trailing-dot addendum spelling; the canonical render comes from
+  // the lowercase ".add" parse ("NBS.TN.467pt1.Add." -> ".add").
+  cleaned = cleaned.replace(/\.Add\.$/, ".add");
+  // Edition glued to the series in mr form ("NBS.CIRCe2" is
+  // "NBS.CIRC.e2"); digits before "e" are untouched ("24e7").
+  if (format === "mr") {
+    cleaned = cleaned.replace(/([A-Z])e(\d)/g, "$1.e$2");
+  }
+  // Update markers without a number render a phantom "1";
+  // "…-upd" is the numberless spelling of "…-upd1".
+  cleaned = cleaned.replace(/-upd$/, "-upd1");
+  // NIST-era handbook renumbering in the all-dash spelling ("NIST HB
+  // 150-1-2017" -> "NIST HB 1-2017"; NBS-era compound numbers keep
+  // their number).
+  cleaned = cleaned.replace(/\b(NIST HB\s+)(?:105|150)-(\d+)-(\d{4})(?=\s|$)/, "$1$2-$3");
+
   return { cleaned, format };
 }
