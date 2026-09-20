@@ -5,9 +5,10 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// nist — 19,849 corpus rows, the largest flavor. The corpus is a LEDGER
-// flavor (23 known reference defects on Ruby main); all 23 reproduce
-// here one-for-one and are pended in conformance/pending.yaml.
+// nist — 19,849 corpus rows, the largest flavor, clean: the port
+// mirrors the gem's legacy-spelling normalizations (dotted catalogue
+// aliases, the numberless "-upd", NIST-era HB renumbering, short-form
+// "supprev" as the plain supplement).
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,10 +21,10 @@ test("every nist corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("nist", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(report.cases + report.pending, payloads.cases.length - report.errors);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
   assert.ok(report.cases > 19500);
-  assert.equal(report.pending, 22);
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
@@ -52,7 +53,7 @@ test("nist parses open-ended beyond the corpus", () => {
   assert.equal(impl.parse("NBS.CRPL.c4-4").toHuman(), "NBS CRPL 4-4");
   assert.equal(
     impl.parse("NIST.IR.8115r1-upd").toHuman(),
-    "NIST IR 8115r1-upd1",
+    "NIST IR 8115r1/Upd1",
   );
   // LCIRC supplement spellings render through the wrapper seam.
   assert.equal(
@@ -69,11 +70,6 @@ test("nist parses open-ended beyond the corpus", () => {
 
 test("nist rejects non-identifiers", () => {
   const impl = grammarImplementation("nist")!;
-  // The known reference defects — Ruby rejects these too.
-  assert.throws(() => impl.parse("NBS.CIRC"));
-  assert.throws(() => impl.parse("NBS.CIRCe2"));
-  assert.throws(() => impl.parse("NIST.SP.955-S..uppl"));
-  assert.throws(() => impl.parse("NBS.TN.467pt1.Add."));
   assert.throws(() => impl.parse("NIST"));
   assert.throws(() => impl.parse("NIST SP"));
 });

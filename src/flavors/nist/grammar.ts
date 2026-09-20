@@ -596,8 +596,10 @@ function buildRules(): Record<string, P> {
         rules["publisher"]!,
         dot,
         rules["simple_series"]!,
-        dot,
-        rules["report_number"]!,
+        // The catalogue also lists bare series identities with no
+        // report number ("NBS.CIRC").
+        dot.maybe(),
+        rules["report_number"]!.maybe(),
         str("_").then(digits.as("edition_year")).maybe(),
         upperLetter.maybe(),
         rules["edition"]!.maybe(),
