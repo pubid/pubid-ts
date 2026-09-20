@@ -5,9 +5,10 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// ashrae — 1,967 corpus rows, a LEDGER flavor (77 known mismatches in
-// _status.yaml; the testsuite verify loop reports 236 failing case
-// ids). Those are pended one-for-one; everything else must pass.
+// ashrae — 2,178 corpus rows, clean: the port mirrors the gem's
+// supplement-URN collapse (the base URN plus the marker segment the
+// MR slug uses), the interpretation wrapper, and the copublisher-led
+// addenda.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,14 +21,9 @@ test("every ashrae corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("ashrae", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
-  assert.equal(
-    report.cases + report.pending,
-    payloads.cases.length - report.errors,
-  );
-  // The ledger's gem-known mismatches (generated from the testsuite
-  // verify loop over the gem, /tmp/verify-ashrae.rb).
-  assert.equal(report.pending, 236);
+  assert.equal(report.outcome, "pass");
+  assert.equal(report.cases, payloads.cases.length - report.errors);
+  assert.equal(report.pending, 0);
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
 
@@ -53,8 +49,8 @@ test("ashrae parses open-ended beyond the corpus", () => {
     "ASHRAE Addenda c, d to Standard 15-1994",
   );
   assert.equal(
-    impl.parse("ASHRAE Standard 140-2007: Addenda Supplement").toUrn(),
-    "urn:ashrae:140",
+    impl.parse("ASHRAE Standard 15-2007: Addenda Supplement Package").toUrn(),
+    "urn:ashrae:15:2007:standard:pkg.supplement-package",
   );
   // Errata dates normalize to the long printed form.
   assert.equal(

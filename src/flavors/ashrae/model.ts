@@ -32,9 +32,46 @@ function copublisherOf(id: AshraeIdentifier): string | undefined {
   return id.copublisher;
 }
 
+/** mr_sanitize: lowercase, fold out-of-charset runs to "-", trim the
+ * edges; an all-out-of-charset value collapses to undefined. */
+function mrSanitize(value: string | undefined): string | undefined {
+  if (value === undefined || value === "") return undefined;
+  const sanitized = value.toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-+|-+$/g, "");
+  return sanitized === "" ? undefined : sanitized;
+}
+
+/** The supplement marker segment (mr_supplement_suffix): the same
+ * marker the MR slug uses, appended to the base's URN. */
+function mrSupplementMarker(id: unknown): string | undefined {
+  const rec = id as Record<string, unknown>;
+  const has = (k: string) => rec[k] !== undefined;
+  if (has("addendum_code")) {
+    const code = rec["addendum_code"] as string;
+    const lower = code.toLowerCase();
+    return lower === "" ? "add" : `add.${lower}`;
+  }
+  if (id instanceof CombinedAddenda) return ["adds", mrSanitize(rec["addendum_codes"] as string)].filter(Boolean).join(".");
+  if (has("package_description")) return ["pkg", mrSanitize(rec["package_description"] as string)].filter(Boolean).join(".");
+  if (id instanceof Interpretation) return "interp";
+  if (id instanceof Errata) {
+    const d = rec["date"] as { year?: string; month?: string; day?: string } | undefined;
+    const slug = d === undefined ? undefined : [d.year, d.month, d.day].filter(Boolean).join("-");
+    return ["errata", mrSanitize(slug)].filter(Boolean).join(".");
+  }
+  return undefined;
+}
+
 class AshraeUrnGenerator extends BaseUrnGenerator<AshraeIdentifier> {
   generate(): string {
     const id = this.identifier;
+    // A supplement's URN is the URN of its base plus the one marker
+    // segment naming the supplement (the same marker the MR slug uses).
+    if (id instanceof SupplementIdentifier && id.base !== undefined) {
+      const marker = mrSupplementMarker(id);
+      return marker === undefined || marker === ""
+        ? id.base.toUrn()
+        : `${id.base.toUrn()}:${marker}`;
+    }
     // A supplement carries no number of its own — the two leaves declare
     // one — so reach it through #root, which walks `base`.
     const number = numberOf(id) ?? numberOf(id.root());

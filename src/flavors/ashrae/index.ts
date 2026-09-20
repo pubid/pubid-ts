@@ -161,14 +161,19 @@ function buildAddendum(parsed: TreeObject): Identifier {
 }
 
 function buildPublisherAddendum(parsed: TreeObject): Identifier {
+  // The copublisher rides BOTH the addendum and its base (the gem
+  // records it at both levels).
+  const copublisher = value(parsed["copublisher"]);
   const base = buildLeaf({
     type: value(parsed["type"]),
     number: value(parsed["code"]),
     year: value(parsed["year"]),
+    ...(copublisher !== undefined ? { copublisher } : {}),
   });
   return new Addendum({
     base,
     addendum_code: value(parsed["addendum_code"]),
+    ...(copublisher !== undefined ? { copublisher } : {}),
   }) as unknown as Identifier;
 }
 
@@ -210,7 +215,13 @@ function buildCombinedAddenda(parsed: TreeObject): Identifier {
   const base = buildLeaf(baseAttrs);
 
   const firstCode = value(parsed["addendum_code"]);
-  const additionalCodes = parsed["additional_codes"];
+  // The "a through z" range form yields a single object, not an array.
+  const additionalRaw = parsed["additional_codes"];
+  const additionalCodes = Array.isArray(additionalRaw)
+    ? additionalRaw
+    : additionalRaw !== undefined && additionalRaw !== null
+      ? [additionalRaw]
+      : undefined;
 
   let addendumCodes: string | undefined;
   if (firstCode !== undefined || additionalCodes !== undefined) {
@@ -250,7 +261,8 @@ export function buildAshraeIdentifier(tree: Tree): Identifier {
   }
   if (parsed["interpretation_identifier"] !== undefined) {
     const data = flatten(parsed["interpretation_identifier"] as Tree);
-    const base = buildLeaf(extractBaseAttributes(data));
+    const baseAttrs = extractBaseAttributes(flatten(data["base"] as Tree));
+    const base = buildLeaf(baseAttrs);
     return new Interpretation({ base }) as unknown as Identifier;
   }
   if (parsed["combined_addenda"] !== undefined) {

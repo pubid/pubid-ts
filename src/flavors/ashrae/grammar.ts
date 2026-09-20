@@ -334,8 +334,6 @@ function buildRules(): Record<string, P> {
       ),
   );
 
-  // Dead branch, kept 1:1: the gem never .as-wraps this rule, so its
-  // captures land flat and the builder treats it as a plain Standard.
   rule("interpretation_identifier", () =>
     str("Interpretations")
       .then(ref(rules, "space"))
@@ -384,7 +382,7 @@ function buildRules(): Record<string, P> {
       .then(str("Addenda"))
       .then(ref(rules, "space"))
       .then(ref(rules, "addendum_code"))
-      .then(addendaCodeList(10, 3).as("additional_codes"))
+      .then(addendaCodeList(20, 50).as("additional_codes"))
       .then(ref(rules, "space"))
       .then(toFor())
       .then(optionalCopublisherSpace())
@@ -755,6 +753,26 @@ function buildRules(): Record<string, P> {
           .as("addendum_no_type"),
       )
       .or(
+        // [ANSI/ASHRAE[/ASHE|/IES]] Addendum X to ASHRAE Standard/Guideline
+        // N-YYYY: leading copublisher + publisher-led base.
+        copublisherToken().as("copublisher")
+          .then(ref(rules, "space"))
+          .maybe()
+          .then(str("Addendum"))
+          .then(ref(rules, "space"))
+          .then(ref(rules, "addendum_code"))
+          .then(ref(rules, "space"))
+          .then(toFor())
+          .then(ref(rules, "publisher").as("base_publisher"))
+          .then(ref(rules, "space"))
+          .then(ref(rules, "type").as("type"))
+          .then(ref(rules, "space"))
+          .then(ref(rules, "code"))
+          .then(codeYearMaybe())
+          .then(addendumTail())
+          .as("publisher_base_addendum"),
+      )
+      .or(
         copublisherToken().as("copublisher")
           .then(ref(rules, "space"))
           .maybe()
@@ -827,7 +845,7 @@ function buildRules(): Record<string, P> {
 
   rule("identifier", () =>
     ref(rules, "errata_identifier")
-      .or(ref(rules, "interpretation_identifier"))
+      .or(ref(rules, "interpretation_identifier").as("interpretation_identifier"))
       .or(ref(rules, "combined_addenda_identifier"))
       .or(ref(rules, "year_first_addenda_package_identifier"))
       .or(ref(rules, "addenda_package_identifier"))
