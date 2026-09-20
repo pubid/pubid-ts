@@ -82,6 +82,7 @@ function buildRules(): Record<string, P> {
   rule("edition", () => space.then(str("ED")).then(digits.as("edition")));
 
   rule("fragment_identifier", () =>
+    // Spelled-out keyword form: EN 60038 AMD1 FRAG2.
     ref(rules, "stage_prefix").or(ref(rules, "publisher"))
       .then(space)
       .then(ref(rules, "number"))
@@ -91,7 +92,24 @@ function buildRules(): Record<string, P> {
       .then(digits.as("amendment_number"))
       .then(space)
       .then(str("FRAG"))
-      .then(digits.as("fragment_number")),
+      .then(digits.as("fragment_number"))
+      .or(
+        // Compact supplement notation: the base may carry a year, the
+        // amendment uses the /A1 or +A1 join (with an optional year of
+        // its own) instead of the spelled-out keyword.
+        ref(rules, "stage_prefix").or(ref(rules, "publisher"))
+          .then(space)
+          .then(ref(rules, "number"))
+          .then(ref(rules, "parts"))
+          .then((ref(rules, "year")).maybe())
+          .then(str("/").or(str("+")))
+          .then(str("A"))
+          .then(digits.as("amendment_number"))
+          .then((str(":").then(digits.as("amendment_year"))).maybe())
+          .then(space)
+          .then(str("FRAG"))
+          .then(digits.as("fragment_number")),
+      ),
   );
 
   rule("adopted_org_prefix", () => str("ISO").or(str("IEC"), str("CISPR")));

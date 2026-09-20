@@ -2603,13 +2603,6 @@ ieee.standard.9350:
     Ruby main diverges from the ledger canonical on this row (the testsuite's own verify loop reports a known mismatch); this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-cen_cenelec.fragment.0129:
-  reason: >-
-    "EN 60038/A1 FRAG2" raises ParseFailed; Ruby main rejects it too —
-    the fragment grammar expects the "AMD1 FRAG2" spelling while the
-    ledger canonical prints "/A1 FRAG2" (known reference defect).
-  ref: tests/cen_cenelec/_status.yaml known_mismatches
-
 astm.data_series.0051:
   reason: >-
     "ASTM DS55S-S1-EB" raises ParseFailed; Ruby main rejects it too —

@@ -5,9 +5,9 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// cen_cenelec — 187 corpus rows, a ledger flavor with exactly one known
-// mismatch: the fragment canonical "EN 60038/A1 FRAG2" (the grammar reads
-// the "AMD1 FRAG2" spelling; Ruby main rejects the canonical too).
+// cen_cenelec — 187 corpus rows, CLEAN since pubid#416 taught the
+// reference (and this port) the compact fragment spelling
+// "EN 60038/A1 FRAG2".
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -20,10 +20,10 @@ test("every cen_cenelec corpus case passes through the grammar", () => {
   const pending = PendingRegistry.load("conformance/pending.yaml");
   const report = runFlavor("cen_cenelec", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  assert.equal(report.outcome, "ledger");
+  // Clean since the compact fragment spelling landed (pubid#416).
+  assert.equal(report.outcome, "pass");
   assert.equal(report.cases + report.pending, payloads.cases.length - report.errors);
-  assert.equal(report.pending, 1);
-  // A pending case that passes must be unmarked.
+  assert.equal(report.pending, 0);
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
 

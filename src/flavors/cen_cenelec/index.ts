@@ -214,10 +214,14 @@ class CenBuilder {
     delete baseData["amendment_number"];
     delete baseData["fragment_number"];
 
+    delete baseData["amendment_year"];
     const base = this.buildPlainIdentifier(baseData);
+    // The compact spelling can carry the amendment's own year
+    // (EN 60038/A1:2009 FRAG2); the AMD-keyword spelling cannot.
     const amendment = new AmendmentClass({
       base,
       number: str(d["amendment_number"]),
+      ...(str(d["amendment_year"]) !== undefined ? { year: str(d["amendment_year"]) } : {}),
     } as unknown as Record<string, unknown>);
     return new FragmentClass({
       base: amendment,
