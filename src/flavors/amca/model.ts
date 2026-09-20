@@ -15,12 +15,6 @@ interface TypeMeta {
   short: string | null;
 }
 
-// The URN's type segment is the Ruby Hash#to_s of the class type
-// metadata, downcased — reproduced verbatim (quotes, braces, nil).
-function urnTypeSegment(meta: TypeMeta): string {
-  return `{key: :${meta.key}, title: "${meta.title.toLowerCase()}", short: ${meta.short === null ? "nil" : `"${meta.short.toLowerCase()}"`}}`;
-}
-
 const BASE_ATTRS: AttributeTable = {
   publisher: { type: "string", default: "AMCA" },
   copublisher: { type: "string" },
@@ -56,38 +50,41 @@ export abstract class AmcaIdentifier extends BaseIdentifier {
   abstract typeMeta(): TypeMeta;
 
   render(): string {
-    return renderBase(this);
+    return renderBase(this as unknown as Numbered);
   }
 }
 
-function renderBase(id: AmcaIdentifier & { number?: string }): string {
-  const parts: string[] = [];
-  if (id.copublisher !== undefined) parts.push(id.copublisher);
-  parts.push(id.typeMeta().title);
-  parts.push(id.number ?? "");
-  if (id.year !== undefined) parts.push(`-${id.year}`);
+type Numbered = AmcaIdentifier & { readonly number: string | undefined };
 
-  let result = parts.filter((p) => p !== "").join(" ");
-
-  if (id.copublisher?.includes("/") === true && id.year !== undefined) {
-    result = `${id.copublisher} ${id.typeMeta().title} ${id.number}-${id.year}`;
-  }
-
-  if (id.reaffirmed !== undefined) result += ` (${id.reaffirmed})`;
+function renderDocument(id: Numbered, title: string): string {
+  // "AMCA Standard 803-02 (R2008)": the year joins the number with a
+  // bare dash; the reaffirmation prints with the R prefix.
+  let result = [id.copublisher, title, id.number ?? ""].filter((p) => p !== "").join(" ");
+  if (id.year !== undefined) result += `-${id.year}`;
   return result;
 }
 
-class AmcaUrnGenerator extends BaseUrnGenerator<AmcaIdentifier & { number?: string }> {
+function renderBase(id: Numbered): string {
+  let result = renderDocument(id, id.typeMeta().title);
+  if (id.reaffirmed !== undefined) result += ` (R${id.reaffirmed})`;
+  return result;
+}
+
+class AmcaUrnGenerator extends BaseUrnGenerator<Numbered> {
   generate(): string {
     const id = this.identifier;
     const parts = ["urn", "amca"];
     if (id.number !== undefined) parts.push(id.number);
     if (id.year !== undefined) parts.push(id.year);
     if (id.suffix !== undefined) parts.push(id.suffix.toLowerCase());
+    const code = (id as unknown as { interpretation_code?: string }).interpretation_code;
+    if (code !== undefined) parts.push(`interp.${code.toLowerCase()}`);
+    const revision = (id as unknown as { revision?: string }).revision;
+    if (revision !== undefined) parts.push(`rev.${revision}`);
     if (id.reaffirmed !== undefined) parts.push(`reaff.${id.reaffirmed}`);
     if (id.copublisher !== undefined) parts.push(`copub.${id.copublisher.toLowerCase()}`);
     parts[1] = id.publisher !== undefined ? id.publisher.toLowerCase() : "amca";
-    parts.push(urnTypeSegment(id.typeMeta()));
+    parts.push(id.typeMeta().key);
     return parts.join(":");
   }
 }
@@ -136,16 +133,12 @@ export const PublicationClass = (() => {
     }
 
     render(): string {
-      const parts: string[] = [];
-      if (this.copublisher !== undefined) parts.push(this.copublisher);
-      parts.push("Publication");
-      parts.push(this.number ?? "");
-      if (this.year !== undefined) parts.push(`-${this.year}`);
-      if (this.revision !== undefined) parts.push(` (Rev. ${this.revision})`);
-      if (this.reaffirmed !== undefined && this.revision === undefined) {
-        parts.push(` (${this.reaffirmed})`);
-      }
-      return parts.join(" ").replaceAll("  ", " ");
+      // The revision and the reaffirmation are separate optional
+      // groups in the grammar, so either or both can appear.
+      let result = renderDocument(this, "Publication");
+      if (this.revision !== undefined) result += ` (Rev. ${this.revision})`;
+      if (this.reaffirmed !== undefined) result += ` (R${this.reaffirmed})`;
+      return result;
     }
   }
   registerType(Publication as unknown as IdentifierStatic);
@@ -174,16 +167,16 @@ export const InterpretationClass = (() => {
     }
 
     render(): string {
-      const parts: string[] = [];
-      if (this.copublisher !== undefined) parts.push(this.copublisher);
-      parts.push(this.number ?? "");
+      let result = [this.copublisher, this.number ?? ""].filter((p) => p !== "").join(" ");
       if (this.interpretation_code !== undefined) {
-        parts.push(`– ${this.interpretation_code}`);
+        result += ` ${this.interpretation_code} Interp`;
       } else if (this.year !== undefined) {
-        parts.push(`-${this.year}`);
+        result += ` – ${this.year}`;
+      } else {
+        result += " Interp";
       }
-      if (this.suffix !== undefined) parts.push(` ${this.suffix}`);
-      return parts.join(" ").replaceAll("  ", " ");
+      if (this.suffix !== undefined) result += ` ${this.suffix}`;
+      return result;
     }
   }
   registerType(Interpretation as unknown as IdentifierStatic);
