@@ -156,18 +156,33 @@ export abstract class BaseIdentifier {
 
   /** Serialize one attribute's value (component → toWire, nested identifier → toHash, scalars as-is). */
   protected serializeValue(value: unknown): unknown {
-    if (value instanceof BaseIdentifier) return value.toHash();
+    // A nested identifier serializes through the NESTED mapping list: a
+    // class whose top-level wire deletes derived keys (the Ruby reference
+    // drops JointDevelopment's derived publisher/copublisher only on the
+    // public to_hash — lutaml's nested transform reads the accessors and
+    // keeps them) must keep them here.
+    if (value instanceof BaseIdentifier) return value.toHashNested();
     if (value instanceof Component) return value.toWire();
     if (Array.isArray(value)) return value.map((v) => this.serializeValue(v));
     return value;
   }
 
+  /** Nested serialization: same as toHash but with the unfiltered mappings. */
+  toHashNested(): Record<string, unknown> {
+    const ctor = this.constructor as unknown as { mappingsNested?: FieldMapping[] };
+    if (ctor.mappingsNested === undefined) return this.toHash();
+    return this.toHashWith(ctor.mappingsNested);
+  }
+
   toHash(): Record<string, unknown> {
+    return this.toHashWith(this.constructor.mappings);
+  }
+
+  private toHashWith(mappings: readonly FieldMapping[] | undefined): Record<string, unknown> {
     const hash: Record<string, unknown> = { _type: this.constructor.polymorphicName };
     // A flavor's explicit mapping list is a WHITELIST (lutaml key_value):
     // unmapped attributes never serialize — that is how un keeps its
     // runtime `date` out of the hash while the URN still reads it.
-    const mappings = this.constructor.mappings;
     const emitted: [name: string, wire: string, toWire?: FieldMapping["toWire"]][] = mappings
       ? mappings.map((m) => [m.to, m.wire, m.toWire])
       : Object.keys(this.classAttributes()).map((name) => [name, name, undefined]);

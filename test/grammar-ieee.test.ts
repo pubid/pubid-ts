@@ -27,16 +27,15 @@ test("every ieee corpus case passes through the grammar", () => {
     report.cases + report.pending + report.review,
     payloads.cases.length - report.errors,
   );
-  assert.ok(report.cases > 8700);
-  assert.equal(report.pending, 613);
+  assert.ok(report.cases > 9700);
+  // The 22-row residual the pubid reference itself documents
+  // (tests/ieee/_status.yaml, after the printed-form wave + testsuite#20).
+  assert.equal(report.pending, 22);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
-  // The only residual failures are the stale negative fixtures: the Ruby
-  // reference parses every one of them today (verified against pubid main
-  // with the testsuite's own verify loop over _negative.yaml).
-  const nonNegative = report.failures.filter((f) => !f.includes("unexpectedly parsed"));
-  assert.equal(nonNegative.length, 0, nonNegative.slice(0, 10).join("; "));
-  assert.equal(report.failures.length, 155);
+  // No failures: the port matches the reference on every non-residual row,
+  // and the reference's regenerated _negative rows all reject.
+  assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
 });
 
 test("ieee parses open-ended beyond the corpus", () => {

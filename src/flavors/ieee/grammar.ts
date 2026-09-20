@@ -227,6 +227,11 @@ function buildRules(): Record<string, P> {
     (
       comma.or(space).then(monthName().as("month")).then(space).then(R("year_digits").as("year"))
     ).or(
+      // Space-separated bare year after the draft designator
+      // ("IEEE Draft Std P14764/D1 2004, Nov 2004" - the "D1 2004" draft
+      // carries its own year, with the print date still trailing).
+      space.then(R("year_digits").as("year")),
+    ).or(
       comma.or(space).then(R("month_numeric").as("month")).then(space.or(dash)).then(R("year_digits").as("year")),
     ).or(
       (
@@ -532,15 +537,20 @@ function buildRules(): Record<string, P> {
         .or(str("NP"))
         .as("iso_stage");
     const stdNoise = () => (space.then(str("Std"))).maybe();
+    // The dash-year and ", Month YYYY" spellings are the catalogue-PRINTED
+    // joint form; tag them so the builder routes to a Standard. A
+    // dash-joined part is tagged too (printed parts spell the dash).
     const dateClause = () =>
       (
         str(":").then(R("year_digits").as("year"))
       ).or(
         dash.then(R("year_digits").as("year"))
-          .then(dash.then(R("month_numeric").as("month")).maybe()),
+          .then(dash.then(R("month_numeric").as("month")).maybe())
+          .then(str("").as("printed_dash_year")),
       ).or(
         (comma.or(space)).then(monthName().as("month")).then(space)
-          .then(R("year_digits").as("year")),
+          .then(R("year_digits").as("year"))
+          .then(str("").as("printed_month_year")),
       ).maybe();
 
     return (
@@ -553,7 +563,12 @@ function buildRules(): Record<string, P> {
     )
       .then(str("P").maybe())
       .then(digits.as("number"))
-      .then((dot.or(dash)).then(absent(R("year_digits"))).then(digits.as("part")).maybe())
+      .then(
+        (dot.then(absent(R("year_digits"))).then(digits.as("part")))
+          .or(dash.then(str("").as("part_dash")).then(absent(R("year_digits")))
+            .then(digits.as("part")))
+          .maybe(),
+      )
       .then(dateClause())
       .then(
         (
@@ -576,8 +591,6 @@ function buildRules(): Record<string, P> {
       )
       .then(ref(rules, "edition").maybe())
       .then(ref(rules, "revision_suffix").maybe())
-      .then(spaceMaybe())
-      .then(str("(E)").or(str("(F)")).maybe())
       .then(ref(rules, "parenthetical").maybe());
   });
 
@@ -740,8 +753,6 @@ function buildRules(): Record<string, P> {
         (str(",").or(dot)).as("separator").then(spaceMaybe())
           .then(monthName().as("month").then(space).maybe())
           .then(R("aiee_year").as("year"))
-      ).or(
-        (space.then(dash)).as("separator").then(spaceMaybe()).then(R("aiee_year").as("year")),
       ).or(monthName().as("month").then(dash).then(R("aiee_year").as("year"))),
     ),
   );
@@ -849,7 +860,8 @@ function buildRules(): Record<string, P> {
   );
 
   rule("nesc_year_first", () =>
-    digit.repeat(4, 4).as("year")
+    str("IEEE").then(space).then(str("Std")).then(space).maybe()
+      .then(digit.repeat(4, 4).as("year"))
       .then(space)
       .then(
         (
@@ -1028,13 +1040,15 @@ function buildRules(): Record<string, P> {
       .then(
         (
           (
-            str("C").then(digit.repeat(2, 2)).then(dot).then(digit).then(space).then(str("No")).then(dot)
+            str("C").then(digit.repeat(2, 2)).then(dot).then(digit).then(space)
+              .then(str("No").or(str("NO"))).then(dot)
               .then(space).then(match("[0-9.]").repeat(1, Infinity))
               .then(dash.or(str(":"))).then(digit.repeat(2, 2))
           ).or(
             str("C").then(match("[0-9.]").repeat(1, Infinity)).then(dash).then(digit.repeat(2, 2)),
           ).or(
-            str("C").then(digit.repeat(2, 2)).then(dot).then(digit).then(space).then(str("No"))
+            str("C").then(digit.repeat(2, 2)).then(dot).then(digit).then(space)
+              .then(str("No").or(str("NO")))
               .then(dot).then(space).then(match("[0-9.]").repeat(1, Infinity))
               .then(str(":")).then(digit.repeat(2, 2)),
           ).or(
@@ -1093,6 +1107,12 @@ function buildRules(): Record<string, P> {
       str("Draft").then(space).then(str("NESC").or(str("National Electrical Safety Code"))),
     ).or(
       str("National Electrical Safety Code").then(str(",")).then(space).then(str("C2-")),
+    ).or(
+      // Catalogue form: "IEEE Std YYYY NESC …" / "IEEE Std YYYY National
+      // Electrical Safety Code" - must not fall through to the generic
+      // standard grammar, which would read YYYY as a number.
+      str("IEEE").then(space).then(str("Std")).then(space).then(R("year_digits")).then(space)
+        .then(str("NESC").or(str("National Electrical Safety Code"))),
     ).present()
       .then(ref(rules, "nesc_identifier").as("nesc")),
   );
@@ -1142,6 +1162,16 @@ function buildRules(): Record<string, P> {
           .then(ref(rules, "draft").maybe())
           .then(ref(rules, "revision_suffix").maybe())
           .then(ref(rules, "trailing_month_year").maybe())
+          .then(
+            // The ASHRAE joint suffix may also trail a draft+date
+            // ("IEEE P1635/D13, December, 2017/ASHRAE Guideline 21").
+            ref(rules, "ashrae_copub").maybe(),
+          )
+          .then(
+            // A bracketed narrative may sit between the base and a trailing
+            // corrigendum ("IEEE Std 671-1985 [Corrigendum to …]/Cor. 1-2010").
+            ref(rules, "book_nickname").maybe(),
+          )
           .then(ref(rules, "corrigendum").maybe())
           .then(ref(rules, "edition").maybe())
           .then(ref(rules, "parenthetical").maybe())

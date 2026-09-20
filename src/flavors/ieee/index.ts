@@ -105,7 +105,19 @@ class IeeeBuilder {
     if (parsedHash["base"] !== undefined && parsedHash["cor_number"] !== undefined) {
       return this.buildCorrigendumSupplement(parsedHash);
     }
+    // A corrigendum capture that is a bare STRING matched the marker
+    // without its ordinal - never a valid complete parse (the reference
+    // rejects "…Corrigendum/D1").
+    if (typeof parsedHash["corrigendum"] === "string") {
+      throw new ParseFailed("corrigendum marker without ordinal", 0);
+    }
     if (isObj(parsedHash["corrigendum"]) && parsedHash["base"] === undefined) {
+      // A corrigendum marker without its ordinal is not a marker - the
+      // reference never completes such a parse ("…Corrigendum/D1").
+      const cor = asHash(parsedHash["corrigendum"] as Tree);
+      if (cor["cor_number"] === undefined && cor["cor_year"] === undefined) {
+        throw new ParseFailed("corrigendum marker without ordinal", 0);
+      }
       return this.buildFlatCorrigendum(parsedHash);
     }
     if (parsedHash["base"] !== undefined && parsedHash["amd_number"] !== undefined) {
@@ -283,6 +295,13 @@ class IeeeBuilder {
       attributes["edition_month"] = extractValue(parsed["edition_month"]);
     }
 
+    // The historical "No"-prefixed spellings ("IEEE No148, April 1959")
+    // are plain standards - No normalizes to Std so the render prints
+    // "IEEE Std 148" and the stage lookup resolves. AIEE keeps its No.
+    if (typeValue !== undefined && /^No\.?$/.test(typeValue) &&
+        /^IEEE\s/.test(this.originalInput)) {
+      typeValue = "Std";
+    }
     if (typeValue !== undefined) attributes["type"] = typeValue;
 
     const typedStageAbbr = this.determineStageAbbr(typeValue, parsed);
@@ -679,6 +698,68 @@ class IeeeBuilder {
       if (draftVer !== "") attributes["ieee_draft"] = `D${draftVer}`;
     }
 
+    // The catalogue-PRINTED joint form (dash-year / ", Month YYYY" /
+    // date-trailing-the-draft / date-less parenthetical): a Standard
+    // carrying publisher/copublisher renders it as printed; the colon-year
+    // spelling stays the ISO-style JointDevelopment. Stage-WORD drafts
+    // (letters, not a D-number) stay joint - their canonical renders drop
+    // the P and keep the joint spelling.
+    const numericDraft = parsed["draft_version"] !== undefined &&
+      /^\d/.test(extractValue(parsed["draft_version"]) ?? "");
+    if (
+      parsed["iso_published"] !== undefined &&
+      (parsed["printed_dash_year"] !== undefined || parsed["printed_month_year"] !== undefined ||
+        (numericDraft && parsed["draft_month"] !== undefined) ||
+        (parsed["year"] === undefined && parsed["parameters"] !== undefined &&
+          typeof parsed["parameters"] === "object" && !Array.isArray(parsed["parameters"]) &&
+          (parsed["parameters"] as TreeObject)["parenthetical_content"] !== undefined))
+    ) {
+      const sep = parsed["part_dash"] !== undefined ? "-" : ".";
+      const printedCode = [extractValue(parsed["number"]), extractValue(parsed["part"])]
+        .filter((x) => x !== undefined).join(sep);
+      const printedAttrs: Record<string, unknown> = {
+        publisher: attributes["publisher"],
+        copublisher: attributes["copublisher"],
+        typed_stage: locateStage("Std") !== undefined ? new IeeeTypedStage(locateStage("Std")!) : undefined,
+      };
+      let printedDraft = attributes["ieee_draft"] as string | undefined;
+      let finalCode = printedCode;
+      if (parsed["printed_dash_year"] !== undefined && parsed["month"] !== undefined) {
+        // A dash-year-month date glues onto the printed code before any
+        // draft - the render's month slot would lose the printed form.
+        finalCode = `${printedCode}-${attributes["year"]}-${attributes["month"]}`;
+      } else if (parsed["printed_dash_year"] !== undefined) {
+        // A bare dash-year is the identity year - an attribute.
+        printedAttrs["year"] = attributes["year"];
+      } else if (parsed["printed_month_year"] !== undefined) {
+        printedAttrs["year"] = attributes["year"];
+        printedAttrs["month"] = attributes["month"];
+      } else if (parsed["draft_month"] !== undefined) {
+        // The date trails the draft itself; keep it inside the draft so
+        // the code stays date-less.
+        printedDraft = `${printedDraft}, ${extractValue(parsed["draft_month"])} ${extractValue(parsed["draft_year"])}`;
+      }
+      const codeObj = IeeeCode.parse(finalCode);
+      if (codeObj !== undefined) {
+        printedAttrs["number"] = codeObj.number;
+        if (codeObj.prefix !== undefined) printedAttrs["prefix"] = codeObj.prefix;
+        if (codeObj.parts.length > 0) printedAttrs["parts"] = codeObj.parts;
+        if (codeObj.originalSeparator !== undefined) printedAttrs["separator"] = codeObj.originalSeparator;
+      }
+      if (printedDraft !== undefined) printedAttrs["draft"] = printedDraft;
+      if (attributes["edition"] !== undefined) printedAttrs["edition"] = attributes["edition"];
+      if (attributes["edition_month"] !== undefined) printedAttrs["edition_month"] = attributes["edition_month"];
+      const params = parsed["parameters"] as TreeObject | undefined;
+      if (params !== undefined && typeof params === "object" && !Array.isArray(params) &&
+          params["parenthetical_content"] !== undefined) {
+        printedAttrs["parenthetical_content"] = extractValue(params["parenthetical_content"]);
+      }
+      for (const k of Object.keys(printedAttrs)) {
+        if (printedAttrs[k] === undefined) delete printedAttrs[k];
+      }
+      return new StandardClass(printedAttrs as unknown as Record<string, unknown>) as unknown as Identifier;
+    }
+
     if (parsed["iso_stage"] !== undefined) {
       attributes["lead_party"] = "ISO";
       const stageAbbr = extractValue(parsed["iso_stage"]);
@@ -766,7 +847,10 @@ class IeeeBuilder {
 
   buildCsaDualPublished(parsed: TreeObject): Identifier {
     const ieeeId = this.buildSingleIdentifier(asHash(parsed["ieee_portion"] as Tree), false) as IeeeIdentifier;
-    const csaString = extractValue(parsed["csa_portion"]) ?? "";
+    // The CSA portion normalizes "No." to the catalogue's "NO." spelling
+    // (the Ruby CSA component uppercases it) so every alias renders the
+    // same canonical form.
+    const csaString = (extractValue(parsed["csa_portion"]) ?? "").replace(/\bNo\./, "NO.");
     return new CsaDualPublishedClass({
       ieee_identifier: ieeeId,
       csa_string: csaString,
@@ -985,6 +1069,21 @@ function ieeeParseSingle(input: string): Identifier {
   return builder.build(tree);
 }
 
+// The aiee_simple fallback parses WITHOUT the legacy update-codes table -
+// the Ruby reference routes "AIEE …" to the AIEE sub-parser only, so an
+// update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
+// a line parse that the reference rejects.
+function ieeeParseSingleNoCodes(input: string): Identifier {
+  const tree = parseGrammar(ieeeGrammar, preprocessIeee(input));
+  const builder = new IeeeBuilder();
+  builder.originalInput = input;
+  return builder.build(tree);
+}
+
+// The aiee_simple fallback parses WITHOUT the legacy update-codes table -
+// the Ruby reference routes "AIEE …" to the AIEE sub-parser only, so an
+// update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
+// a line parse that the reference rejects.
 function parseAieeDirect(input: string): Identifier {
   const builder = new IeeeBuilder();
   builder.originalInput = input;
@@ -1048,11 +1147,17 @@ function buildAdopted(parts: string[]): Identifier {
   } as unknown as Record<string, unknown>) as unknown as Identifier;
 }
 
+// A sentinel for "the reference rejects this line outright" - distinct from
+// ParseFailed so ieeeParse's blanket retry (load-bearing for other forms)
+// does not resurrect it.
+class RejectedOutright extends Error {}
+
 export function ieeeParse(input: string): Identifier {
   try {
     return ieeeParseDispatched(input);
   } catch (e) {
-    if (e instanceof ParseFailed) return ieeeParseSingle(input);
+    if (e instanceof ParseFailed && !(e instanceof RejectedOutright)) return ieeeParseSingle(input);
+    if (e instanceof RejectedOutright) throw new ParseFailed(e.message, 0);
     throw e;
   }
 }
@@ -1067,7 +1172,14 @@ function ieeeParseDispatched(input: string): Identifier {
       try {
         return parseAieeDirect(result.input);
       } catch {
-        return ieeeParseSingle(input);
+        // Ruby: Aiee::Identifier.parse with no retry - an update-codes
+        // rewrite must not make an AIEE-form line parse that the
+        // reference rejects ("AIEE Nos 72 and 73 - 1932").
+        try {
+          return ieeeParseSingleNoCodes(input);
+        } catch {
+          throw new RejectedOutright(input);
+        }
       }
     case "iec_ieee_copublished":
     case "dual_semicolon":
