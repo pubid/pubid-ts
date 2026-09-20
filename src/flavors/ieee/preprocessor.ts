@@ -320,7 +320,10 @@ function normalizeJointStageSpellings(input: string): string {
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/${stage} (\\d{4})\\b`), "$1$3 $2-$4");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num} ${stage}${tail}`), "$1$3 $2$4");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num} ${stage} (D\\d+)\\b`), "$1$3 $2/$4");
-  cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/ ?${stage}(-\\d{4}(?:-\\d\\d)?)`), "$1$3 $2$4");
+  // The dash-date must be a plausible year - a 4-digit monthcode (YYMM,
+  // e.g. "…/CD2-1410" = October 2014) is a DRAFT designator, not a
+  // dash-date, and rewriting it onto the number breaks the parse.
+  cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/ ?${stage}(-(?:19|20)\\d\\d(?:-\\d\\d)?)`), "$1$3 $2$4");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${stage} ${num}/? ?(D\\d+)\\b`), "$1$2 $3/$4");
   return cleaned;
 }
@@ -446,16 +449,6 @@ export function preprocessIeee(input: string): string {
     "$1 (ANSI $2)",
   );
   cleaned = cleaned.replace(/(ISO\/IEC\s+TR)(\d)/g, "$1 $2");
-
-  {
-    const m = /AIEE\s+Nos\s+(\d+)\s+and\s+(\d+)\s+-\s+(\d{4})/.exec(cleaned);
-    if (m !== null) {
-      cleaned = cleaned.replace(
-        /AIEE\s+Nos\s+(\d+)\s+and\s+(\d+)\s+-\s+(\d{4})/,
-        `AIEE No ${m[1]}-${m[3]} and AIEE No ${m[2]}-${m[3]}`,
-      );
-    }
-  }
 
   cleaned = cleaned.replace(/\bStad\b/g, "Std");
   cleaned = cleaned.replace(/\b(IEEE|ANSI|AIEE)\s+std\b/g, "$1 Std");

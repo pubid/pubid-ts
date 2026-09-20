@@ -520,8 +520,14 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
 
   const codeObj = id.codeObj;
   const draftObj = id.draftObject();
+  // An exactly-IEC/IEEE co-published reference drops its comma project
+  // dates (catalogue metadata, not identity); wider sets and
+  // space-separated dates print as spelled.
+  const iecIeeOnly = id.publisher === "IEC" && JSON.stringify(id.copublisher) === '["IEEE"]';
   if (codeObj !== undefined) {
     let result = codeObj.render();
+    // A draft-carrying ISO-led joint reference prints P-less.
+    if (id.publisher === "ISO" && draftObj !== undefined) result = result.replace(/^P/, "");
     if (stageObj?.projectStatus === true && shouldRenderType && !result.startsWith("P")) {
       result = `P${result}`;
     }
@@ -530,7 +536,18 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     }
     if (id.revision !== undefined) result += `Rev${id.revision}`;
     if (draftObj !== undefined) {
-      result += id.space_before_draft === true ? ` ${draftObj.render()}` : draftObj.render();
+      let printed = draftObj.render();
+      if (iecIeeOnly) {
+        printed = printed.split(", ")[0]!;
+      } else if (id.publisher === "IEEE" && (id.draft_status ?? "") === "") {
+        // The long comma form for dated project drafts; the
+        // unapproved-draft keeps its pinned single-comma form.
+        printed = printed.replace(/, ([A-Z][a-z]+) (\d{4})$/, ", $1, $2");
+      }
+      // A space-separated draft year with no print date trailing is the
+      // dash form ("…/D1-2006").
+      printed = printed.replace(/^(D\d+) (\d{4})$/, "$1-$2");
+      result += id.space_before_draft === true ? ` ${printed}` : printed;
     }
     if (id.interpretation === true) result += "/INT";
     if (id.ashrae_number !== undefined) {
@@ -554,7 +571,7 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
 
   let result = parts.join(" ");
 
-  if (id.month !== undefined) {
+  if (id.month !== undefined && !iecIeeOnly) {
     result += `, ${id.month}`;
     if (id.day !== undefined) result += ` ${id.day}`;
     if (id.year !== undefined && id.edition === undefined) result += ` ${id.year}`;
@@ -636,13 +653,21 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
       first !== undefined && second !== undefined
         ? [first.publisher, second.publisher]
         : undefined;
-    const wrapped = (self["base"] ?? single) as IeeeIdentifier | undefined;
-    const id = wrapped ?? this.identifier;
-    const names = derived ?? (Array.isArray(id.publisher) ? id.publisher : [id.publisher]);
+    // The Ruby reference reads the publisher through the wrapper (an
+    // adopted IRE id namespaces "ire") but the copublisher list RAW off
+    // this identifier: an amendment over a joint base carries publisher
+    // "ISO" and no copublishers of its own, so its URN namespace is
+    // "iso", not the base's joint slug.
+    const wrapped = ((self["base"] as IeeeIdentifier | undefined) ?? single) as IeeeIdentifier | undefined;
+    const pubSource = derived !== undefined || wrapped === undefined
+      ? this.identifier
+      : wrapped;
+    const names = derived ?? (Array.isArray(pubSource.publisher) ? pubSource.publisher : [pubSource.publisher]);
     const cleaned = names.map((p) => String(p).toLowerCase()).filter((p) => p !== "");
     let pub = cleaned.length === 0 ? "ieee" : cleaned.join("-");
-    if (id.copublisher !== undefined && id.copublisher.length > 0) {
-      pub = [pub, ...id.copublisher.map((c) => String(c).toLowerCase())].join("-");
+    const rawCopub = this.identifier.copublisher;
+    if (rawCopub !== undefined && rawCopub.length > 0) {
+      pub = [pub, ...rawCopub.map((c) => String(c).toLowerCase())].join("-");
     }
     return pub;
   }
@@ -750,6 +775,15 @@ function ieeeClass(
       return opts.wireDelete === undefined
         ? base
         : base.filter((m) => !opts.wireDelete!.keys.includes(m.wire));
+    }
+
+    // The UNFILTERED list: nested serialization keeps the derived keys
+    // the top-level wire deletes (mirrors lutaml's nested transform,
+    // which serializes through the reader methods).
+    static get mappingsNested() {
+      return opts.extraMappings === undefined
+        ? parentMappings()
+        : [...parentMappings(), ...opts.extraMappings];
     }
 
     declare readonly number: string | undefined;
@@ -1094,7 +1128,9 @@ export const JointDevelopmentClass = ieeeClass(
       const isoStage = id["iso_stage"] as string | undefined;
       const ieeeDraft = id["ieee_draft"] as string | undefined;
       const codeObj = id.codeObj;
-      if (leadParty === "ISO" && (id.typed_stage !== undefined || isoStage !== undefined)) {
+      // ISO-led renders the ISO format ALWAYS (the stage-less published
+      // form "ISO/IEC/IEEE 12207.2:2020" prints colon-year, no stage).
+      if (leadParty === "ISO") {
         const parts: string[] = [];
         if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
         if (id.typed_stage !== undefined) {
