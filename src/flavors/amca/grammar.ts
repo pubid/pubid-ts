@@ -60,9 +60,9 @@ function buildRules(): Record<string, P> {
   rule("revision", () =>
     ref(rules, "lparen").then(str("Rev")).then(ref(rules, "dot").maybe())
       .then(ref(rules, "space"))
-      .then(ref(rules, "digits").as("revision_year"))
-      .then(ref(rules, "dash"))
-      .then(ref(rules, "digits"))
+      .then(
+        ref(rules, "digits").then(ref(rules, "dash")).then(ref(rules, "digits")).as("revision"),
+      )
       .then(ref(rules, "rparen")),
   );
 
