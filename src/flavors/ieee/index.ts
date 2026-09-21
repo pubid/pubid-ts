@@ -164,6 +164,10 @@ class IeeeBuilder {
         if (codeObj?.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
         if (codeObj !== undefined && codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
         if (codeObj?.originalSeparator !== undefined) attributes["separator"] = codeObj.originalSeparator;
+        // P = project (the document is a draft): the marker is
+        // identity-bearing, so stripping the letter must not strip the
+        // fact (docs/IEEE-DRAFT-STAGES.md §1.1).
+        attributes["project_marker"] = true;
       }
     }
     delete attributes["__code"];
@@ -343,10 +347,22 @@ class IeeeBuilder {
   }
 
   determineStageAbbr(typeValue: string | undefined, parsed: TreeObject): string | undefined {
+    // An explicit joint stage on the draft ("=DFDIS.3") IS the stage —
+    // it outranks the ordinal ladder, which classifies IEEE-internal
+    // drafts only (docs/IEEE-DRAFT-STAGES.md §1.3).
     if (parsed["draft"] !== undefined) {
       let draftData = parsed["draft"] as Tree;
       if (Array.isArray(draftData)) {
         draftData = mergeParsedArray(draftData as TreeObject[]);
+      }
+      if (isObj(draftData) && draftData["draft_iso_stage"] !== undefined) {
+        const stage = extractValue(draftData["draft_iso_stage"]) ?? "";
+        // The doubled-D alias ("DFDIS") carries its own draft marker;
+        // the stage is what remains.
+        const rest = stage.slice(1);
+        return stage.startsWith("D") && ["PWI", "NP", "WD", "CD", "CDV", "DIS", "FDIS"].includes(rest)
+          ? rest
+          : stage;
       }
       if (isObj(draftData) && draftData["draft_version"] !== undefined) {
         const dv = draftData["draft_version"];
@@ -386,6 +402,8 @@ class IeeeBuilder {
 
     let version: string | undefined;
     let revision: string | undefined;
+    let isoStage: string | undefined;
+    let isoIteration: string | undefined;
     let month: string | undefined;
     let year: string | undefined;
     let day: string | undefined;
@@ -398,6 +416,8 @@ class IeeeBuilder {
         if (version !== undefined) version = version.replace(/^-/, "");
       }
       revision = extractValue(draftData["revision"]);
+      isoStage = extractValue(draftData["draft_iso_stage"]);
+      isoIteration = extractValue(draftData["draft_iso_iteration"]);
       month = extractValue(draftData["month"]);
       year = extractValue(draftData["year"]);
       day = extractValue(draftData["day"]);
@@ -415,10 +435,12 @@ class IeeeBuilder {
       version = extractValue(draftData);
     }
 
-    if (version !== undefined) {
+    if (version !== undefined || (isObj(draftData) && draftData["draft_iso_stage"] !== undefined)) {
       const draftObj = new IeeeDraft({
         version,
         revision,
+        iso_stage: isoStage,
+        iso_iteration: isoIteration,
         month,
         year,
         day,
@@ -667,6 +689,10 @@ class IeeeBuilder {
     if (codeStr !== undefined && codeParts.length > 0) {
       codeStr += `.${codeParts.join(".")}`;
     }
+    // P = project (a draft): identity-bearing, preserved as spelled.
+    if (parsed["project_marker"] !== undefined && codeStr !== undefined) {
+      codeStr = `P${codeStr}`;
+    }
     if (codeStr !== undefined) {
       const codeObj = IeeeCode.parse(codeStr);
       if (codeObj !== undefined) {
@@ -698,6 +724,25 @@ class IeeeBuilder {
       if (draftVer !== "") attributes["ieee_draft"] = `D${draftVer}`;
     }
 
+    // The joint stage-draft clause (docs/IEEE-DRAFT-STAGES.md §1.3):
+    // variant 1's compound tail composes onto the IEEE ordinal
+    // ("D5=DIS.3"); variant 1b is the ordinal-less stage draft whose
+    // date rides inside the designator ("D=CDV:2020"). The doubled-D
+    // alias spelling echoes as spelled.
+    if (parsed["draft_iso_stage"] !== undefined) {
+      const stageText = `${extractValue(parsed["draft_stage_d"]) ?? ""}${extractValue(parsed["draft_iso_stage"]) ?? ""}`;
+      let jointDraft = parsed["draft_version"] !== undefined
+        ? `D${(extractValue(parsed["draft_version"]) ?? "").replace(/^D/, "")}=${stageText}`
+        : `D=${stageText}`;
+      if (parsed["draft_iso_iteration"] !== undefined) {
+        jointDraft += `.${extractValue(parsed["draft_iso_iteration"])}`;
+      }
+      if (parsed["draft_stage_year"] !== undefined) {
+        jointDraft += `:${extractValue(parsed["draft_stage_year"])}`;
+      }
+      attributes["ieee_draft"] = jointDraft;
+    }
+
     // The catalogue-PRINTED joint form (dash-year / ", Month YYYY" /
     // date-trailing-the-draft / date-less parenthetical): a Standard
     // carrying publisher/copublisher renders it as printed; the colon-year
@@ -715,8 +760,10 @@ class IeeeBuilder {
           (parsed["parameters"] as TreeObject)["parenthetical_content"] !== undefined))
     ) {
       const sep = parsed["part_dash"] !== undefined ? "-" : ".";
-      const printedCode = [extractValue(parsed["number"]), extractValue(parsed["part"])]
+      let printedCode = [extractValue(parsed["number"]), extractValue(parsed["part"])]
         .filter((x) => x !== undefined).join(sep);
+      // P = project: the marker is identity, preserved as spelled.
+      if (parsed["project_marker"] !== undefined) printedCode = `P${printedCode}`;
       const printedAttrs: Record<string, unknown> = {
         publisher: attributes["publisher"],
         copublisher: attributes["copublisher"],

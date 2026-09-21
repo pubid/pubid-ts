@@ -150,6 +150,8 @@ const DRAFT_MONTH_NAMES: Record<string, string> = {
 export class IeeeDraft {
   readonly version: string;
   readonly revision: string | undefined;
+  readonly isoStage: string | undefined;
+  readonly isoIteration: string | undefined;
   readonly year: string | undefined;
   readonly month: string | undefined;
   readonly day: string | undefined;
@@ -162,6 +164,8 @@ export class IeeeDraft {
     this.commaBeforeMonthSet = "comma_before_month" in attrs;
     this.version = String(attrs["version"] ?? "");
     this.revision = attrs["revision"] as string | undefined;
+    this.isoStage = attrs["iso_stage"] as string | undefined;
+    this.isoIteration = attrs["iso_iteration"] as string | undefined;
     this.year = attrs["year"] as string | undefined;
     this.originalMonth = attrs["month"] as string | undefined;
     this.month = attrs["month"] !== undefined
@@ -178,6 +182,20 @@ export class IeeeDraft {
     else if (body.startsWith("/")) body = body.slice(1);
     else if (body.startsWith("D") && body.length > 1) body = body.slice(1);
 
+    // The compound stage suffix (docs/IEEE-DRAFT-STAGES.md §1.3):
+    // "=DIS.3" is canonical - D (draft) = DIS (the stage), iteration 3.
+    // "=DDIS.3", "=DDIS3", "=DDIS-3" (the stage echoed with its own D)
+    // are accepted aliases. Captures [stage, iteration].
+    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(?:[.-]?(\d+))?$/;
+    let isoStage: string | undefined;
+    let isoIteration: string | undefined;
+    const cm = compound.exec(body);
+    if (cm !== null) {
+      isoStage = cm[1];
+      isoIteration = cm[2];
+      body = body.slice(0, cm.index);
+    }
+
     const monthAlt = Object.keys(DRAFT_MONTH_NAMES)
       .sort((a, b) => b.length - a.length)
       .map((m) => `${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.?`)
@@ -186,18 +204,26 @@ export class IeeeDraft {
       `(?:(, | )(${monthAlt})(?: (\\d{1,2}))?(?:, | )| )((?:19|20)\\d{2}[a-z]{0,2})$`,
     );
     const m = suffix.exec(body);
-    if (m === null) return new IeeeDraft({ version: body });
+    if (m === null) {
+      return new IeeeDraft({ version: body, iso_stage: isoStage, iso_iteration: isoIteration });
+    }
     return new IeeeDraft({
       version: body.slice(0, m.index),
       month: m[2],
       day: m[3],
       year: m[4],
       comma_before_month: m[1] === ", ",
+      iso_stage: isoStage,
+      iso_iteration: isoIteration,
     });
   }
 
   render(): string {
     let result = `/D${this.version}`;
+    if (this.isoStage !== undefined) result += `=${this.isoStage}`;
+    if (this.isoStage !== undefined && this.isoIteration !== undefined) {
+      result += `.${this.isoIteration}`;
+    }
     if (this.revision !== undefined) result += `.${this.revision}`;
     if (this.year !== undefined) {
       const displayMonth = this.originalMonth;
@@ -526,9 +552,16 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
   const iecIeeOnly = id.publisher === "IEC" && JSON.stringify(id.copublisher) === '["IEEE"]';
   if (codeObj !== undefined) {
     let result = codeObj.render();
-    // A draft-carrying ISO-led joint reference prints P-less.
-    if (id.publisher === "ISO" && draftObj !== undefined) result = result.replace(/^P/, "");
-    if (stageObj?.projectStatus === true && shouldRenderType && !result.startsWith("P")) {
+    // Prepend P if this is a project AND code doesn't already have P.
+    // A recorded project marker (the source spelled the P on a
+    // non-IEEE-led publisher) prints regardless of the publisher.
+    if (
+      (stageObj?.projectStatus === true && shouldRenderType ||
+        (id.constructor as { polymorphicName: string }).polymorphicName ===
+          "pubid:ieee:project-draft-identifier" &&
+          (id as unknown as Record<string, unknown>)["project_marker"] === true) &&
+      !result.startsWith("P")
+    ) {
       result = `P${result}`;
     }
     if (id.year !== undefined && draftObj === undefined && id.edition === undefined && id.month === undefined) {
@@ -642,6 +675,14 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
   }
 
   protected publisherComponent(): string {
+    // The IEC/IEEE co-published pair is definitional to the class and
+    // was previously lost ("urn:ieee:ieee" — no number, no draft).
+    if (
+      (this.identifier.constructor as { polymorphicName: string }).polymorphicName ===
+      "pubid:ieee:iec-ieee-copublished"
+    ) {
+      return "iec-ieee";
+    }
     // Supplements delegate #publisher/#copublisher to their base (Ruby
     // SupplementIdentifier); DualPublished derives publisher from BOTH
     // members; MultiNumbered derives it from its primary.
@@ -673,12 +714,35 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
   }
 
   protected typeComponent(): string | undefined {
+    // A joint stage draft carries the stage in its draft clause and the
+    // project P inside the code — a separate type segment would
+    // duplicate both.
+    const jointDraft = (this.identifier as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
+    if (jointDraft !== undefined && jointDraft.startsWith("D=")) return undefined;
     const type = this.identifier.type;
     if (type === undefined || type.trim() === "" || type === "Std") return undefined;
     return type.toLowerCase().replaceAll(" ", ".");
   }
 
   protected codeComponent(): string | undefined {
+    const id = this.identifier;
+    // The co-published code is number+parts+separators (no year — its
+    // own segment), e.g. "61886-1".
+    if (
+      (id.constructor as { polymorphicName: string }).polymorphicName ===
+      "pubid:ieee:iec-ieee-copublished"
+    ) {
+      const self = id as unknown as Record<string, unknown>;
+      const number = self["number"] as string | undefined;
+      if (number === undefined || number === "") return undefined;
+      const parts = (self["parts"] as string[] | undefined) ?? [];
+      const separators = (self["separators"] as string[] | undefined) ?? [];
+      let code = number;
+      separators.forEach((sep, i) => {
+        code += `${sep}${parts[i] ?? ""}`;
+      });
+      return code;
+    }
     // Wrappers delegate code_obj to the identifier they wrap (Ruby
     // AdoptedStandard/CsaDualPublished/MultiNumberedIdentifier).
     const self = this.identifier as unknown as Record<string, unknown>;
@@ -700,6 +764,18 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
   }
 
   protected draftComponent(): string | undefined {
+    // The joint stage draft's stage rides in its ieee_draft clause
+    // ("D=CDV[:2020]"), emitted directly as the draft segment.
+    const jointDraft = (this.identifier as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
+    if (jointDraft !== undefined && jointDraft.startsWith("D=")) return `draft.${jointDraft}`;
+    const draftInfo = (this.identifier as unknown as Record<string, unknown>)["draft_info"] as string | undefined;
+    if (
+      draftInfo !== undefined &&
+      (this.identifier.constructor as { polymorphicName: string }).polymorphicName ===
+        "pubid:ieee:iec-ieee-copublished"
+    ) {
+      return draftInfo === "" ? undefined : `draft.${draftInfo}`;
+    }
     const draftObj = this.identifier.draftObject();
     return draftObj === undefined ? undefined : `draft.${draftObj.render()}`;
   }
@@ -880,7 +956,13 @@ export const StandardClass = ieeeClass({ kind: "standard" }, { codeColumns: true
 
 export const ProjectDraftIdentifierClass = ieeeClass(
   { kind: "project-draft-identifier" },
-  { codeColumns: true },
+  {
+    codeColumns: true,
+    extraDefs: {
+      project_marker: { type: "boolean", default: false },
+    },
+    extraMappings: keyValue({ wire: "project_marker", to: "project_marker" }),
+  },
 );
 
 export const SiStandardClass = ieeeClass(
@@ -1130,6 +1212,9 @@ export const JointDevelopmentClass = ieeeClass(
       const codeObj = id.codeObj;
       // ISO-led renders the ISO format ALWAYS (the stage-less published
       // form "ISO/IEC/IEEE 12207.2:2020" prints colon-year, no stage).
+      // IEEE semantics: P = project (a draft); no P = a standard. The
+      // P-state is identity-bearing and prints as spelled - it is never
+      // added or stripped here.
       if (leadParty === "ISO") {
         const parts: string[] = [];
         if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
@@ -1138,7 +1223,7 @@ export const JointDevelopmentClass = ieeeClass(
         } else if (isoStage !== undefined) {
           parts.push(isoStage);
         }
-        let codeStr = codeObj?.render().replace(/^P/, "") ?? "";
+        const codeStr = codeObj?.render() ?? "";
         if (codeStr !== "") parts.push(codeStr);
         let result = parts.join(" ");
         if (id.year !== undefined) result += `:${id.year}`;
@@ -1147,8 +1232,9 @@ export const JointDevelopmentClass = ieeeClass(
       // IEEE format
       const parts: string[] = [];
       if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
-      let codeStr = codeObj?.render().replace(/^P/, "") ?? "";
-      if (id.typed_stage?.projectStatus === true || id.type === "P") codeStr = `P${codeStr}`;
+      // The P-state prints as spelled (P = project draft; no P =
+      // standard). Never added or stripped.
+      let codeStr = codeObj?.render() ?? "";
       if (ieeeDraft !== undefined) codeStr += `/${ieeeDraft}`;
       else if (id.typed_stage?.ieeeDraftEquivalent !== undefined) {
         codeStr += `/${id.typed_stage.ieeeDraftEquivalent}`;

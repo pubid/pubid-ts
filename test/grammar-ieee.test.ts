@@ -5,12 +5,11 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// ieee — 9,358 corpus rows, the largest remaining ledger flavor. The corpus
-// carries 985 recorded known mismatches; against the CURRENT Ruby main the
-// testsuite's own verify loop fails 625 rows, and every one of those
-// reproduces here one-for-one (pended in conformance/pending.yaml). The
-// residual failures are stale _negative.yaml rows the current gem also
-// parses (the fixtures predate the gem's grammar widenings).
+// ieee — the largest ledger flavor. Against the CURRENT Ruby main the
+// testsuite's own verify loop documents the residual alias-family
+// divergences after the stage-draft wave (tests/ieee/_status.yaml); every
+// one of them reproduces here one-for-one (pended in
+// conformance/pending.yaml).
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -28,9 +27,9 @@ test("every ieee corpus case passes through the grammar", () => {
     payloads.cases.length - report.errors,
   );
   assert.ok(report.cases > 9700);
-  // The 22-row residual the pubid reference itself documents
-  // (tests/ieee/_status.yaml, after the printed-form wave + testsuite#20).
-  assert.equal(report.pending, 22);
+  // The 31-row residual the pubid reference itself documents
+  // (tests/ieee/_status.yaml, after the stage-draft wave).
+  assert.equal(report.pending, 31);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -91,4 +90,33 @@ test("ieee rejects non-identifiers", () => {
   assert.throws(() => impl.parse("IEC/IEEE TR"));
   assert.throws(() => impl.parse("IEEE S"));
   assert.throws(() => impl.parse("IEEE Std"));
+});
+
+test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
+  const impl = grammarImplementation("ieee")!;
+  // The ordinal-less stage draft: D = the IEC stage it drafts, its date
+  // riding inside the designator; the URN carries draft.D=<STAGE> and no
+  // type segment (the stage is already the draft clause).
+  const stage = impl.parse("IEC/IEEE P63113/D=CDV:2020");
+  assert.equal(stage.toHuman(), "IEC/IEEE P63113/D=CDV:2020");
+  assert.equal(stage.toUrn(), "urn:ieee:iec-ieee:P63113:draft.D=CDV:2020");
+  // The compound both-systems form: IEEE draft ordinal = the ISO/IEC
+  // stage, with its iteration. "=DDIS.3" (stage echoed with its own D)
+  // is an accepted alias spelling of the canonical "=DIS.3".
+  const compound = impl.parse("IEEE P24748-5/D5=DIS.3");
+  assert.equal(compound.toHuman(), "IEEE P24748-5/D5=DIS.3");
+  assert.equal(compound.toHash().draft, "D5=DIS.3");
+  assert.equal(compound.toHash().stage, "DIS");
+  assert.equal(compound.toHash().project_marker, true);
+  const alias = impl.parse("IEEE P24748-5/D5=DDIS.3");
+  assert.equal(alias.toHuman(), "IEEE P24748-5/D5=DIS.3");
+  // The joint route echoes the doubled-D spelling as spelled.
+  const joint = impl.parse("ISO/IEC/IEEE P26511/D8=DDIS.3");
+  assert.equal(joint.toHuman(), "ISO/IEC/IEEE P26511/D8=DDIS.3");
+  assert.equal(joint.toHash().ieee_draft, "D8=DDIS.3");
+  // P = project (a draft): the marker is identity on an ISO-led
+  // publisher, preserved through the hash and re-rendered.
+  const led = impl.parse("ISO/IEC/IEEE P24774/DIS, July 2020");
+  assert.equal(led.toHuman(), "ISO/IEC/IEEE P24774/DDIS, July 2020");
+  assert.equal(led.toHash().project_marker, true);
 });

@@ -47,6 +47,10 @@ function buildRules(): Record<string, P> {
   const dashMaybe = () => dash.maybe();
   const monthName = () => literalAlternation(MONTHS);
   const absent = (p: P) => p.absent();
+  // The ISO/IEC draft-stage vocabulary of the D= notation
+  // (docs/IEEE-DRAFT-STAGES.md §1.2). Ordered so the longest token wins
+  // ("FDIS" over "DIS").
+  const stageVocab = () => literalAlternation(["FDIS", "CDV", "PWI", "DIS", "WD", "NP", "CD"]);
 
   rule("year_digits", () =>
     str("19").or(str("20")).then(digit.repeat(2, 2)).then(lower.repeat(0, 2)).then(absent(digits)),
@@ -265,6 +269,19 @@ function buildRules(): Record<string, P> {
       ref(rules, "draft_prefix")
         .then(ref(rules, "draft_version").repeat(1, 2))
         .then(dot.then(digits.as("revision")).maybe())
+        .then(
+          // The compound both-systems form (docs/IEEE-DRAFT-STAGES.md
+          // §1.3): "=DDIS.3" - IEEE draft ordinal = draft of the ISO/IEC
+          // stage, with its iteration. The glued "=DDIS3" / "=DDIS-3"
+          // spellings are accepted aliases of "=DDIS.3".
+          str("=")
+            .then(
+              str("D").then(stageVocab().as("draft_iso_stage"))
+                .or(stageVocab().as("draft_iso_stage")),
+            )
+            .then((dot.or(dash)).maybe().then(digits.as("draft_iso_iteration")).maybe())
+            .maybe(),
+        )
         .then(ref(rules, "draft_date").maybe())
     ).as("draft"),
   );
@@ -492,7 +509,9 @@ function buildRules(): Record<string, P> {
   rule("joint_development_ieee_format", () =>
     literalAlternation(["ISO/IEC/IEEE", "ISO/IEEE", "IEC/IEEE", "IEEE/CSA"]).as("joint_publishers")
       .then(space)
-      .then(str("P"))
+      // P = project (the document is a draft): identity-bearing, so it
+      // is captured and preserved, never silently consumed.
+      .then(str("P").as("project_marker"))
       .then(digits.as("number"))
       .then((dot.or(dash)).then(digits.as("part")).maybe())
       .then(
@@ -500,12 +519,36 @@ function buildRules(): Record<string, P> {
           .then(dash.then(digits.as("draft_version")).maybe()).maybe(),
       )
       .then(
-        slash.then(str("D")).then(digits.as("draft_version"))
+        // Variant 1b: the ordinal-less stage draft "D=CDV[:2020]" -
+        // D (draft) = CDV (the IEC stage it drafts). The year rides in
+        // the draft clause (a distinct key, so the builder keeps the
+        // date inside the designator).
+        slash.then(str("D")).then(str("="))
+          .then(stageVocab().as("draft_iso_stage"))
+          .then(str(":").then(R("year_digits").as("draft_stage_year")).maybe())
           .or(
-            comma.then(
-              literalAlternation(["CDV", "FDIS", "CD", "DIS"]).as("iec_stage"),
-            ).then(digits.maybe().as("stage_iteration")),
-          ).maybe(),
+            // Variant 1: /D8 notation (original), with the compound
+            // both-systems suffix "=DDIS.3" (docs/IEEE-DRAFT-STAGES.md
+            // §1.3). The doubled-D spelling is consumed and echoed: the
+            // joint form prints the stage as spelled.
+            slash.then(str("D")).then(digits.as("draft_version"))
+              .then(
+                str("=")
+                  .then(
+                    str("D").as("draft_stage_d").then(stageVocab().as("draft_iso_stage"))
+                      .or(stageVocab().as("draft_iso_stage")),
+                  )
+                  .then((dot.or(dash)).maybe().then(digits.as("draft_iso_iteration")).maybe())
+                  .maybe(),
+              ),
+          )
+          .or(
+            // Variant 2: , CDV1 notation (comma before stage code) —
+            // the stage draft of the named ISO/IEC stage, its iteration
+            comma.then(literalAlternation(["CDV", "FDIS", "CD", "DIS"]).as("iec_stage"))
+              .then(digits.maybe().as("stage_iteration")),
+          )
+          .maybe(),
       )
       .then(ref(rules, "edition").maybe())
       .then(
@@ -561,7 +604,7 @@ function buildRules(): Record<string, P> {
         )
         .or(stagedOnly.as("joint_publishers").then(space).then(isoStage()).then(stdNoise()).then(space))
     )
-      .then(str("P").maybe())
+      .then(str("P").as("project_marker").maybe())
       .then(digits.as("number"))
       .then(
         (dot.then(absent(R("year_digits"))).then(digits.as("part")))
@@ -600,7 +643,7 @@ function buildRules(): Record<string, P> {
       "IEC/IEEE", "IEEE/IEC", "ISO/IEC", "IEEE",
     ]).as("joint_publishers")
       .then(space)
-      .then(str("P").maybe())
+      .then(str("P").as("project_marker").maybe())
       .then(digits.as("number"))
       .then((dot.or(dash)).then(absent(R("year_digits"))).then(digits.as("part")).maybe())
       .then(dot)
