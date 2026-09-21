@@ -3,8 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Manual trigger: push/PR event delivery was down >24h (GitHub-side);
-  # dispatch lets CI run on a branch without waiting on events.
+  # Manual trigger: push/PR event delivery for this repo was down for >24h
+  # (GitHub-side); dispatch lets CI run on a branch without waiting on events.
   workflow_dispatch:
 
 env:
