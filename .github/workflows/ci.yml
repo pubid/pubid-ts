@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Manual trigger: push/PR event delivery was down >24h (GitHub-side);
+  # dispatch lets CI run on a branch without waiting on events.
+  workflow_dispatch:
 
 env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
