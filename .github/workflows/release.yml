@@ -17,7 +17,7 @@ permissions:
 
 env:
   # The corpus-backed tests read the pinned testsuite (same ref as ci.yml).
-  TESTSUITE_REF: 0b36c7c02d02b4fd12ca3971438d828fd87a0cec
+  TESTSUITE_REF: 548b2d11e45534bafb44b5564d11c05e8ef9b3f8
 
 jobs:
   publish:
