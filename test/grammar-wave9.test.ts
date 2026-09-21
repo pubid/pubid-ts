@@ -49,6 +49,35 @@ test("gb parses open-ended beyond the corpus", () => {
   });
 });
 
+test("gb all parts is a wrapper class, not a flag (gem #433)", () => {
+  const impl = grammarImplementation("gb")!;
+  // The all-parts reference wraps the document it parsed; the document
+  // loses its part and its edition in the render, and the URN is the
+  // document's.
+  const all = impl.parse("GB/T 5606.1-2006 (all parts)");
+  assert.deepEqual(all.toHash(), {
+    _type: "pubid:gb:all-parts",
+    identifiers: [
+      {
+        _type: "pubid:gb:standard",
+        publisher: "GB",
+        mandate: "T",
+        number: "5606",
+        part: "1",
+        year: "2006",
+      },
+    ],
+  });
+  assert.equal(all.toHuman(), "GB/T 5606 (all parts)");
+  assert.equal(all.toUrn(), "urn:gb:gb:5606");
+  // The member round-trips through the wrapper's deserialize.
+  const rt = all.fromHash(all.toHash());
+  assert.deepEqual(rt.toHash(), all.toHash());
+  assert.equal(rt.toHuman(), "GB/T 5606 (all parts)");
+  // A plain reference is untouched.
+  assert.equal(impl.parse("GB/T 5606-2006").toHuman(), "GB/T 5606-2006");
+});
+
 test("gb rejects non-identifiers", () => {
   const impl = grammarImplementation("gb")!;
   assert.throws(() => impl.parse("GB"));

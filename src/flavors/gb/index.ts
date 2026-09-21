@@ -73,15 +73,22 @@ export class GbIdentifier extends BaseIdentifier {
     mandate: { type: "string" },
     number: { type: "string" },
     part: { type: "string" },
-    all_parts: { type: "boolean", default: false },
   });
   static mappings = keyValue(
-    { wire: "publisher", to: "publisher" },
+    {
+      wire: "publisher",
+      to: "publisher",
+      // The flat wire form is the Publisher's body scalar; rebuild the
+      // component on deserialize (lutaml coerces it on the Ruby side).
+      fromWire: (hash) => {
+        const value = hash["publisher"];
+        return typeof value === "string" ? new Publisher({ body: value }) : value;
+      },
+    },
     { wire: "mandate", to: "mandate" },
     { wire: "number", to: "number" },
     { wire: "part", to: "part" },
     { wire: "date", to: "date" },
-    { wire: "all_parts", to: "all_parts" },
   );
   // GB's flat-scalar entry: the Publisher serializes as its body scalar.
   static flatScalarComponents = { publisher: "publisher" };
@@ -92,7 +99,6 @@ export class GbIdentifier extends BaseIdentifier {
   declare readonly number: string;
   declare readonly part: string | undefined;
   declare readonly date: PubidDate | undefined;
-  declare readonly all_parts: boolean | undefined;
 
   render(): string {
     let code = this.publisher.body;
@@ -100,16 +106,62 @@ export class GbIdentifier extends BaseIdentifier {
     let numberPortion = this.number;
     if (this.part !== undefined) numberPortion += `.${this.part}`;
     if (this.date !== undefined && this.date.year !== undefined) numberPortion += `-${this.date.year}`;
-    let result = `${code} ${numberPortion}`;
-    if (this.all_parts) result += " (all parts)";
-    return result;
+    return `${code} ${numberPortion}`;
   }
 }
 registerType(GbIdentifier as unknown as IdentifierStatic);
 
+// The document a member names: without its part and its edition (the
+// attributes an all-parts reference ignores).
+function gbDocumentOf(member: GbIdentifier): GbIdentifier {
+  const r = member as unknown as Record<string, unknown>;
+  return new GbIdentifier({
+    publisher: r["publisher"],
+    mandate: r["mandate"],
+    number: r["number"],
+  });
+}
+
+// "GB/T 5606 (all parts)" names every part of one document: the wrapper
+// holds the member identifiers (gem #433 - the mark is a class, not a
+// flag), renders the document plus the suffix, and URNs as the document.
+export class GbAllPartsIdentifier extends BaseIdentifier {
+  static polymorphicName = "pubid:gb:all-parts";
+  static get attributes() {
+    return extendAttributes(BaseIdentifier, {
+      identifiers: { type: GbIdentifier as unknown as IdentifierStatic, collection: true },
+    });
+  }
+  static get mappings() {
+    return [{ wire: "identifiers", to: "identifiers" } as never];
+  }
+
+  declare readonly identifiers: GbIdentifier[];
+
+  render(): string {
+    const first = this.identifiers[0];
+    return `${first === undefined ? "" : gbDocumentOf(first).render()} (all parts)`;
+  }
+
+  toUrn(): string {
+    const first = this.identifiers[0];
+    return gbDocumentOf(first!).toUrn();
+  }
+}
+registerType(GbAllPartsIdentifier as unknown as IdentifierStatic);
+
 class GbBuilder extends BaseBuilder {
   protected defaultIdentifierClass() {
     return GbIdentifier as unknown as IdentifierStatic;
+  }
+
+  build(tree: Record<string, unknown>): BaseIdentifier {
+    const id = super.build(tree);
+    if (tree["all_parts"] === undefined) return id;
+    // "(all parts)" wraps the document it parsed.
+    return new GbAllPartsIdentifier({
+      identifiers: [id as GbIdentifier],
+    }) as unknown as BaseIdentifier;
   }
 
   protected cast(key: string, value: unknown): unknown {
@@ -125,7 +177,8 @@ class GbBuilder extends BaseBuilder {
       return value === undefined || value === null ? null : { date: new PubidDate({ year: String(value) }) };
     }
     if (key === "all_parts") {
-      return { all_parts: String(value) !== "" };
+      // Presence marker only: the wrapper carries the members.
+      return value;
     }
     return value;
   }
