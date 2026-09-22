@@ -119,14 +119,20 @@ export const UPDATE_CODES: UpdateCode[] = [
   { plain: "ANSI/IEEE Std: Outdoor Apparatus Bushings", replacement: "ANSI/IEEE Std 21-1976-11" },
   { plain: "Draft National Electrical Safety Code, January 2016", replacement: "IEEE PC2-2016-01" },
   { plain: "International Standard ISO/IEC 8802-9: 1996(E) ANSI/IEEE Std 802.9, 1996 Edition", replacement: "ISO/IEC/IEEE Std 802.9-1996" },
-  { plain: "ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991", replacement: "ISO/IEC/IEEE 13210-1994" },
+  { plain: "ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991", replacement: "ISO/IEC/IEEE 13210:1994" },
   { plain: "J-STD-016-1995", replacement: "IEEE 016-1995" },
   { plain: "Nuclear EQ Sourcebook and Supplement", replacement: "IEEE 7438946" },
   { plain: "PC37.30.2/D043 Rev 18, May 2015", replacement: "IEEE PC37.30-2/D-043/R-18-2015" },
   { plain: "IEEE/IEC P62582 CD2 proposal, May 2017", replacement: "IEEE/IEC CD2 P62582-2017-05" },
-  { plain: "ISO/IEC/IEEE P16326:201x WD.4a, July 2017", replacement: "ISO/IEC/IEEE P16326/D-4a-2017-07" },
+  { plain: "ISO/IEC/IEEE P16326:201x WD.4a, July 2017", replacement: "ISO/IEC/IEEE P16326/DWD4a, July 2017" },
   { plain: "ISO/IEC/IEEE CD.1 P21839, October 2017", replacement: "ISO/IEC/IEEE CD1 P21839-2017-10" },
-  { plain: "ISO/IEC/IEEE P16326:201x WD5, December 2017", replacement: "ISO/IEC/IEEE P16326/D-5-2017-12" },
+  { plain: "ISO/IEC/IEEE P16326:201x WD5, December 2017", replacement: "ISO/IEC/IEEE P16326/DWD5, December 2017" },
+  // The joint-publisher underscore drafts ("ISO /IEC/IEEE P24774_D1,
+  // February 2020") are the slash spellings ("/D1") of rows the ledger
+  // already pins as project drafts; the underscore form parsed through
+  // the printed-joint family and flipped the classification (pubid#430).
+  { pattern: "\\b(ISO ?\\/ ?IEC ?\\/ ?IEEE|IEC ?\\/ ?IEEE) (P\\d+)_D(\\d+), ([A-Z][a-z]+.?) (\\d{4})\\b", replacement: "\\1 \\2/D\\3, \\4, \\5" },
+  { pattern: "\\b(ISO ?\\/ ?IEC ?\\/ ?IEEE|IEC ?\\/ ?IEEE) (P\\d+)_D(\\d+)\\b", replacement: "\\1 \\2/D\\3" },
   { plain: "IEEE/ISO/IEC P42010.CD1-V1.0, April 2020", replacement: "IEEE/ISO/IEC CD1 P42010-2020-04" },
   { plain: "Unapproved Draft Std ISO/IEC FDIS 15288:2007(E) IEEE P15288/D3,", replacement: "ISO/IEC/IEEE FDIS Std P15288/D-3-2007" },
   { plain: "IS0/IEC/IEEE 8802-11:2012/Amd.5:2015(E) (Adoption of IEEE Std 802.11af-2014)", replacement: "ISO/IEC/IEEE 802.11/Amd5-2012" },
