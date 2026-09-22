@@ -5,246 +5,268 @@
 ---
 # IEEE ledger known mismatches (tests/ieee/_status.yaml): the Ruby
 # reference itself fails these rows today (verify loop output); this port
-# reproduces the same divergences. Regenerated for the rawbib
-# faithful-forms corpus (gem #436): the joint underscore drafts, the
-# glued-WD drafts and the citing-tail colon-year rows now classify
-# faithfully, and the residual below is the documented ledger
-# alias-family divergence.
+# reproduces the same divergences. Regenerated for the double-label
+# corpus (gem #439 + #440): the glued-WD drafts are stage drafts and the
+# '(E) ANSI/IEEE Std' spelling is a double-labeled standard; the residual
+# below is the documented ledger divergence (alias families plus rows
+# whose canonical human the reference itself cannot re-parse).
 ieee.adopted_standard.8930:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.adopted_standard.8931:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.iec_ieee_copublished.0845:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0896:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0903:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0910:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0913:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0915:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0916:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0926:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0928:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0930:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0931:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
+
 ieee.joint_development.0932:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0956:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9248:
+ieee.joint_development.9141:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9257:
+ieee.joint_development.9142:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9283:
+ieee.joint_development.9143:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
+  ref: tests/ieee/_status.yaml known_mismatches
+
+ieee.joint_development.9253:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
+  ref: tests/ieee/_status.yaml known_mismatches
+
+ieee.joint_development.9263:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
+  ref: tests/ieee/_status.yaml known_mismatches
+
+ieee.joint_development.9289:
+  reason: >-
+    Ruby main diverges from the ledger canonical on this row (the testsuite's
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.0902:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.0906:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.0912:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.0922:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.0927:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.1294:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.1432:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.1898:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.project_draft_identifier.3171:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.9323:
+ieee.project_draft_identifier.9328:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.9325:
+ieee.project_draft_identifier.9331:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.9372:
+ieee.project_draft_identifier.9378:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.standard.6934:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.standard.8721:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.standard.8848:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.standard.8850:
   reason: >-
     Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the rawbib faithful-forms
-    wave); this port reproduces the gem's behavior.
+    own verify loop reports a known mismatch after the double-label wave);
+    this port reproduces the gem's behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.neg.base.0029:

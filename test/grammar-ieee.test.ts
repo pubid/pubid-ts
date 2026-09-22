@@ -29,9 +29,9 @@ test("every ieee corpus case passes through the grammar", () => {
   // The re-derived rawbib corpus (gem #436): convergent-spelling dedup
   // shrank the ledger from 10,007 to 9,410 cases.
   assert.ok(report.cases > 9300);
-  // The 34-row residual the pubid reference itself documents
+  // The 37-row residual the pubid reference itself documents
   // (tests/ieee/_status.yaml, after the stage-draft wave).
-  assert.equal(report.pending, 34);
+  assert.equal(report.pending, 37);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -121,4 +121,35 @@ test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
   const led = impl.parse("ISO/IEC/IEEE P24774/DIS, July 2020");
   assert.equal(led.toHuman(), "ISO/IEC/IEEE P24774/DDIS, July 2020");
   assert.equal(led.toHash().project_marker, true);
+});
+
+test("ieee double-label and stage-draft rulings (gem #439/#440)", () => {
+  const impl = grammarImplementation("ieee")!;
+  // The glued-WD drafts are stage drafts: the 201x placeholder year is
+  // replaced by the real year, WD is an ISO/IEC stage whose numeral is
+  // the iteration.
+  const wd = impl.parse("ISO/IEC/IEEE P16326:201x WD5, December 2017");
+  assert.equal(wd.toHuman(), "ISO/IEC/IEEE P16326:2017/D=WD.5");
+  assert.equal(wd.toHash().ieee_draft, "D=WD.5");
+  const wd4a = impl.parse("ISO/IEC/IEEE P16326:201x WD.4a, July 2017");
+  assert.equal(wd4a.toHuman(), "ISO/IEC/IEEE P16326:2017/D=WD.4a");
+  // The "(E) ANSI/IEEE Std" spelling is a double-labeled standard: the
+  // ISO/IEC label and the IEEE label of one document.
+  const dual = impl.parse("ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991");
+  assert.equal(dual.toHuman(), "ISO/IEC 13210:1994 (E) and ANSI/IEEE 1003.3-1991");
+  assert.equal(dual.toHash()._type, "pubid:ieee:dual-published");
+  // The edition marker may sit between year and amendment tail.
+  const amd = impl.parse("ISO/IEC/IEEE 8802.11:2012 (E)/Amd 1-2014");
+  assert.equal(amd.toHuman(), "ISO/IEC/IEEE 8802.11:2012 (E)/Amd 1-2014");
+});
+
+test("oiml dual-published identifiers (gem #441)", () => {
+  const impl = grammarImplementation("oiml")!;
+  const dual = impl.parse("ISO 4064-1:2024|OIML R 49-1:2024");
+  assert.equal(dual.toHuman(), "ISO 4064-1:2024|OIML R 49-1:2024");
+  assert.equal(dual.toUrn(), "urn:oiml:r:49-1:2024");
+  // Either side may print first; the URN is the OIML side's.
+  const flipped = impl.parse("OIML R 49-1:2024|ISO 4064-1:2024");
+  assert.equal(flipped.toHuman(), "OIML R 49-1:2024|ISO 4064-1:2024");
+  assert.equal(flipped.toUrn(), "urn:oiml:r:49-1:2024");
 });

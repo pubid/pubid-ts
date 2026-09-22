@@ -1,6 +1,6 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed } from "../../grammar/engine.js";
-import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import { BaseIdentifier, registerType, resolveType } from "../../model/identifier.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { extendAttributes, keyValue } from "../../model/attribute.js";
 import type { AttributeTable } from "../../model/attribute.js";
@@ -362,6 +362,69 @@ for (const klass of Object.values(KIND_CLASSES)) {
 }
 
 /** ---- builder (lib/pubid/oiml/builder.rb) ---- */
+
+// OIML co-publishes some documents jointly with another SDO (ISO so
+// far); the printed reference carries both identifiers joined by "|":
+// "ISO 4064-1:2024|OIML R 49-1:2024". The URN is the OIML side's.
+export class OimlDualPublished extends OimlBase {
+  static polymorphicName = "pubid:oiml:dual-published";
+  static get attributes() {
+    return extendAttributes(OimlBase, {
+      // "string" keeps objects passing through the scalar coercion
+      // untouched (the ieee AdoptedStandard precedent for cross-flavor
+      // members); the constructor coerces bare hashes via the registry.
+      first: { type: "string" },
+      second: { type: "string" },
+    });
+  }
+  static get mappings() {
+    return [
+      { wire: "first", to: "first" } as never,
+      { wire: "second", to: "second" } as never,
+    ];
+  }
+
+  declare readonly first: BaseIdentifier;
+  declare readonly second: BaseIdentifier;
+
+  constructor(attrs: Record<string, unknown> = {}) {
+    super(attrs);
+    // The members are cross-flavor (the co-publisher's side arrives as a
+    // bare hash with _type); coerce through the registry - the abstract
+    // BaseIdentifier attribute type cannot dispatch polymorphically.
+    const coerceMember = (v: unknown): BaseIdentifier | undefined => {
+      if (v instanceof BaseIdentifier) return v;
+      if (typeof v === "object" && v !== null && "_type" in (v as Record<string, unknown>)) {
+        const klass = resolveType((v as Record<string, unknown>)["_type"] as string);
+        if (klass !== undefined) {
+          return klass.fromHash(v as Record<string, unknown>) as unknown as BaseIdentifier;
+        }
+      }
+      return undefined;
+    };
+    const self = this as unknown as Record<string, unknown>;
+    const f = coerceMember(self["first"]);
+    const s = coerceMember(self["second"]);
+    if (f !== undefined) self["first"] = f;
+    if (s !== undefined) self["second"] = s;
+  }
+
+  render(): string {
+    return `${this.first.toHuman()}|${this.second.toHuman()}`;
+  }
+
+  toUrn(): string {
+    // The URN is the OIML side's, whichever position it prints in.
+    const oimlSide =
+      this.second instanceof OimlBase ? this.second : this.first;
+    return oimlSide.toUrn();
+  }
+
+  root(): BaseIdentifier {
+    return this.second instanceof OimlBase ? this.second : this.first;
+  }
+}
+registerType(OimlDualPublished as unknown as IdentifierStatic);
 
 export function buildOimlIdentifier(tree: Tree): BaseIdentifier {
   if (!isObj(tree)) throw new ParseFailed("OIML: unexpected parse tree", 0);
