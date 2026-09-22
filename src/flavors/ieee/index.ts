@@ -724,6 +724,19 @@ class IeeeBuilder {
       if (draftVer !== "") attributes["ieee_draft"] = `D${draftVer}`;
     }
 
+    // The "(E)" edition marker of an ISO/IEC label rides on the joint
+    // reference as parenthetical_content - either from the trailing
+    // parenthetical slot (the double-label form) or the mid-rule slot
+    // before an amendment tail.
+    const parenthetical = parsed["parameters"];
+    if (parenthetical !== undefined && typeof parenthetical === "object" && !Array.isArray(parenthetical)) {
+      const content = (parenthetical as Record<string, unknown>)["parenthetical_content"];
+      if (content !== undefined) attributes["parenthetical_content"] = extractValue(content);
+    }
+    if (attributes["parenthetical_content"] === undefined && parsed["edition_marker"] !== undefined) {
+      attributes["parenthetical_content"] = extractValue(parsed["edition_marker"]);
+    }
+
     // The joint stage-draft clause (docs/IEEE-DRAFT-STAGES.md §1.3):
     // variant 1's compound tail composes onto the IEEE ordinal
     // ("D5=DIS.3"); variant 1b is the ordinal-less stage draft whose
@@ -1109,7 +1122,15 @@ function copublishedStructured(copublishedNumber: string | undefined): Record<st
 // --- parse orchestration -------------------------------------------------------
 
 function ieeeParseSingle(input: string): Identifier {
-  const cleaned = preprocessIeee(applyUpdateCodes(input));
+  const normalized = applyUpdateCodes(input);
+  // UpdateCodes may introduce the "; " double-label separator (the
+  // ISO/IEC and IEEE labels of one document), but the dispatch ran on
+  // the raw input - re-dispatch so the dual construction sees it.
+  if (normalized !== input && normalized.includes("; ")) {
+    const re = preParse(normalized);
+    if (re.dispatch === "dual_semicolon") return buildDual(re.parts);
+  }
+  const cleaned = preprocessIeee(normalized);
   const tree = parseGrammar(ieeeGrammar, cleaned);
   const builder = new IeeeBuilder();
   builder.originalInput = input;

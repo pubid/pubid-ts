@@ -614,7 +614,26 @@ function buildRules(): Record<string, P> {
       )
       .then(dateClause())
       .then(
+        // The ISO/IEC edition marker may sit between the year and an
+        // amendment/draft tail ("8802.11:2012 (E)/Amd 1-2014").
         (
+          spaceMaybe().then(str("("))
+            .then(match("[^)]").repeat(1, Infinity).as("edition_marker"))
+            .then(str(")"))
+        ).maybe(),
+      )
+      .then(
+        // The stage-draft clause of the ISO-led print: "/D=WD.5" - D
+        // (draft) = the ISO/IEC stage it drafts, with its iteration
+        // (docs/IEEE-DRAFT-STAGES.md §1.2).
+        (
+          slash.then(str("D")).then(str("="))
+            .then(stageVocab().as("draft_iso_stage"))
+            .then(
+              dot.then(digits.then(match("[A-Za-z]").repeat(0, 1)).as("draft_iso_iteration")).maybe(),
+            )
+        )
+        .or(
           slash.then(str("D")).then(dashMaybe())
             .then(match("[0-9.]").repeat(1, Infinity).as("draft_version"))
             .then(
@@ -622,7 +641,7 @@ function buildRules(): Record<string, P> {
                 (comma.or(space)).then(monthName().as("draft_month")).then(space)
                   .then(R("year_digits").as("draft_year"))
               ).or(comma.then(R("year_digits").as("draft_year"))).maybe(),
-            )
+            ),
         ).maybe(),
       )
       .then(
@@ -636,6 +655,22 @@ function buildRules(): Record<string, P> {
       .then(ref(rules, "revision_suffix").maybe())
       .then(ref(rules, "parenthetical").maybe());
   });
+
+  // The stage-less ISO/IEC label with a colon year and the ISO/IEC
+  // edition marker: "ISO/IEC 13210:1994 (E)" - the ISO/IEC portion of a
+  // double-labeled standard. The (E) parenthetical is REQUIRED: without it
+  // this spelling is the ISO flavor's own form and must not be stolen.
+  rule("joint_development_iso_iec_edition", () =>
+    str("ISO/IEC").as("joint_publishers")
+      .then(space)
+      .then(str("").as("iso_published"))
+      .then(str("P").as("project_marker").maybe())
+      .then(digits.as("number"))
+      .then(dot.then(digits.as("part")).maybe())
+      .then(str(":").then(spaceMaybe()).then(R("year_digits").as("year")))
+      .then(spaceMaybe())
+      .then(ref(rules, "parenthetical")),
+  );
 
   rule("joint_development_embedded_stage", () =>
     literalAlternation([
@@ -1175,6 +1210,7 @@ function buildRules(): Record<string, P> {
       .or(ref(rules, "conformance_identifier"))
       .or(ref(rules, "joint_development_ieee_format"))
       .or(ref(rules, "joint_development_iso_format"))
+      .or(ref(rules, "joint_development_iso_iec_edition"))
       .or(ref(rules, "joint_development_embedded_stage"))
       .or(ref(rules, "iec_ieee_copublished"))
       .or(ref(rules, "number_first_identifier"))

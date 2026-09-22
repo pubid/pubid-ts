@@ -119,14 +119,14 @@ export const UPDATE_CODES: UpdateCode[] = [
   { plain: "ANSI/IEEE Std: Outdoor Apparatus Bushings", replacement: "ANSI/IEEE Std 21-1976-11" },
   { plain: "Draft National Electrical Safety Code, January 2016", replacement: "IEEE PC2-2016-01" },
   { plain: "International Standard ISO/IEC 8802-9: 1996(E) ANSI/IEEE Std 802.9, 1996 Edition", replacement: "ISO/IEC/IEEE Std 802.9-1996" },
-  { plain: "ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991", replacement: "ISO/IEC/IEEE 13210:1994" },
+  { plain: "ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991", replacement: "ISO/IEC 13210:1994 (E); ANSI/IEEE Std 1003.3-1991" },
   { plain: "J-STD-016-1995", replacement: "IEEE 016-1995" },
   { plain: "Nuclear EQ Sourcebook and Supplement", replacement: "IEEE 7438946" },
   { plain: "PC37.30.2/D043 Rev 18, May 2015", replacement: "IEEE PC37.30-2/D-043/R-18-2015" },
   { plain: "IEEE/IEC P62582 CD2 proposal, May 2017", replacement: "IEEE/IEC CD2 P62582-2017-05" },
-  { plain: "ISO/IEC/IEEE P16326:201x WD.4a, July 2017", replacement: "ISO/IEC/IEEE P16326/DWD4a, July 2017" },
+  { plain: "ISO/IEC/IEEE P16326:201x WD.4a, July 2017", replacement: "ISO/IEC/IEEE P16326:2017/D=WD.4a" },
   { plain: "ISO/IEC/IEEE CD.1 P21839, October 2017", replacement: "ISO/IEC/IEEE CD1 P21839-2017-10" },
-  { plain: "ISO/IEC/IEEE P16326:201x WD5, December 2017", replacement: "ISO/IEC/IEEE P16326/DWD5, December 2017" },
+  { plain: "ISO/IEC/IEEE P16326:201x WD5, December 2017", replacement: "ISO/IEC/IEEE P16326:2017/D=WD.5" },
   // The joint-publisher underscore drafts ("ISO /IEC/IEEE P24774_D1,
   // February 2020") are the slash spellings ("/D1") of rows the ledger
   // already pins as project drafts; the underscore form parsed through

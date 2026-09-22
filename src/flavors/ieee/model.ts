@@ -1196,12 +1196,14 @@ export const JointDevelopmentClass = ieeeClass(
       lead_party: { type: "string" },
       iso_stage: { type: "string" },
       ieee_draft: { type: "string" },
+      parenthetical_content: { type: "string" },
     },
     extraMappings: keyValue(
       { wire: "publishers", to: "publishers" },
       { wire: "lead_party", to: "lead_party" },
       { wire: "iso_stage", to: "iso_stage" },
       { wire: "ieee_draft", to: "ieee_draft" },
+      { wire: "parenthetical_content", to: "parenthetical_content" },
     ),
     wireDelete: { keys: ["publisher", "copublisher"] },
     render: (id) => {
@@ -1227,6 +1229,15 @@ export const JointDevelopmentClass = ieeeClass(
         if (codeStr !== "") parts.push(codeStr);
         let result = parts.join(" ");
         if (id.year !== undefined) result += `:${id.year}`;
+        // The joint stage-draft clause ("D=WD.5") rides after the year in
+        // the ISO-led print; only the bare language/edition marker ("(E)")
+        // prints - a relationship narrative is metadata, not identity.
+        const jointDraft = (id as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
+        if (jointDraft !== undefined && jointDraft.startsWith("D=")) result += `/${jointDraft}`;
+        const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
+        if (marker !== undefined && /^[A-Z](?:\s*[/&]\s*[A-Z])*$/.test(marker)) {
+          result += ` (${marker})`;
+        }
         return result;
       }
       // IEEE format

@@ -49,7 +49,7 @@ export function registerType(klass: IdentifierStatic): void {
   TYPE_REGISTRY.set(klass.polymorphicName, klass);
 }
 
-function resolveType(type: string): IdentifierStatic | undefined {
+export function resolveType(type: string): IdentifierStatic | undefined {
   return TYPE_REGISTRY.get(type);
 }
 
