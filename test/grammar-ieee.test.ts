@@ -29,9 +29,9 @@ test("every ieee corpus case passes through the grammar", () => {
   // The re-derived rawbib corpus (gem #436): convergent-spelling dedup
   // shrank the ledger from 10,007 to 9,410 cases.
   assert.ok(report.cases > 9300);
-  // The 37-row residual the pubid reference itself documents
+  // The 42-row residual the pubid reference itself documents
   // (tests/ieee/_status.yaml, after the stage-draft wave).
-  assert.equal(report.pending, 37);
+  assert.equal(report.pending, 42);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -141,6 +141,12 @@ test("ieee double-label and stage-draft rulings (gem #439/#440)", () => {
   // The edition marker may sit between year and amendment tail.
   const amd = impl.parse("ISO/IEC/IEEE 8802.11:2012 (E)/Amd 1-2014");
   assert.equal(amd.toHuman(), "ISO/IEC/IEEE 8802.11:2012 (E)/Amd 1-2014");
+  // The 8802 family row keeps its dash-joined part in the ISO/IEC label.
+  const iso8802 = impl.parse(
+    "International Standard ISO/IEC 8802-9: 1996(E) ANSI/IEEE Std 802.9, 1996 Edition",
+  );
+  assert.equal(iso8802.toHuman(), "ISO/IEC 8802-9:1996 (E) and ANSI/IEEE 802.9-1996");
+  assert.equal(iso8802.toHash()._type, "pubid:ieee:dual-published");
 });
 
 test("oiml dual-published identifiers (gem #441)", () => {

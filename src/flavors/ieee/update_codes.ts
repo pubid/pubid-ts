@@ -118,7 +118,7 @@ export const UPDATE_CODES: UpdateCode[] = [
   { plain: "ISO/IEC/IEEE/P16085_DIS, March 2020", replacement: "ISO/IEC/IEEE DIS P16085-2020-03" },
   { plain: "ANSI/IEEE Std: Outdoor Apparatus Bushings", replacement: "ANSI/IEEE Std 21-1976-11" },
   { plain: "Draft National Electrical Safety Code, January 2016", replacement: "IEEE PC2-2016-01" },
-  { plain: "International Standard ISO/IEC 8802-9: 1996(E) ANSI/IEEE Std 802.9, 1996 Edition", replacement: "ISO/IEC/IEEE Std 802.9-1996" },
+  { plain: "International Standard ISO/IEC 8802-9: 1996(E) ANSI/IEEE Std 802.9, 1996 Edition", replacement: "ISO/IEC 8802-9:1996(E); ANSI/IEEE Std 802.9, 1996 Edition" },
   { plain: "ISO/IEC13210: 1994 (E) ANSI/IEEE Std 1003.3-1991", replacement: "ISO/IEC 13210:1994 (E); ANSI/IEEE Std 1003.3-1991" },
   { plain: "J-STD-016-1995", replacement: "IEEE 016-1995" },
   { plain: "Nuclear EQ Sourcebook and Supplement", replacement: "IEEE 7438946" },

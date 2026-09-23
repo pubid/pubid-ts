@@ -666,7 +666,14 @@ function buildRules(): Record<string, P> {
       .then(str("").as("iso_published"))
       .then(str("P").as("project_marker").maybe())
       .then(digits.as("number"))
-      .then(dot.then(digits.as("part")).maybe())
+      // The part may be dot- or dash-joined ("8802-9"); a dash-year is
+      // not a part. A distinct key: the iso-format route's part_dash
+      // prints as a dot in the joint code; only the label keeps its dash.
+      .then(
+        (dot.then(digits.as("part")))
+          .or(dash.then(str("").as("iec_label_dash")).then(absent(R("year_digits"))).then(digits.as("part")))
+          .maybe(),
+      )
       .then(str(":").then(spaceMaybe()).then(R("year_digits").as("year")))
       .then(spaceMaybe())
       .then(ref(rules, "parenthetical")),
