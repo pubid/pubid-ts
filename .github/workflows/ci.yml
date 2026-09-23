@@ -10,7 +10,7 @@ on:
 env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
   # changes always land in pubid (Ruby) PRs first, then this pin bumps.
-  TESTSUITE_REF: 2e8e2d25b772b74a3ebf4e5a2689021b35d652f6
+  TESTSUITE_REF: 879236f20cf237fde2a8ab106bbfcb5994e4dc1f
 
 jobs:
   ci:

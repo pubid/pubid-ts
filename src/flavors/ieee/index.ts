@@ -687,7 +687,10 @@ class IeeeBuilder {
     if (parsed["part"] !== undefined) codeParts.push(extractValue(parsed["part"]) ?? "");
     let codeStr = extractValue(parsed["number"]);
     if (codeStr !== undefined && codeParts.length > 0) {
-      codeStr += `.${codeParts.join(".")}`;
+      // The ISO/IEC label's part may be dash-joined ("8802-9") - keep the
+      // printed separator.
+      const sep = parsed["iec_label_dash"] !== undefined ? "-" : ".";
+      codeStr += `${sep}${codeParts.join(sep)}`;
     }
     // P = project (a draft): identity-bearing, preserved as spelled.
     if (parsed["project_marker"] !== undefined && codeStr !== undefined) {
