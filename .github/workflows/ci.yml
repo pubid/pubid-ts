@@ -13,7 +13,32 @@ env:
   TESTSUITE_REF: 2591d0fd5863cb8e68816ca2eb7e36d44de0ff00
 
 jobs:
-  ci:
+  # The per-flavor corpus loops dominate wall time (ieee alone ~6.5 min
+  # inside one test file), so the files are sharded across parallel
+  # runners instead of running the whole suite in one job.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: pubid/pubid-testsuite
+          ref: ${{ env.TESTSUITE_REF }}
+          path: pubid-testsuite
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: npm ci
+      - run: npx tsc -p tsconfig.json && npx tsc -p tsconfig.test.json
+      - run: node --test --test-shard=${{ matrix.shard }}/4 dist-test/test/*.test.js
+        env:
+          TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+
+  conformance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,11 +49,9 @@ jobs:
           path: pubid-testsuite
       - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
       - run: npm ci
-      - run: npm test
-        env:
-          TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+      - run: npx tsc -p tsconfig.json
       - name: Conformance report (bootstrap; unimplemented flavors report, never gate)
         run: npm run conformance -- $TESTSUITE_DIR conformance/pending.yaml
         working-directory: .
