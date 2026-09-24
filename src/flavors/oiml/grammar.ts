@@ -70,6 +70,7 @@ function buildRules(): Record<string, P> {
       .or(ref(rules, "annex_identifier"))
       .or(ref(rules, "plus_supplement_identifier"))
       .or(ref(rules, "trailing_supplement_identifier"))
+      .or(ref(rules, "cs_identifier"))
       .or(ref(rules, "bulletin_identifier"))
       .or(ref(rules, "base")),
   );
@@ -77,8 +78,10 @@ function buildRules(): Record<string, P> {
   // Publisher - always "OIML"
   rule("publisher", () => str("OIML").as("publisher").then(ref(rules, "space")));
 
-  // Document type - single letter
-  rule("doc_type", () => match("[BDEGRSVX]").as("type").then(ref(rules, "space")));
+  // Document type - single letter. Strict family set: OIML publishes
+  // R D B G E V S documents (the estate grammar's family letters);
+  // any other letter is a rejection, not a flavor.
+  rule("doc_type", () => match("[BDEGRSV]").as("type").then(ref(rules, "space")));
 
   // Bulletin locator - structured YYYY[-II[-SS]]
   rule("bulletin_date", () =>
@@ -186,10 +189,15 @@ function buildRules(): Record<string, P> {
   rule("lang_single", () => match("[EFRXDSCAU]"));
   rule("lang_multi_oiml", () => str("PO").or(str("PT")).or(str("PE")).or(str("SR")));
   rule("lang_multi", () => match("[a-z]").repeat(2, 2));
+  // Full-word language markers as OIML prints them ("(Fra)", "(Eng)"),
+  // three or more letters, any case. Kept verbatim on the identifier;
+  // the URN lowercases.
+  rule("lang_word", () => match("[A-Za-z]").repeat(3));
   rule("language_code", () =>
     ref(rules, "lang_single")
       .then(ref(rules, "slash"), ref(rules, "lang_single"))
       .or(ref(rules, "lang_multi_oiml"))
+      .or(ref(rules, "lang_word"))
       .or(ref(rules, "lang_single"))
       .or(ref(rules, "lang_multi"))
       .as("language"),
@@ -236,7 +244,41 @@ function buildRules(): Record<string, P> {
     ref(rules, "base_without_language")
       .as("base")
       .then(str(" "), str("Amendment").or(str("Errata")).as("trailing_marker"))
-      .then(ref(rules, "language_portion").maybe().as("language")),
+      .then(
+        str(" ").then(ref(rules, "digits").as("number")).maybe(),
+        ref(rules, "language_portion").maybe().as("language"),
+      ),
+  );
+
+  // OIML-CS certification-system documents. Two head spellings
+  // ("OIML-CS" / "OIML CS") and two family-number separators
+  // ("PD-05" / "PD 05"), an "Edition N" instead of a year, and an
+  // optional parenthesized trailing amendment - "(Amendment 1)".
+  rule("cs_identifier", () =>
+    str("OIML")
+      .as("publisher")
+      .then(
+        ref(rules, "dash")
+          .then(str("CS"))
+          .or(str(" ").then(str("CS")))
+          .as("cs_series"),
+      )
+      .then(ref(rules, "space"))
+      .then(str("PD").or(str("OD")).or(str("CID")).as("cs_family"))
+      .then(ref(rules, "dash").or(str(" ")).as("cs_separator"))
+      .then(ref(rules, "digits").as("number"))
+      .then(str(" "), str("Edition"), str(" "), ref(rules, "digits").as("edition"))
+      .then(
+        str(" ")
+          .then(
+            ref(rules, "lparen"),
+            str("Amendment"),
+            str(" "),
+            ref(rules, "digits").as("cs_amendment"),
+            ref(rules, "rparen"),
+          )
+          .maybe(),
+      ),
   );
 
   rule("plus_supplement_identifier", () =>

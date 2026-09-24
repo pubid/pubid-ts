@@ -27,7 +27,8 @@ type OimlKind =
   | "bulletin"
   | "amendment"
   | "errata"
-  | "annex";
+  | "annex"
+  | "certification-system";
 
 const KIND_BY_TYPE: Record<string, OimlKind> = {
   B: "basic-publication",
@@ -41,6 +42,7 @@ const KIND_BY_TYPE: Record<string, OimlKind> = {
 
 const TYPE_STRINGS: Record<string, string> = {
   "basic-publication": "B",
+  "certification-system": "CS",
   document: "D",
   "expert-report": "E",
   guide: "G",
@@ -155,6 +157,40 @@ abstract class OimlSingle extends OimlBase {
   }
 }
 
+/** ---- OIML-CS certification-system documents ---- */
+
+const CS_ATTRS: AttributeTable = {
+  ...SINGLE_ATTRS,
+  family: { type: "string" },
+  amendment: { type: "string" },
+  space_separator: { type: "boolean", default: false },
+} as const;
+
+const CS_MAPPINGS = keyValue(
+  ...Object.keys(CS_ATTRS).map((name) => ({ wire: name, to: name })),
+);
+
+// "OIML-CS PD-05 Edition 6 (Amendment 1)": the number keeps its printed
+// zero padding; the print states an edition instead of a year.
+class OimlCertificationSystem extends OimlSingle {
+  static polymorphicName = "pubid:oiml:certification-system";
+  static attributes = extendAttributes(BaseIdentifier, CS_ATTRS);
+  static mappings = CS_MAPPINGS;
+  declare readonly family: string | undefined;
+  declare readonly amendment: string | undefined;
+  declare readonly space_separator: boolean | undefined;
+
+  render(): string {
+    let result =
+      `${this.publisher}-CS ${this.family}` +
+      `${this.space_separator ? " " : "-"}${this.number} Edition ${this.edition}`;
+    if (this.amendment) result += ` (Amendment ${this.amendment})`;
+    return result;
+  }
+}
+
+registerType(OimlCertificationSystem as unknown as IdentifierStatic);
+
 function oimlSingleClass(kind: OimlKind): IdentifierStatic {
   const isBulletin = kind === "bulletin";
   class OimlSingleIdentifier extends OimlSingle {
@@ -194,6 +230,7 @@ const SUPP_ATTRS: AttributeTable = {
   parsed_format: { type: "string", default: "short" },
   base: { type: OimlSingle as unknown as IdentifierStatic },
   supp_year: { type: "string" },
+  number: { type: "string" },
   trailing: { type: "boolean", default: false },
   joined: { type: "boolean", default: false },
   letter: { type: "string" },
@@ -205,6 +242,7 @@ const SUPP_MAPPINGS = keyValue(
   { wire: "parsed_format", to: "parsed_format" },
   { wire: "base", to: "base" },
   { wire: "year", to: "supp_year" },
+  { wire: "number", to: "number" },
   { wire: "trailing", to: "trailing" },
   { wire: "joined", to: "joined" },
   { wire: "letter", to: "letter" },
@@ -216,6 +254,7 @@ const SUPP_MAPPINGS = keyValue(
 abstract class OimlSupplement extends OimlBase {
   declare readonly base: OimlSingle;
   declare readonly supp_year: string | undefined;
+  declare readonly number: string | undefined;
   declare readonly trailing: boolean | undefined;
   declare readonly joined: boolean | undefined;
   declare readonly letter: string | undefined;
@@ -244,6 +283,7 @@ abstract class OimlSupplement extends OimlBase {
 
     if (this.trailing) {
       let result = `${stripLanguage(this.base.render())} ${this.supplementType()}`;
+      if (this.number) result += ` ${this.number}`;
       if (this.language) result += ` (${this.language})`;
       return result;
     }
@@ -314,6 +354,7 @@ for (const kind of [
 ] as const) {
   KIND_CLASSES[kind] = oimlSingleClass(kind);
 }
+KIND_CLASSES["certification-system"] = OimlCertificationSystem as unknown as IdentifierStatic;
 KIND_CLASSES["amendment"] = oimlSupplementClass("amendment");
 KIND_CLASSES["errata"] = oimlSupplementClass("errata");
 KIND_CLASSES["annex"] = oimlSupplementClass("annex");
@@ -337,6 +378,14 @@ class OimlUrnGenerator extends BaseUrnGenerator<OimlBase> {
       return parts.join(":");
     }
 
+    // Certification-system documents: the family-number pair is the
+    // document identity ("cs:pd-05"); the printed edition and trailing
+    // amendment are print states, not URN segments.
+    if (kind === "certification-system") {
+      const cs = id as unknown as { family?: string; number?: string };
+      return ["urn", "oiml", "cs", `${(cs.family ?? "").toLowerCase()}-${cs.number ?? ""}`].join(":");
+    }
+
     const isSupp = kind === "amendment" || kind === "errata" || kind === "annex";
     const single = (isSupp ? (id as unknown as OimlSupplement).base : (id as unknown as OimlSingle));
     const parts = ["urn", "oiml"];
@@ -346,14 +395,23 @@ class OimlUrnGenerator extends BaseUrnGenerator<OimlBase> {
     // Ruby SupplementIdentifier#code delegates to the wrapped standard.
     const code = single.composedCode();
     if (code) parts.push(code);
+    // The trailing-word form keeps the publication year on the base
+    // ("R 138:2009 Amendment 1"); the supplement itself carries only the
+    // ordinal.
     const year = (id as unknown as { year?: string }).year ??
-      (id as unknown as OimlSupplement).supp_year;
+      (id as unknown as OimlSupplement).supp_year ??
+      (isSupp ? single.year : undefined);
     if (year) parts.push(year);
     const stage = (id as unknown as { stage?: string }).stage;
     if (stage) parts.push(stage.toLowerCase());
     const iteration = (id as unknown as { iteration?: string }).iteration;
     if (iteration) parts.push(iteration);
     if (id.language) parts.push(id.language.toLowerCase());
+    // Ruby's supplement branch appends the ordinal after the language.
+    if (isSupp) {
+      const ordinal = (id as unknown as { number?: string }).number;
+      if (ordinal) parts.push(ordinal);
+    }
     return parts.join(":");
   }
 }
@@ -429,9 +487,32 @@ registerType(OimlDualPublished as unknown as IdentifierStatic);
 export function buildOimlIdentifier(tree: Tree): BaseIdentifier {
   if (!isObj(tree)) throw new ParseFailed("OIML: unexpected parse tree", 0);
 
+  if (tree["cs_series"] !== undefined) return buildCs(tree);
   if (tree["amd_marker"] !== undefined) return buildShortAmendment(tree);
   if (tree["base"] !== undefined) return buildSupplement(tree);
   return buildBaseDocument(tree);
+}
+
+// OIML-CS documents: family (PD/OD/CID), zero-padded number, the
+// printed "Edition N", and an optional parenthesized trailing
+// amendment. The family-number separator is a spelling flag.
+function buildCs(tree: TreeObject): BaseIdentifier {
+  const attrs: Record<string, unknown> = {
+    publisher: str(tree["publisher"]) ?? "OIML",
+    parsed_format: "short",
+  };
+  const family = str(tree["cs_family"]);
+  if (family !== undefined) attrs["family"] = family;
+  const number = str(tree["number"]);
+  if (number !== undefined) attrs["number"] = number;
+  const edition = str(tree["edition"]);
+  if (edition !== undefined) attrs["edition"] = edition;
+  const amendment = str(tree["cs_amendment"]);
+  if (amendment !== undefined) attrs["amendment"] = amendment;
+  attrs["space_separator"] = tree["cs_separator"] === " ";
+  return new (KIND_CLASSES["certification-system"] as new (
+    a?: Record<string, unknown>,
+  ) => BaseIdentifier)(attrs);
 }
 
 function buildShortAmendment(tree: TreeObject): BaseIdentifier {
@@ -486,6 +567,8 @@ function buildSupplement(tree: TreeObject): BaseIdentifier {
   if (suppYear !== undefined) attrs["supp_year"] = suppYear;
   const language = extractLanguage(tree["language"]);
   if (language !== undefined) attrs["language"] = language;
+  const ordinal = str(tree["number"]);
+  if (ordinal !== undefined) attrs["number"] = ordinal;
   if (marker !== undefined) attrs["trailing"] = true;
   if (plusMarker !== undefined) attrs["joined"] = true;
   const letter = str(tree["annex_letter"]);
