@@ -18,6 +18,23 @@ function flavorOf(input: string): string {
  */
 export function oimlGrammarImplementation(): FlavorImplementation {
   return {
+    // Inverse of OimlUrnGenerator (lib/pubid/oiml/urn_parser.rb): strip the
+    // "urn:oiml:" namespace, rebuild the human head "OIML <TYPE> <locator>",
+    // and re-parse. Mirrors the reference exactly — the year and language
+    // URN segments are not carried back (the reference parser reads only
+    // the type and the number-part locator).
+    parseUrn(urn: string): Identifier {
+      const body = urn.replace(/^urn:oiml:/i, "");
+      const parts = body.split(":");
+      const typeToken = parts[0] ?? "";
+      const number = parts[1];
+      const displayType =
+        typeToken.toLowerCase() === "bulletin" ? "Bulletin" : typeToken.toUpperCase();
+      let text = `OIML ${displayType}`;
+      if (number !== undefined && number !== "") text += ` ${number}`;
+      return this.parse(text);
+    },
+
     parse(input: string): Identifier {
       // The co-published form carries both identifiers joined by "|":
       // "ISO 4064-1:2024|OIML R 49-1:2024". The first side is another

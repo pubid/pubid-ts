@@ -1,4 +1,4 @@
-import type { FlavorImplementation } from "../conformance/implementation.js";
+import type { FlavorImplementation, Identifier } from "../conformance/implementation.js";
 import { oimlGrammarImplementation } from "./oiml/implementation.js";
 import { xsfGrammarImplementation } from "./xsf/index.js";
 import { doiGrammarImplementation } from "./doi/index.js";
@@ -49,6 +49,22 @@ import { ialaGrammarImplementation } from "./iala/index.js";
  * flavor NOT listed falls back to corpus mode.
  */
 export function grammarImplementation(flavor: string): FlavorImplementation | undefined {
+  const impl = grammarImplementationSwitch(flavor);
+  if (impl === undefined) return undefined;
+  // "urn:" inputs route to the flavor's URN parser where the reference
+  // implements one; flavors whose own grammar accepts URN spellings
+  // (iala) keep parsing them natively (pubid/pubid-ts#1).
+  if (impl.parseUrn === undefined) return impl;
+  return {
+    parse(input: string): Identifier {
+      if (/^urn:/i.test(input)) return impl.parseUrn!(input);
+      return impl.parse(input);
+    },
+    parseUrn: impl.parseUrn,
+  };
+}
+
+function grammarImplementationSwitch(flavor: string): FlavorImplementation | undefined {
   switch (flavor) {
     case "oiml":
       return oimlGrammarImplementation();
