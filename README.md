@@ -87,12 +87,28 @@ The conformance gate enforces corpus mode over the whole testsuite on
 every CI run: 42/42 flavors, canonical hash, human form, URN, alias
 normalization, negative rejection and deserialize idempotency.
 
-Grammar-backed parsing (novel identifiers beyond the published corpus)
-lands wave by wave and takes over per flavor — the same gate then
-enforces parity, so a wave can never regress below the floor corpus
-mode set (waves: core model → parser engine → builder → normalizer →
-renderer → urn → iso → iec → …). **No wave has shipped yet**; until one
-does, every flavor is corpus-only.
+## Grammar mode: open-universe runtime parsing
+
+All 42 flavors are grammar-backed and ship the wave plan end to end
+(core model → parser engine → builder → normalizer → renderer → urn →
+per-flavor grammars). Grammar implementations parse real-world
+identifiers far beyond the published corpus — novel spellings, unseen
+numbers, live catalogues — and the conformance gate still enforces
+parity with the corpus floor on every run, so a grammar can never
+regress below what corpus mode set:
+
+```ts
+import { grammarImplementation } from "@pubid/pubid";
+
+const oiml = grammarImplementation("oiml")!;
+oiml.parse("OIML R 60-1:2021");            // any published identifier
+oiml.parse(oiml.parse("OIML R 117-1").toUrn()!); // URNs ingest back
+```
+
+`grammarImplementation` is exported from the package root. URN ingestion
+ships per flavor where the Ruby reference implements a URN parser
+(oiml today; the remaining flavors throw a clear "not yet supported"
+error naming this issue until their ports land).
 
 ## Development
 

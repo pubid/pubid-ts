@@ -9,6 +9,9 @@ import type { Representations } from "../corpus/types.js";
 export interface FlavorImplementation {
   /** Parse a canonical human form; must throw on a bad input. */
   parse(input: string): Identifier;
+  /** Inverse of toUrn for flavors whose reference implements a URN
+   *  parser; when absent, "urn:" inputs throw a not-supported error. */
+  parseUrn?(urn: string): Identifier;
 }
 
 export interface Identifier {
