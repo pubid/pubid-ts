@@ -2,6 +2,7 @@ import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import { BaseIdentifier } from "../../model/identifier.js";
+import { TYPED_STAGES } from "./model.js";
 import { Language, PubidDate } from "../../model/component.js";
 import { iecGrammar, preprocessIec } from "./grammar.js";
 import {
@@ -532,6 +533,27 @@ for (const klass of [
 export function iecGrammarImplementation(): FlavorImplementation {
   const builder = new IecBuilder();
   return {
+    // Inverse of the IEC UrnGenerator (lib/pubid/iec/urn_parser.rb):
+    // reassemble the positional URN fields into a text code, parse it, then
+    // attach languages and the all-parts wrap.
+    parseUrn(urn: string): Identifier {
+      const parsed = urnToCode(urn);
+      if (!parsed) throw new Error(`Invalid IEC URN: ${urn}`);
+      const [code, lang, allParts] = parsed;
+      // The reference parses the unprefixed rebuild and its grammar
+      // defaults the IEC publisher; the ts grammar needs it explicit.
+      const id = this.parse(code);
+      if (lang && lang !== "" && "languages" in (id as object)) {
+        (id as unknown as { languages: unknown }).languages = lang
+          .split("-")
+          .map((c) => new Language({ code: c }));
+      }
+      if (allParts) {
+        (id as unknown as { all_parts: boolean }).all_parts = true;
+      }
+      return id;
+    },
+
     parse(input: string): Identifier {
       let tree: Tree;
       try {
@@ -543,3 +565,62 @@ export function iecGrammarImplementation(): FlavorImplementation {
     },
   };
 }
+
+// Port of Relaton::Iec.urn_to_code + the slot helpers
+// (lib/pubid/iec/urn_parser.rb): reassemble the positional URN fields into
+// a text code. Returns [code, language, allParts].
+function urnToCode(urn: string): [string, string | undefined, boolean] | undefined {
+  const fields = urn.toUpperCase().split(":");
+  if (fields.length < 5) return undefined;
+
+  const [head, num, date, type, deliv, lang] = fields.slice(3, 9);
+  let allParts = false;
+
+  let code = head!.replaceAll("-", "/");
+  const typeCode = typeSlotToCode(type);
+  if (typeCode !== "") code += ` ${typeCode}`;
+  code += ` ${num!}`;
+  if (date !== undefined && date !== "") code += `:${date}`;
+  code += adjunctToCode(fields.slice(9));
+
+  if ((deliv ?? "").toLowerCase() === "ser") {
+    allParts = true;
+  } else if (deliv !== undefined) {
+    const edition = editionSlotToCode(deliv);
+    if (edition) code += ` ${edition}`;
+    else if (deliv !== "") code += ` ${deliv}`;
+  }
+
+  return [code, lang?.toLowerCase(), allParts];
+}
+
+// The type slot holds a legacy type token ("TS"), a stage
+// ("STAGE-10.20"), or both ("TS-STAGE-50.00"); a stage is written back as
+// the abbreviation resolved from the typed-stage registry.
+function typeSlotToCode(type: string | undefined): string {
+  if (type === undefined || type === "") return "";
+  const match = type.match(/^([A-Z]+-)?STAGE-([\d.]+)$/);
+  if (!match) return type;
+  const stageType = (match[1] ?? "IS-").replace("-", "").toLowerCase();
+  const stage = TYPED_STAGES.find(
+    (t) => t.typeCode === stageType && (t.harmonized ?? "") === match[2],
+  );
+  return stage ? stage.abbr : "";
+}
+
+// "ED-7" in the deliverable slot is an edition, not a deliverable code.
+function editionSlotToCode(deliv: string | undefined): string | undefined {
+  const match = deliv?.match(/^ED-(.+)$/);
+  return match ? `ED${match[1]}` : undefined;
+}
+
+// Adjuncts are (relation, type, number, date) quartets; a "PLUS" relation
+// yields "+", otherwise "/".
+function adjunctToCode(fields: string[]): string {
+  if (!fields.length) return "";
+  const [rel = "", type = "", num = "", date = ""] = fields.slice(0, 4);
+  let code = (rel === "" ? "/" : "+") + type + num;
+  if (date !== "") code += `:${date}`;
+  return code + adjunctToCode(fields.slice(4));
+}
+
