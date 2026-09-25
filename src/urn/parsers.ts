@@ -307,6 +307,113 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       return parse(text);
     },
   },
+
+
+  // lib/pubid/amca/urn_parser.rb — keyed tokens (copub./rev./reaff./interp.),
+  // a bare numeric year, and a trailing type token.
+  amca: {
+    prefix: "urn:amca:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const number = parts.shift() ?? "";
+      const first = parts[0];
+      const year = first !== undefined && /^\d+$/.test(first) ? (parts.shift() as string) : undefined;
+      const keyed: Record<string, string> = {};
+      const keyedTokens: string[] = [];
+      for (const token of parts) {
+        if (token.includes(".")) {
+          const [k, ...v] = token.split(".", 2);
+          keyed[k as string] = v.join(".");
+          keyedTokens.push(token);
+        }
+      }
+      const type = parts.filter((t) => !keyedTokens.includes(t)).pop();
+      const publisher = (keyed["copub"] ?? "amca").toUpperCase();
+      let text: string;
+      if (type === "interpretation") {
+        const code = keyed["interp"]?.toUpperCase();
+        text = [publisher, number, code, "Interp"].filter(Boolean).join(" ");
+      } else {
+        const titles: Record<string, string> = {
+          standard: "Standard",
+          publication: "Publication",
+        };
+        text = [publisher, titles[type ?? ""], number].filter(Boolean).join(" ");
+        if (year) text += `-${year}`;
+        if (keyed["rev"]) text += ` (Rev. ${keyed["rev"]})`;
+        if (keyed["reaff"]) text += ` (R${keyed["reaff"]})`;
+      }
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/itu/urn_parser.rb — "report" segment between sector and code
+  // marks an ITU-R Report; otherwise "ITU-<SECTOR> <code>".
+  itu: {
+    prefix: "urn:itu:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const sector = parts[0] ?? "";
+      if (parts[1] === "report") {
+        return parse(`Report ITU-${sector.toUpperCase()} ${parts[2] ?? ""}`);
+      }
+      return parse(`ITU-${sector.toUpperCase()} ${parts[1] ?? ""}`);
+    },
+  },
+
+  // lib/pubid/iala/urn_parser.rb — annex(-letter) / ed.<x> / single-letter
+  // language segments after the code.
+  iala: {
+    prefix: "urn:mrn:iala:pub:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const code = (parts.shift() ?? "").toUpperCase();
+      let annexForm: string | undefined;
+      let annexLetter: string | undefined;
+      let edition: string | undefined;
+      let language: string | undefined;
+      for (const seg of parts) {
+        const annexMatch = seg.match(/^annex(-([a-z]))?$/i);
+        if (annexMatch) {
+          annexLetter = annexMatch[2]?.toUpperCase();
+          annexForm = annexLetter ? "ANNEX" : "Annex";
+        } else if (/^ed\.?/i.test(seg)) {
+          edition = seg.replace(/^ed\.?/i, "");
+        } else if (/^[a-z]$/i.test(seg)) {
+          language = seg.toUpperCase();
+        }
+      }
+      let text = `IALA ${code}`;
+      if (annexForm) text += ` ${annexForm}`;
+      if (annexLetter) text += ` ${annexLetter}`;
+      if (edition) text += ` Ed ${edition}`;
+      if (language) text += ` (${language})`;
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/bsi/urn_parser.rb — publisher token + number + year +
+  // 3-segment supplement slices (amd/cor/add).
+  bsi: {
+    prefix: "urn:bsi:",
+    reconstruct(body, parse) {
+      const abbr: Record<string, string> = { amd: "Amd", cor: "Cor", add: "Add" };
+      const parts = splitParts(body);
+      const [publisherToken = "", number = "", year, ...supplementParts] = parts;
+      let text = `${publisherToken.toUpperCase()} ${number}`;
+      if (year) text += `:${year}`;
+      for (let i = 0; i < supplementParts.length; i += 3) {
+        const type = supplementParts[i] ?? "";
+        const num = supplementParts[i + 1];
+        const suppYear = supplementParts[i + 2];
+        const label = abbr[type.toLowerCase()] ?? (type.charAt(0).toUpperCase() + type.slice(1));
+        let suffix = num ? ` ${num}` : "";
+        if (suppYear) suffix += `:${suppYear}`;
+        text += `/${label}${suffix}`;
+      }
+      return parse(text);
+    },
+  },
 }
 
 export function lookupUrnParser(flavor: string): UrnParserDef | undefined {
