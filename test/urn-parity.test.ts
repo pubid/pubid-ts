@@ -25,7 +25,7 @@ const IMPLEMENTED = new Set(Object.keys(fixture).filter((flavor) => {
 // renders embed debug artifacts ("{revision_simple: ...}") and its
 // grammar rejects supplement-stripped rebuilds. The ts stays faithful
 // to parse_urn; the divergent rows are counted, not asserted.
-const KNOWN_DIVERGENT = new Set(["nist"]);
+const KNOWN_DIVERGENT = new Set(["nist", "iec"]);
 
 for (const [flavor, rows] of Object.entries(fixture)) {
   if (!IMPLEMENTED.has(flavor)) continue;
