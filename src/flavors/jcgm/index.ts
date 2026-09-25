@@ -330,6 +330,28 @@ class JcgmBuilder extends BaseBuilder {
 export function jcgmGrammarImplementation(): FlavorImplementation {
   const builder = new JcgmBuilder();
   return {
+    // Inverse of JcgmUrnGenerator (lib/pubid/jcgm/urn_parser.rb): rebuild
+    // identifiers DIRECTLY from the URN segments — re-parsing through the
+    // grammar flattened segments and lost languages/supplements.
+    parseUrn(urn: string): Identifier {
+      const parts = urn.replace(/^urn:jcgm:/, "").split(":");
+      if (parts[0] === "meeting") {
+        const number = toMeetingNumber(parts[1]);
+        const date = urnDate(parts[2]);
+        return new (KIND_CLASSES.meeting)({ number, date }) as unknown as Identifier;
+      }
+      const markerAt = parts.findIndex((seg) => seg === "corrigendum" || seg === "amendment");
+      if (markerAt === -1) {
+        return buildUrnDocument(parts);
+      }
+      const kind = (parts[markerAt] === "amendment" ? "amendment" : "corrigendum") as JcgmKind;
+      const base = buildUrnDocument(parts.slice(0, markerAt));
+      const tail = parts.slice(markerAt + 1);
+      const number = tail[0] === undefined || tail[0] === "" ? undefined : tail[0];
+      const date = urnDate(tail[1]);
+      return new (KIND_CLASSES[kind])({ base, number, date }) as unknown as Identifier;
+    },
+
     parse(input: string): Identifier {
       const tree = parseGrammar(jcgmGrammar, input);
       if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
@@ -338,6 +360,48 @@ export function jcgmGrammarImplementation(): FlavorImplementation {
       return builder.build(tree as Record<string, unknown>) as unknown as Identifier;
     },
   };
+}
+
+// lib/pubid/jcgm/urn_parser.rb build_document: Guide vs GumGuide by the
+// "gum." number prefix; the year and language segments are matched by
+// pattern, not position.
+function buildUrnDocument(parts: string[]): Identifier {
+  const number = parts[0];
+  if (number === undefined || number === "") {
+    throw new Error("JCGM URN has no document number");
+  }
+  const gum = number.startsWith("gum.");
+  const rest = parts.slice(1);
+  const year = rest.find((seg) => /^(19|20)\d{2}$/.test(seg));
+  const langSegment = rest.find((seg) => /^[a-z]{2}(,[a-z]{2})*$/.test(seg));
+  const langLetters: Record<string, string> = {
+    ru: "R", fr: "F", en: "E", ar: "A", es: "S", de: "D",
+  };
+  const languages = langSegment
+    ? langSegment.split(",").map((code) => new Language({ code, originalCode: langLetters[code] ?? code }))
+    : [];
+  const cls = gum ? KIND_CLASSES["gum-guide"] : KIND_CLASSES.guide;
+  const cleanNumber = gum ? number.slice("gum.".length) : number;
+  return new cls({
+    number: cleanNumber,
+    date: year ? new PubidDate({ year }) : undefined,
+    languages,
+  }) as unknown as Identifier;
+}
+
+// nil for an absent year; a component for a well-formed 19xx/20xx year;
+// anything else rejects (no re-parse validates it any more).
+function urnDate(segment: string | undefined): PubidDate | undefined {
+  if (segment === undefined || segment === "") return undefined;
+  if (!/^(19|20)\d{2}$/.test(segment)) {
+    throw new Error(`Invalid year in JCGM URN: ${JSON.stringify(segment)}`);
+  }
+  return new PubidDate({ year: segment });
+}
+
+// "011" reads back as "11" (Identifiers::Meeting.ordinal normalization).
+function toMeetingNumber(segment: string | undefined): string {
+  return String(Number(segment));
 }
 
 export { isObj };
