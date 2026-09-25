@@ -510,6 +510,43 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
+  // lib/pubid/nist/urn_parser.rb — type token upcased via the reference
+  // map; ".supp" stripped; ".r<N>" revision suffix split off the payload.
+  nist: {
+    prefix: "urn:nist:",
+    reconstruct(body, parse) {
+      const typeUpcase: Record<string, string> = {
+        sp: "SP", fips: "FIPS", ir: "IR", nistcir: "NISTCIR", nbs: "NBS",
+        nistir: "NISTIR", csf: "CSF", gcr: "GCR", itl: "ITL", jres: "JRES",
+        lcirc: "LCIRC", mon: "MONO", ms: "MS", nsrds: "NSRDS", tn: "TN",
+        wp: "WP",
+      };
+      const parts = splitParts(body);
+      const typeToken = parts[0] ?? "";
+      const payload = parts[1] ?? "";
+      const label = typeUpcase[typeToken.toLowerCase()] ?? typeToken.toUpperCase();
+      const stripped = payload.replace(/\.supp$/, "");
+      const revMatch = stripped.match(/^(.*)\.(r\d+)$/i);
+      const code = revMatch ? revMatch[1] : stripped;
+      const revision = revMatch ? revMatch[2] : undefined;
+      let text = `NIST ${label} ${code}`;
+      if (revision) text += revision;
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/ieee/urn_parser.rb — "IEEE Std <code>[-<year>]". The fixture
+  // pins the reference's own parse failures for narrative/artifact rows.
+  ieee: {
+    prefix: "urn:ieee:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const [, code, year] = parts;
+      let text = `IEEE Std ${code}`;
+      if (year) text += `-${year}`;
+      return parse(text);
+    },
+  },
 }
 
 export function lookupUrnParser(flavor: string): UrnParserDef | undefined {
