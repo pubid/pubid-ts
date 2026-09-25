@@ -651,6 +651,47 @@ class BipmBuilder {
 export function bipmGrammarImplementation(): FlavorImplementation {
   const builder = new BipmBuilder();
   return {
+    // Inverse of BipmUrnGenerator (lib/pubid/bipm/urn_parser.rb): rebuild
+    // the identifier DIRECTLY from the URN fields — the printed forms carry
+    // surface detail (meeting ordinals, French wording) the URN omits.
+    parseUrn(urn: string): Identifier {
+      const body = urn.replace(/^urn:bipm:/, "");
+      // Keep trailing empty segments (gem splits with -1).
+      const parts = body.split(":");
+      const presence = (v: string | undefined) =>
+        v === undefined || v === "" ? undefined : v;
+      if (parts[0] === "metrologia") {
+        return new BipmMetrologiaArticle({
+          number: presence(parts[1]),
+          issue: parts[2],
+          article: parts[3],
+        }) as unknown as Identifier;
+      }
+      if (parts[0] === "si-brochure") {
+        return new BipmSiBrochure({
+          number: presence(parts[2]),
+          language: (parts[1] ?? "").toUpperCase(),
+          edition: parts[2],
+          version: parts[3],
+          years: parts[4],
+        }) as unknown as Identifier;
+      }
+      const group = (parts[0] ?? "").toUpperCase();
+      if (parts[1] === "meeting") {
+        return new BipmMeeting({
+          group,
+          number: parts[2] ?? "",
+          year: parts[3] ? Number(parts[3]) : undefined,
+        }) as unknown as Identifier;
+      }
+      return new BipmCommitteeDocument({
+        group,
+        type_code: presence(parts[1])?.toUpperCase(),
+        number: presence(parts[2]),
+        year: parts[3] ? Number(parts[3]) : undefined,
+      }) as unknown as Identifier;
+    },
+
     parse(input: string): Identifier {
       const normalized = UPDATE_CODES[input] ?? input;
       const tree = parseGrammar(bipmGrammar, normalized);
