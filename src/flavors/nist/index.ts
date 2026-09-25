@@ -878,6 +878,7 @@ class NistBuilder {
       h["supplement_month_year"] !== undefined ||
       h["supplement_year"] !== undefined ||
       h["supplement"] !== undefined ||
+      h["supplement_empty"] !== undefined ||
       h["base_portion"] !== undefined
     ) {
       return this.buildCircularSupplement(h);
@@ -1160,9 +1161,15 @@ class NistBuilder {
     }
     const seriesValue = isObj(h["circ_series"]) ? s((h["circ_series"] as TreeObject)["series"]) : s(h["series"]);
 
+    // The dotted series literal ("NBS.CIRC") names its publisher in the
+    // first token; the builder default would render "NIST" instead.
+    const seriesPublisher = seriesValue?.startsWith("NBS") ? "NBS" : undefined;
     if (isObj(h["supplement_date_range"])) {
       const range = h["supplement_date_range"] as TreeObject;
-      const identifier = this.build({ series: seriesValue }, "short") as unknown as Record<string, unknown>;
+      const identifier = this.build(
+        { series: seriesValue, publisher: seriesPublisher },
+        "short",
+      ) as unknown as Record<string, unknown>;
       const ms = s(range["supp_month_start"]);
       const ys = s(range["supp_year_start"]);
       const me = s(range["supp_month_end"]);
@@ -1176,7 +1183,7 @@ class NistBuilder {
       return identifier as unknown as BaseIdentifier;
     }
 
-    const base = this.buildCircularSupplementBase(h, seriesValue);
+    const base = this.buildCircularSupplementBase(h, seriesValue, seriesPublisher);
     const self = base as unknown as Record<string, unknown>;
     const raw =
       h["supplement_month_year"] !== undefined
@@ -1188,12 +1195,16 @@ class NistBuilder {
     return base;
   }
 
-  private buildCircularSupplementBase(h: Record<string, unknown>, seriesValue: string | undefined): BaseIdentifier {
+  private buildCircularSupplementBase(
+    h: Record<string, unknown>,
+    seriesValue: string | undefined,
+    seriesPublisher?: string,
+  ): BaseIdentifier {
     const basePortion = h["base_portion"];
     if (!isObj(basePortion)) {
       return this.build(
         {
-          publisher: s(h["publisher"]),
+          publisher: s(h["publisher"]) ?? seriesPublisher,
           series: seriesValue ?? s(h["series"]),
           first_number: s(h["first_number"]),
         },

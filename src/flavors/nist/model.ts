@@ -592,9 +592,17 @@ export abstract class NistIdentifier extends BaseIdentifier {
       result += `${this.volume.render()}n${this.issue_number.number}`;
     }
 
-    if (this.edition !== undefined) result += this.edition.render();
+    // With a number the edition glues per the NIST spec ("800-53r5");
+    // series-only editions take a dot separator ("NBS.CIRC.e2" — the
+    // attested raw spelling; testsuite#5 C4/C5).
+    if (this.edition !== undefined) {
+      result += this.number !== undefined ? this.edition.render() : `.${this.edition.render()}`;
+    }
     if (this.version_component !== undefined) result += this.version_component.render();
-    result += this.supplementShort();
+    // A series-only supplement takes the dot itself ("NBS.CIRC.sup").
+    if (this.supplement !== undefined) {
+      result += this.number !== undefined ? this.supplementShort() : `.${this.supplementShort()}`;
+    }
     if (this.update_component !== undefined) result += this.update_component.render("mr");
     if (this.stage !== undefined) {
       const rendered = this.stage.render();
