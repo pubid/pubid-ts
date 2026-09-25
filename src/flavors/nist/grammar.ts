@@ -659,52 +659,68 @@ function buildRules(): Record<string, P> {
       .then(space.or(dot))
       .as("circ_series")
       .then(
-        str("supp")
-          .then(
-            monthAbbrev().as("supp_month_start"),
-            digits.as("supp_year_start"),
-            dash,
-            monthAbbrev().as("supp_month_end"),
-            digits.as("supp_year_end"),
+        // Bare supplement marker to the whole series, no base number
+        // ("NBS.CIRC.sup" — testsuite#5 C4).
+        (
+          (str("supp").or(str("sup"))).then(
+            monthAbbrev().then(digits).as("supplement_month_year").or(
+              digits.as("supp_number").then(slash, digits.as("supp_year")).as("supplement_slash_year"),
+              str("").as("supplement_empty"),
+            ).maybe()
           )
-          .as("supplement_date_range")
-          .or(
-            (str("supp").or(str("sup")))
-              .then(
-                match("[0-9]").repeat(4, 4).as("supp_year_start"),
-                dash,
-                match("[0-9]").repeat(4, 4).as("supp_year_end"),
-              )
-              .as("supplement_date_range"),
-            (
-              digits.as("base_number").then(str("e"), digits.as("edition_number")).or(
-                digits
-                  .as("base_number")
-                  .then(lowerLetter.as("revision_letter"), digits.as("revision_number")),
-                digits.as("base_number").then(upperLetter.as("letter_suffix")),
-                digits.as("simple_number"),
-              )
+        ).or(
+          // Date-range supplement (no base document).
+          str("supp")
+            .then(
+              monthAbbrev().as("supp_month_start"),
+              digits.as("supp_year_start"),
+              dash,
+              monthAbbrev().as("supp_month_end"),
+              digits.as("supp_year_end"),
             )
-              .as("base_portion")
-              .then(
-                (
-                  (str("supp").or(str("sup"))).then(
-                    (
-                      monthAbbrev().then(digits).as("supplement_month_year").or(
-                        dash.then(digits.as("supp_number"), slash, digits.as("supp_year")).as("supplement_dash_slash_year"),
-                        dash.then(digits.as("supplement_year")),
-                        digits.as("supp_number").then(slash, digits.as("supp_year")).as("supplement_slash_year"),
-                        str("").as("supplement_empty"),
-                      )
-                    ).maybe(),
-                  )
-                ).or(
-                  slash.then(digits.as("implicit_supplement_year")).as("implicit_supplement"),
-                ),
+            .as("supplement_date_range")
+            .or(
+              (str("supp").or(str("sup")))
+                .then(
+                  match("[0-9]").repeat(4, 4).as("supp_year_start"),
+                  dash,
+                  match("[0-9]").repeat(4, 4).as("supp_year_end"),
+                )
+                .as("supplement_date_range"),
+            ),
+        ).or(
+          // Base identifier + supplement.
+          (
+            digits.as("base_number").then(str("e"), digits.as("edition_number")).or(
+              digits
+                .as("base_number")
+                .then(lowerLetter.as("revision_letter"), digits.as("revision_number")),
+              digits.as("base_number").then(upperLetter.as("letter_suffix")),
+              digits.as("simple_number"),
+            )
+          )
+            .as("base_portion")
+            .then(
+              (
+                (str("supp").or(str("sup"))).then(
+                  (
+                    monthAbbrev().then(digits).as("supplement_month_year").or(
+                      dash.then(digits.as("supp_number"), slash, digits.as("supp_year")).as("supplement_dash_slash_year"),
+                      dash.then(digits.as("supplement_year")),
+                      digits.as("supp_number").then(slash, digits.as("supp_year")).as("supplement_slash_year"),
+                      str("").as("supplement_empty"),
+                    )
+                  ).maybe(),
+                )
+              ).or(
+                slash.then(digits.as("implicit_supplement_year")).as("implicit_supplement"),
               ),
-          ),
+            ),
+        ),
       ),
   );
+
+
 
   rule("root", () => rules["identifier"]!);
   return rules;
