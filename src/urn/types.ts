@@ -6,8 +6,9 @@ import type { Identifier } from "../conformance/implementation.js";
 // human text from the URN parts and re-parse, exactly as the reference
 // does, including its lossiness.
 export type UrnParserDef = {
-  /** URN namespace after "urn:" (gem UrnParser#flavor_name). */
-  namespace: string;
+  /** Full URN prefix including the trailing colon
+   *  (gem UrnParser PREFIX / "urn:" + flavor_name + ":"). */
+  prefix: string;
   /** Rebuild the human text (or parse directly) from the URN body. */
   reconstruct: (body: string, parse: (text: string) => Identifier) => Identifier;
 };

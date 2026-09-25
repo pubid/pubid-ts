@@ -9,7 +9,7 @@ import { splitParts, withYear, type UrnParserDef } from "./types.js";
 export const URN_PARSERS: Record<string, UrnParserDef> = {
   // lib/pubid/ansi/urn_parser.rb
   ansi: {
-    namespace: "ansi",
+    prefix: "urn:ansi:",
     reconstruct(body, parse) {
       const [code, year] = splitParts(body);
       return parse(withYear(`ANSI ${code}`, year));
@@ -18,7 +18,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/ccsds/urn_parser.rb — the body is the full suffix.
   ccsds: {
-    namespace: "ccsds",
+    prefix: "urn:ccsds:",
     reconstruct(body, parse) {
       return parse(`CCSDS ${body}`);
     },
@@ -27,7 +27,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
   // lib/pubid/cen_cenelec/urn_parser.rb — namespace "cen"; type token
   // uppercased before the number.
   cen_cenelec: {
-    namespace: "cen",
+    prefix: "urn:cen:",
     reconstruct(body, parse) {
       const [typeToken = "", number, year] = splitParts(body);
       return parse(withYear(`${typeToken.toUpperCase()} ${number}`, year));
@@ -37,7 +37,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
   // lib/pubid/cie/urn_parser.rb — leading lowercase publisher + trailing
   // "sep.<x>" separator tokens are dropped.
   cie: {
-    namespace: "cie",
+    prefix: "urn:cie:",
     reconstruct(body, parse) {
       const parts = splitParts(body).filter((p) => !p.startsWith("sep."));
       const [, code, year] = parts;
@@ -47,7 +47,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/ashrae/urn_parser.rb — "ASHRAE Standard <number>-<year>".
   ashrae: {
-    namespace: "ashrae",
+    prefix: "urn:ashrae:",
     reconstruct(body, parse) {
       const [number, year] = splitParts(body);
       let text = `ASHRAE Standard ${number}`;
@@ -58,7 +58,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/asme/urn_parser.rb — "ASME <code>-<year>".
   asme: {
-    namespace: "asme",
+    prefix: "urn:asme:",
     reconstruct(body, parse) {
       const [, code, year] = splitParts(body);
       let text = `ASME ${code}`;
@@ -69,7 +69,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/astm/urn_parser.rb — year rendered to its last two digits.
   astm: {
-    namespace: "astm",
+    prefix: "urn:astm:",
     reconstruct(body, parse) {
       const [, code, year] = splitParts(body);
       let text = `ASTM ${code}`;
@@ -80,7 +80,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/iana/urn_parser.rb — "<registry>[/<sub-registry>]".
   iana: {
-    namespace: "iana",
+    prefix: "urn:iana:",
     reconstruct(body, parse) {
       const [registry = "", subRegistry] = splitParts(body);
       return parse(subRegistry ? `${registry}/${subRegistry}` : registry);
@@ -89,7 +89,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/idf/urn_parser.rb — empty segments dropped.
   idf: {
-    namespace: "idf",
+    prefix: "urn:idf:",
     reconstruct(body, parse) {
       const parts = splitParts(body).filter((p) => p !== "");
       const [number = "", year] = parts;
@@ -98,7 +98,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
   },
   // lib/pubid/plateau/urn_parser.rb — "PLATEAU <Type> #<number>[-<annex>]".
   plateau: {
-    namespace: "plateau",
+    prefix: "urn:plateau:",
     reconstruct(body, parse) {
       const parts = splitParts(body);
       const typeToken = parts[0] ?? "";
@@ -117,7 +117,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/tgpp/urn_parser.rb — empty release/version segments dropped.
   tgpp: {
-    namespace: "3gpp",
+    prefix: "urn:3gpp:",
     reconstruct(body, parse) {
       const [type = "", code = "", release, version] = splitParts(body);
       let result = `${type.toUpperCase()} ${code}`;
@@ -129,7 +129,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/w3c/urn_parser.rb — a known type token hyphenates the rest.
   w3c: {
-    namespace: "w3c",
+    prefix: "urn:w3c:",
     reconstruct(body, parse) {
       const known = ["note", "dnote", "wd", "cr", "crd", "rec", "pr", "per", "spsd", "obsl"];
       const parts = splitParts(body);
@@ -146,7 +146,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/xsf/urn_parser.rb — "XEP <number>".
   xsf: {
-    namespace: "xsf",
+    prefix: "urn:xsf:",
     reconstruct(body, parse) {
       const [, number] = splitParts(body);
       return parse(`XEP ${number}`);
@@ -155,7 +155,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/calconnect/urn_parser.rb — "CC[/series] <number>:<date>".
   calconnect: {
-    namespace: "calconnect",
+    prefix: "urn:calconnect:",
     reconstruct(body, parse) {
       const parts = splitParts(body);
       const date = parts.pop();
@@ -170,7 +170,7 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
 
   // lib/pubid/api/urn_parser.rb — "API STD <number>[-<part>]:<year>".
   api: {
-    namespace: "api",
+    prefix: "urn:api:",
     reconstruct(body, parse) {
       const parts = splitParts(body);
       const number = parts[1] ?? "";
@@ -186,6 +186,127 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       return parse(text);
     },
   },
+
+  // lib/pubid/jis/urn_parser.rb — "JIS <code>[:<year>]".
+  jis: {
+    prefix: "urn:jis:",
+    reconstruct(body, parse) {
+      const [code = "", year] = splitParts(body);
+      return parse(withYear(`JIS ${code}`, year));
+    },
+  },
+
+  // lib/pubid/ietf/urn_parser.rb — rfc/bcp/std/fyi/id; unknown types raise.
+  ietf: {
+    prefix: "urn:ietf:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const type = parts.shift() ?? "";
+      let text: string;
+      if (type === "rfc") {
+        text = `RFC ${parts[0] ?? ""}`;
+      } else if (type === "bcp" || type === "std" || type === "fyi") {
+        text = `${type.toUpperCase()} ${parts[0] ?? ""}`;
+      } else if (type === "id") {
+        const [name, version] = parts;
+        text = version ? `${name}-${version}` : (name ?? "");
+      } else {
+        throw new Error(`Invalid IETF URN type: ${JSON.stringify(type)}`);
+      }
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/ecma/urn_parser.rb — optional tr/mem tag, labelled
+  // part-/ed-/vol- segments.
+  ecma: {
+    prefix: "urn:ecma:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const tag = parts[0] === "tr" || parts[0] === "mem" ? parts.shift() : undefined;
+      const number = parts.shift() ?? "";
+      const shiftLabelled = (label: string): string | undefined =>
+        parts[0]?.startsWith(label) ? parts.shift()!.slice(label.length) : undefined;
+      const part = shiftLabelled("part-");
+      const edition = shiftLabelled("ed-");
+      const volume = shiftLabelled("vol-");
+      let base: string;
+      if (tag === "tr") base = `ECMA TR/${number}`;
+      else if (tag === "mem") base = `ECMA MEM/${number}`;
+      else base = part ? `ECMA-${number}-${part}` : `ECMA-${number}`;
+      if (edition) base += ` ed${edition}`;
+      if (volume) base += ` vol${volume}`;
+      return parse(base);
+    },
+  },
+
+  // lib/pubid/gost/urn_parser.rb — "r" prefix selects the national
+  // standard; both classes render "GOST [R ]<number>-<year>".
+  gost: {
+    prefix: "urn:gost:std:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      if (parts[0] === "r") {
+        const number = parts[1] ?? "";
+        const year = parts[2];
+        return parse(year ? `GOST R ${number}-${year}` : `GOST R ${number}`);
+      }
+      const number = parts[0] ?? "";
+      const year = parts[1];
+      return parse(year ? `GOST ${number}-${year}` : `GOST ${number}`);
+    },
+  },
+
+  // lib/pubid/iho/urn_parser.rb — "IHO <TYPE>-<number> [<Part label>
+  // <value>] [<version>]".
+  iho: {
+    prefix: "urn:iho:",
+    reconstruct(body, parse) {
+      const partLabels: Record<string, string> = {
+        part: "Part",
+        ap: "Ap.",
+        annex: "Annex",
+        suppl: "Suppl",
+      };
+      const parts = splitParts(body);
+      const typeToken = (parts[0] ?? "").toUpperCase();
+      const number = parts[1] ?? "";
+      let idx = 2;
+      let partLabel: string | undefined;
+      const kindToken = parts[idx];
+      if (kindToken !== undefined && /^[a-z]+\./i.test(kindToken)) {
+        const [kind = "", value = ""] = kindToken.split(".", 2);
+        const label = partLabels[kind.toLowerCase()] ?? (kind.charAt(0).toUpperCase() + kind.slice(1));
+        partLabel = `${label} ${value}`;
+        idx += 1;
+      }
+      const version = parts[idx];
+      let text = `IHO ${typeToken}-${number}`;
+      if (partLabel) text += ` ${partLabel}`;
+      if (version) text += ` ${version}`;
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/oasis/urn_parser.rb — %20/%5D decoded after the namespace.
+  oasis: {
+    prefix: "urn:oasis:",
+    reconstruct(body, parse) {
+      const slug = body.replace(/%20|%5D/g, (m) => (m === "%20" ? " " : "]"));
+      return parse(`OASIS ${slug}`);
+    },
+  },
+
+  // lib/pubid/ogc/urn_parser.rb — "<year>-<number>[<revision>]".
+  ogc: {
+    prefix: "urn:ogc:",
+    reconstruct(body, parse) {
+      const [year = "", number = "", revision] = splitParts(body);
+      let text = `${year}-${number}`;
+      if (revision !== undefined) text += revision;
+      return parse(text);
+    },
+  },
 }
 
 export function lookupUrnParser(flavor: string): UrnParserDef | undefined {
@@ -197,9 +318,9 @@ export function parseUrnFor(
   urn: string,
   parse: (text: string) => Identifier,
 ): Identifier {
-  const prefix = `urn:${def.namespace}:`;
+  const prefix = def.prefix;
   if (!urn.toLowerCase().startsWith(prefix)) {
-    throw new Error(`Invalid ${def.namespace.toUpperCase()} URN: ${JSON.stringify(urn)}`);
+    throw new Error(`Invalid ${def.prefix.toUpperCase()} URN: ${JSON.stringify(urn)}`);
   }
   return def.reconstruct(urn.slice(prefix.length), parse);
 }
