@@ -1,5 +1,8 @@
 import type { Identifier } from "../conformance/implementation.js";
 import { splitParts, withYear, type UrnParserDef } from "./types.js";
+import type { BaseIdentifier } from "../model/identifier.js";
+import { grammarImplementation } from "../flavors/index.js";
+import { NationalAdoption } from "../flavors/evs/model.js";
 
 // Each parser mirrors lib/pubid/<flavor>/urn_parser.rb#parse_urn exactly —
 // including its lossiness (dropped segments stay dropped) and its error
@@ -20,6 +23,11 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
   ccsds: {
     prefix: "urn:ccsds:",
     reconstruct(body, parse) {
+      // The reference rejects cor-supplemented forms at its text parser;
+      // mirrored (fixture-pinned gap).
+      if (/:cor\./.test(body)) {
+        throw new Error(`CCSDS URN rejected by the reference: ${JSON.stringify(body)}`);
+      }
       return parse(`CCSDS ${body}`);
     },
   },
@@ -414,6 +422,94 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       return parse(text);
     },
   },
+
+
+  // lib/pubid/csa/urn_parser.rb — format.<sep> token picks the year
+  // separator; the token itself is dropped.
+  csa: {
+    prefix: "urn:csa:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const separators: Record<string, string> = { dash: "-", colon: ":" };
+      const formatToken = parts.find((t) => t.startsWith("format."));
+      const separator = separators[(formatToken?.split(".")[1]) ?? ""] ?? "-";
+      const payload = parts.filter((t) => !t.startsWith("format."));
+      const [, code, year] = payload;
+      let text = `CSA ${code}`;
+      if (year) text += `${separator}${year}`;
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/etsi/urn_parser.rb — "ETSI <TYPE> <code> [VERSION] [(date)]".
+  etsi: {
+    prefix: "urn:etsi:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const typeToken = (parts[0] ?? "").toUpperCase();
+      const code = parts[1] ?? "";
+      const version = parts[2];
+      const date = parts[3];
+      let text = `ETSI ${typeToken} ${code}`;
+      if (version !== undefined) text += ` ${version.toUpperCase()}`;
+      if (date !== undefined) text += ` (${date})`;
+      return parse(text);
+    },
+  },
+
+  // lib/pubid/evs/urn_parser.rb — EN [org] number[:year] with an optional
+  // amd/cor iteration tail; the rebuilt text is parsed as a CEN adoption.
+  evs: {
+    prefix: "urn:evs:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const type = parts.shift() ?? "";
+      if (type.toLowerCase() !== "en") {
+        throw new Error(`unsupported type in ${JSON.stringify(body)}`);
+      }
+      const orgs: Record<string, string> = {
+        iso: "ISO",
+        "iso-iec": "ISO/IEC",
+        iec: "IEC",
+        cispr: "CISPR",
+      };
+      const orgParts: string[] = [];
+      while (parts[0] !== undefined && /^[a-z][a-z-]*$/.test(parts[0])) {
+        orgParts.push(parts.shift() as string);
+      }
+      let text = "EN";
+      if (orgParts.length) {
+        const org = orgs[orgParts.join("-")];
+        if (org === undefined) throw new Error(`unknown adopted org in ${JSON.stringify(body)}`);
+        text += ` ${org}`;
+      }
+      const number = parts.shift();
+      if (number === undefined) throw new Error(`missing number in ${JSON.stringify(body)}`);
+      text += ` ${number}`;
+      const year = parts.shift();
+      if (year) text += `:${year}`;
+      if (parts.length) {
+        const yearTail = parts[parts.length - 1]?.match(/^\d{4}$/) ? (parts.pop() as string) : undefined;
+        const kind = parts.shift();
+        const iteration = parts.shift();
+        if (kind !== "amd" && kind !== "cor") {
+          throw new Error(`malformed supplement in ${JSON.stringify(body)}`);
+        }
+        if (iteration === undefined || parts.length) {
+          throw new Error(`malformed supplement in ${JSON.stringify(body)}`);
+        }
+        text += kind === "amd" ? `/A${iteration}` : `/AC${iteration}`;
+        if (yearTail) text += `:${yearTail}`;
+      }
+      // The reference constructs NationalAdoption around a parsed CEN
+      // base (lib/pubid/evs/urn_parser.rb) rather than re-parsing the
+      // rebuilt text as EVS.
+      const cen = grammarImplementation("cen_cenelec")!;
+      const base = cen.parse(text) as unknown as BaseIdentifier;
+      return new NationalAdoption({ base }) as unknown as Identifier;
+    },
+  },
+
 }
 
 export function lookupUrnParser(flavor: string): UrnParserDef | undefined {
