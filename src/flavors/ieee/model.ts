@@ -570,9 +570,9 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     if (id.revision !== undefined) result += `Rev${id.revision}`;
     if (draftObj !== undefined) {
       let printed = draftObj.render();
-      if (iecIeeOnly) {
-        printed = printed.split(", ")[0]!;
-      } else if (id.publisher === "IEEE" && (id.draft_status ?? "") === "") {
+      // The draft designator carries its date on every lead
+      // (docs/IEEE-DRAFT-STAGES.md §3) — mirrors the ruby render fix.
+      if (id.publisher === "IEEE" && (id.draft_status ?? "") === "") {
         // The long comma form for dated project drafts; the
         // unapproved-draft keeps its pinned single-comma form.
         printed = printed.replace(/, ([A-Z][a-z]+) (\d{4})$/, ", $1, $2");
