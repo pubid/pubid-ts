@@ -31,7 +31,7 @@ test("every ieee corpus case passes through the grammar", () => {
   assert.ok(report.cases > 9300);
   // The 42-row residual the pubid reference itself documents
   // (tests/ieee/_status.yaml, after the stage-draft wave).
-  assert.equal(report.pending, 42);
+  assert.equal(report.pending, 24); // C1 wave re-derived the ledger (testsuite#31)
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
