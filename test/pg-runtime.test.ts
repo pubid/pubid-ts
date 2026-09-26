@@ -67,7 +67,7 @@ test("reject inputs are rejected by the wasm engine", { skip: skipReason }, () =
   assert.equal(runtime.parseAndBind("nonsense"), null);
 });
 
-test("derived URN matches the Ruby reference (F6 derive)", () => {
+test("derived URN matches the Ruby reference (F6 derive)", { skip: skipReason }, () => {
   const runtime = PgRuntime.load("iso");
   assert.equal(runtime.deriveString("ISO 5537:2025", "urn"), "urn:iso:std:5537:2025");
 });
