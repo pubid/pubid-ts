@@ -61,11 +61,14 @@ export class PgRuntime {
 
   readonly defaultEntry: string | null;
 
+  readonly envelope: Record<string, unknown>;
+
   constructor(artifactJson: string, entry?: string) {
+    this.envelope = JSON.parse(artifactJson) as Record<string, unknown>;
     this.artifact = new wasm.PgArtifactJs(artifactJson);
     this.schema = JSON.parse(this.artifact.schema()) as Schema;
     this.renderSpec =
-      (JSON.parse(artifactJson)["render"] as Record<string, RenderSegment[]>) ?? {};
+      (this.envelope["render"] as Record<string, RenderSegment[]>) ?? {};
     // The compiler bakes default_entry: JSON key order is not preserved
     // across engines, so the sorted entry list cannot rederive it.
     this.defaultEntry =
@@ -137,10 +140,39 @@ export class PgRuntime {
     return bound === null ? null : this.render(bound, variant);
   }
 
+  /** Evaluate a named derive spec against a bound map (F6). */
+  derive(name: string, bound: Record<string, unknown>): string {
+    return deriveTemplate(
+      (this.envelope["derive"] ?? {}) as Record<string, string>,
+      name,
+      bound,
+    );
+  }
+
+  /** Parse, bind, and evaluate a derive spec in one step. */
+  deriveString(input: string, name: string): string | null {
+    const bound = this.parseAndBind(input);
+    return bound === null ? null : this.derive(name, bound);
+  }
+
   /** Run the artifact's embedded tests; empty list means green. */
   runTests(): string[] {
     return JSON.parse(this.artifact.runTests()) as string[];
   }
+}
+
+/** F6 v1 derive evaluator: {field} interpolates from the bound map. */
+export function deriveTemplate(
+  derive: Record<string, string>,
+  name: string,
+  bound: Record<string, unknown>,
+): string {
+  const template = derive[name];
+  if (template === undefined) throw new Error(`derive spec ${name} not declared`);
+  return template.replace(/\{(\w+)\}/g, (_, field: string) => {
+    const value = bound[field];
+    return value === undefined || value === null ? "" : String(value);
+  });
 }
 
 export type RenderSegment =
