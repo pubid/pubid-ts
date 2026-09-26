@@ -947,13 +947,22 @@ class IeeeBuilder {
   }
 
   buildIecIeeCopublished(parsed: TreeObject): Identifier {
-    const content = extractValue(parsed["content"]);
+    const contentRaw = extractValue(parsed["content"]);
     let copublishedNumber: string | undefined;
     let draftInfo: string | undefined;
     let iecYear: string | undefined;
     let dateInfo: string | undefined;
+    let relationships: IeeeRelationship[] | undefined;
 
-    if (content !== undefined) {
+    if (contentRaw !== undefined) {
+      // A bare (unparenthesised) revision narrative printed after the code
+      // is the same relationship prose as the parenthetical form (C3
+      // ruling) — rewrite it into the parenthetical shape so both
+      // spellings collapse onto one canonical.
+      let content = contentRaw;
+      const bare = content.match(/^(.+?) (Revis(?:ion|on) (?:of|to) IEEE Std .+)$/);
+      if (bare !== null) content = `${bare[1]} (${bare[2]})`;
+
       if (content.includes("IEC:")) {
         copublishedNumber = content.split(" IEC:")[0]?.trim();
       } else if (content.includes(", ")) {
@@ -975,10 +984,32 @@ class IeeeBuilder {
         if (iecPart !== undefined) iecYear = iecPart.split(" ")[0];
       }
 
+      // The parenthetical tail is classified, not swallowed (C3 ruling):
+      // a "(Revision of IEEE Std ...)" narrative is a relationship, not
+      // identity — it lands in `relationships` so the URN carries it as
+      // the rel. segment and the canonical human drops it; an "(MM/DD)"
+      // print date is non-identity and dropped; anything else keeps the
+      // historical date_info rendering.
       if (content.includes(" (")) {
         const datePart = content.split(" (")[1];
         if (datePart !== undefined && datePart.includes(")")) {
-          dateInfo = datePart.split(")")[0];
+          const tail = datePart.split(")")[0];
+          const revision = tail !== undefined
+            ? tail.match(/^Revis(?:ion|on) (?:of|to) IEEE Std (.+)$/)
+            : null;
+          if (tail !== undefined && revision !== null) {
+            let related: { toHuman(): string };
+            try {
+              related = ieeeParseSingle(revision[1]!);
+            } catch {
+              related = { toHuman: () => revision[1]! };
+            }
+            relationships = [new IeeeRelationship("revision_of", [related], [])];
+          } else if (tail !== undefined && /^\d{2}\/\d{2}$/.test(tail)) {
+            // print date — non-identity, dropped
+          } else if (tail !== undefined) {
+            dateInfo = tail;
+          }
         }
       }
     }
@@ -987,6 +1018,7 @@ class IeeeBuilder {
     if (draftInfo !== undefined) attrs["draft_info"] = draftInfo;
     if (iecYear !== undefined) attrs["iec_year"] = iecYear;
     if (dateInfo !== undefined) attrs["date_info"] = dateInfo;
+    if (relationships !== undefined) attrs["relationships"] = relationships;
     Object.assign(attrs, copublishedStructured(copublishedNumber));
     return new IecIeeeCopublishedClass(attrs) as unknown as Identifier;
   }

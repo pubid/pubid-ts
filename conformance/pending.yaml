@@ -3,11 +3,11 @@
 # a pending case that passes raises the pending-satisfied alarm and
 # MUST be unmarked (TODO.correct-test-suite/04).
 ---
-# IEEE residual ledger (tests/ieee/_status.yaml): the 35 rows the Ruby
-# reference itself fails against the C1-regenerated corpus (testsuite#32,
-# gem #458) - alias families plus the pure ISO/IEC joint-development and
-# dotted-Preprint rows the reference cannot re-parse. This port
-# reproduces the residual one-for-one.
+# IEEE residual ledger (tests/ieee/_status.yaml): the 34 rows the Ruby
+# reference itself fails against the C3 corpus (testsuite#33, gem
+# copublished-tails ruling) - alias families plus the pure ISO/IEC
+# joint-development and dotted-Preprint rows the reference cannot
+# re-parse. This port reproduces the residual one-for-one.
 ieee.adopted_standard.8954:
   reason: >-
       Ruby main diverges from the ledger canonical on this row (the
@@ -16,13 +16,6 @@ ieee.adopted_standard.8954:
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.adopted_standard.8955:
-  reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.iec_ieee_copublished.0845:
   reason: >-
       Ruby main diverges from the ledger canonical on this row (the
       testsuite verify loop documents the row in its stage-draft residual);
