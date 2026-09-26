@@ -41,8 +41,14 @@ test("itu parses open-ended beyond the corpus", () => {
   assert.equal(impl.parse("ITU-T X.ImpOSI").toHuman(), "ITU-T X.ImpOSI");
   // The bare version spellings normalise to "(V##)".
   assert.equal(impl.parse("ITU-T H.264 v.1 (08/2021)").toHuman(), "ITU-T H.264 (V1) (08/2021)");
-  // The legacy Operational Bulletin long form.
-  assert.equal(impl.parse("ITU-T Operational Bulletin No. 1096").toHuman(), "ITU OB No. 1096");
+  // The Operational Bulletin long forms: the sector is kept and rendered
+  // (gem#460 — the TSB spelling names the bulletin it cites); the
+  // sector-less spelling keeps the classic "ITU OB No. X" form.
+  assert.equal(impl.parse("ITU-T Operational Bulletin No. 1096").toHuman(), "ITU-T OB.1096");
+  assert.equal(impl.parse("ITU Operational Bulletin No. 1096").toHuman(), "ITU OB No. 1096");
+  // The Radio Regulations and the publication id (gem#460).
+  assert.equal(impl.parse("ITU-R RR-2020").toHuman(), "ITU-R RR (2020)");
+  assert.equal(impl.parse("T-REC-T.4-200307-I").toHuman(), "ITU-T T.4 (07/2003)");
   // Bracketed letter-series questions keep every marker.
   assert.deepEqual(impl.parse("ITU-R S.[4/BL/2]:").toHash(), {
     _type: "pubid:itu:question",
