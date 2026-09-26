@@ -3,318 +3,254 @@
 # a pending case that passes raises the pending-satisfied alarm and
 # MUST be unmarked (TODO.correct-test-suite/04).
 ---
-# IEEE ledger known mismatches (tests/ieee/_status.yaml): the Ruby
-# reference itself fails these rows today (verify loop output); this port
-# reproduces the same divergences. Regenerated for the 8802 double-label
-# corpus (gem #445): the ISO/IEC label keeps its dash-joined part; the
-# residual below is the documented ledger divergence (alias families
-# plus rows whose canonical human the reference itself cannot re-parse).
-ieee.adopted_standard.8930:
+# IEEE residual ledger (tests/ieee/_status.yaml): the 35 rows the Ruby
+# reference itself fails against the C1-regenerated corpus (testsuite#32,
+# gem #458) - alias families plus the pure ISO/IEC joint-development and
+# dotted-Preprint rows the reference cannot re-parse. This port
+# reproduces the residual one-for-one.
+ieee.adopted_standard.8954:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.adopted_standard.8931:
+ieee.adopted_standard.8955:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.iec_ieee_copublished.0845:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.joint_development.0896:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0903:
+ieee.joint_development.0904:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0910:
+ieee.joint_development.0918:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0913:
+ieee.joint_development.0946:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0915:
+ieee.joint_development.0980:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0916:
+ieee.joint_development.9165:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0926:
+ieee.joint_development.9166:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0928:
+ieee.joint_development.9167:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0930:
+ieee.joint_development.9168:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0931:
+ieee.joint_development.9169:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0932:
+ieee.joint_development.9170:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.0957:
+ieee.joint_development.9171:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9141:
+ieee.joint_development.9175:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9142:
+ieee.joint_development.9283:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9143:
+ieee.joint_development.9291:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9144:
+ieee.joint_development.9317:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9145:
+ieee.project_draft_identifier.0903:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9146:
+ieee.project_draft_identifier.0909:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9147:
+ieee.project_draft_identifier.0917:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9151:
+ieee.project_draft_identifier.0933:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9259:
+ieee.project_draft_identifier.0945:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9267:
+ieee.project_draft_identifier.1318:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.joint_development.9293:
+ieee.project_draft_identifier.1456:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.0902:
+ieee.project_draft_identifier.1922:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.0906:
+ieee.project_draft_identifier.3195:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.0912:
+ieee.project_draft_identifier.9357:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.0922:
+ieee.project_draft_identifier.9360:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.0927:
+ieee.project_draft_identifier.9407:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.1294:
+ieee.standard.6958:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.1432:
+ieee.standard.8745:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.1898:
+ieee.standard.8872:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
-ieee.project_draft_identifier.3171:
+ieee.standard.8874:
   reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.9328:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.9331:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.9333:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.9336:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.9383:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.6934:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8721:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8848:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8850:
-  reason: >-
-    Ruby main diverges from the ledger canonical on this row (the testsuite's
-    own verify loop reports a known mismatch after the 8802 double-label
-    wave); this port reproduces the gem's behavior.
+      Ruby main diverges from the ledger canonical on this row (the
+      testsuite verify loop documents the row in its stage-draft residual);
+      this port reproduces the gem behavior.
   ref: tests/ieee/_status.yaml known_mismatches
 
 ieee.neg.base.0029:

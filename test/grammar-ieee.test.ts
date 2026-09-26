@@ -29,9 +29,9 @@ test("every ieee corpus case passes through the grammar", () => {
   // The re-derived rawbib corpus (gem #436): convergent-spelling dedup
   // shrank the ledger from 10,007 to 9,410 cases.
   assert.ok(report.cases > 9300);
-  // The 42-row residual the pubid reference itself documents
-  // (tests/ieee/_status.yaml, after the stage-draft wave).
-  assert.equal(report.pending, 42); // C1 wave re-derived the ledger (testsuite#31)
+  // The 35-row residual the pubid reference itself documents
+  // (tests/ieee/_status.yaml, after the C1 stage-draft wave, testsuite#32).
+  assert.equal(report.pending, 35); // testsuite#32 re-derived the ledger
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
