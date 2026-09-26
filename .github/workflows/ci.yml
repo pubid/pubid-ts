@@ -10,7 +10,7 @@ on:
 env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
   # changes always land in pubid (Ruby) PRs first, then this pin bumps.
-  TESTSUITE_REF: acbadccd06e47912d89bc8ca53e14842428b7893
+  TESTSUITE_REF: ba4a14ac090d90d3af7dd565c9234c6797702c85
 
 jobs:
   # The per-flavor corpus loops dominate wall time (ieee alone ~6.5 min
