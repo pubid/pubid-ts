@@ -10,6 +10,7 @@ import {
   ItuCode,
   ItuDesignation,
   ItuIdentifier,
+  ItuSpecialPublication,
   type ItuKind,
 } from "./model.js";
 
@@ -60,6 +61,9 @@ class ItuBuilder {
     }
     if (tree["appendix_number"] !== undefined) {
       return this.withTwin(this.buildAppendixOfRecommendation(tree), twin);
+    }
+    if (tree["radio_regulations"] !== undefined) {
+      return this.withTwin(this.buildRadioRegulations(tree), twin);
     }
     if ((s(tree["series"]) === "OB" && tree["series_dash"] === undefined) || tree["_op_bull"] !== undefined) {
       return this.withTwin(this.buildSpecialPublication(tree), twin);
@@ -119,14 +123,32 @@ class ItuBuilder {
   }
 
   private buildDate(tree: TreeObject): PubidDate {
-    return new PubidDate({ year: s(tree["year"]), month: s(tree["month"]) });
+    // The Roman month of a bulletin date ("15.III.2016") is stored as the
+    // two-digit month every other ITU date uses; the day marks the spelling.
+    const roman = s(tree["roman_month"]);
+    const month = roman !== undefined
+      ? (ItuSpecialPublication.ROMAN_MONTHS.indexOf(roman) + 1).toString().padStart(2, "0")
+      : s(tree["month"]);
+    return new PubidDate({ year: s(tree["year"]), month, day: s(tree["day"]) });
   }
 
-  /** OB is cross-bureau — the sector of legacy strings is dropped. */
+  /** OB keeps the sector of the TSB spelling ("ITU-T OB.1096") — it is a
+   * spelling, not identity (ItuSpecialPublication ignores it in ==). */
   private buildSpecialPublication(tree: TreeObject): BaseIdentifier {
     return new ITU_CLASSES["special_publication"]({
+      sector: s(tree["sector"]),
       series: "OB",
       code: tree["number"] !== undefined ? this.buildCode(tree) : undefined,
+      date: tree["year"] !== undefined ? this.buildDate(tree) : undefined,
+      language: normLanguage(tree["language"]),
+    });
+  }
+
+  /** "ITU-R RR (2020)" — the series carries the whole designation. */
+  private buildRadioRegulations(tree: TreeObject): BaseIdentifier {
+    return new ITU_CLASSES["radio_regulations"]({
+      sector: s(tree["sector"]),
+      series: "RR",
       date: tree["year"] !== undefined ? this.buildDate(tree) : undefined,
       language: normLanguage(tree["language"]),
     });

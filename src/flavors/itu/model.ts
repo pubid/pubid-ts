@@ -275,6 +275,11 @@ const SUPPLEMENT_MAPPINGS = keyValue(
 
 function urnDateSegment(id: ItuIdentifier): string | undefined {
   if (!(id.date instanceof PubidDate)) return undefined;
+  // Only an Operational Bulletin's printed date carries a day
+  // ("15.III.2016"); it is in `==`, so it must reach the URN too.
+  if (id.date.day !== undefined && id.date.month !== undefined) {
+    return `${id.date.day}/${id.date.month}/${id.date.year}`;
+  }
   return id.date.month !== undefined ? `${id.date.month}/${id.date.year}` : id.date.year;
 }
 
@@ -303,7 +308,13 @@ export class ItuUrnGenerator extends BaseUrnGenerator<ItuIdentifier> {
 
   generateBaseUrn(id: ItuIdentifier): string {
     const parts = ["urn", "itu"];
-    parts.push(id.sector !== undefined ? id.sector.toLowerCase() : "itu");
+    // An Operational Bulletin is cross-bureau: its sector is a spelling,
+    // not identity (see ItuSpecialPublication), so it stays out of the URN.
+    if (id.sector !== undefined && !(id instanceof ItuSpecialPublication)) {
+      parts.push(id.sector.toLowerCase());
+    } else {
+      parts.push("itu");
+    }
     // Reports number independently of Recommendations — the marker must
     // reach the URN or the two same-numbered documents collide.
     if (id instanceof ItuReport) parts.push("report");
@@ -389,18 +400,46 @@ attachUrn(ItuHandbook);
 export class ItuSpecialPublication extends ItuIdentifier {
   static polymorphicName = "pubid:itu:special-publication";
   static mappings = STANDARD_MAPPINGS;
+
+  static ROMAN_MONTHS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+
   renderBase(): string {
-    let result = `ITU ${this.series} No. ${this.code?.number ?? ""}`;
-    if (this.date instanceof PubidDate) {
-      result += this.date.month !== undefined
-        ? ` (${this.date.month.padStart(2, "0")}/${this.date.year})`
-        : ` (${this.date.year})`;
+    const number = this.code?.number ?? "";
+    const result = this.sector !== undefined
+      ? `ITU-${this.sector} ${this.series}.${number}`
+      : `ITU ${this.series} No. ${number}`;
+    return result + this.renderObDate();
+  }
+
+  private renderObDate(): string {
+    if (!(this.date instanceof PubidDate)) return "";
+    if (this.date.day !== undefined && this.date.month !== undefined) {
+      const roman = ItuSpecialPublication.ROMAN_MONTHS[Number(this.date.month) - 1] ?? "";
+      return ` - ${this.date.day.padStart(2, "0")}.${roman}.${this.date.year}`;
     }
-    return result;
+    if (this.date.month !== undefined) {
+      return ` (${this.date.month.padStart(2, "0")}/${this.date.year})`;
+    }
+    return ` (${this.date.year})`;
   }
 }
 registerType(ItuSpecialPublication as unknown as IdentifierStatic);
 attachUrn(ItuSpecialPublication);
+
+// The ITU Radio Regulations — the treaty text revised by each World
+// Radiocommunication Conference (hand-off itu-relaton-query-forms).
+// It has no document number: "RR" is the whole designation, stored as
+// the series; "ITU-R RR-2020" (URL spelling) normalizes to
+// "ITU-R RR (2020)".
+export class ItuRadioRegulations extends ItuIdentifier {
+  static polymorphicName = "pubid:itu:radio-regulations";
+  static mappings = STANDARD_MAPPINGS;
+  renderBase(): string {
+    return `ITU-${this.sector} ${this.series}${this.dateSuffix()}`;
+  }
+}
+registerType(ItuRadioRegulations as unknown as IdentifierStatic);
+attachUrn(ItuRadioRegulations);
 
 export class ItuContribution extends ItuIdentifier {
   static polymorphicName = "pubid:itu:contribution";
@@ -692,6 +731,7 @@ export const ITU_CLASSES = {
   report: ItuReport,
   handbook: ItuHandbook,
   special_publication: ItuSpecialPublication,
+  radio_regulations: ItuRadioRegulations,
   contribution: ItuContribution,
   question: ItuQuestion,
   combined: ItuCombinedIdentifier,

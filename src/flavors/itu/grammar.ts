@@ -98,7 +98,31 @@ function buildRules(): Record<string, P> {
     dash.then(letter.repeat(1, 3).then(dot, digits).as("range_end")),
   );
 
-  rule("part", () => dash.then(digits.as("part")));
+  rule("date_part", () =>
+    space.then(
+      str("("),
+      digits.as("month").then(str("/")).maybe(),
+      digit.repeat(4, 4).as("year"),
+      str(")"),
+    ),
+  );
+
+  // A "-YYYYMM" approval date — the "200307" of "T-REC-T.4-200307-I" and
+  // "ITU-T T.4-200307". ITU's own edition suffix is short ("-5"), so six
+  // digits that read as a plausible year (19xx/20xx) and month (01-12) are
+  // the date, never a part. A six-digit run that fails either test
+  // ("-200313", "-180001") is still a part, as it was before.
+  rule("yyyymm_year", () => str("19").or(str("20")).then(digit.repeat(2, 2)));
+  rule("yyyymm_month", () =>
+    str("0").then(match("[1-9]")).or(str("1").then(match("[0-2]"))),
+  );
+  rule("yyyymm_shape", () =>
+    rules["yyyymm_year"]!.then(rules["yyyymm_month"]!, digit.absent()),
+  );
+
+  rule("part", () =>
+    dash.then(rules["yyyymm_shape"]!.absent(), digits.as("part")),
+  );
 
   rule("parts", () => rules["part"]!.repeat(0, Infinity).as("parts"));
 
@@ -121,14 +145,29 @@ function buildRules(): Record<string, P> {
 
   rule("code", () => rules["imp_code"]!.or(rules["standard_code"]!));
 
-  rule("date_part", () =>
-    space.then(
-      str("("),
-      digits.as("month").then(str("/")).maybe(),
-      digit.repeat(4, 4).as("year"),
-      str(")"),
+  // The status letter that trails the date in a publication id — "I" (in
+  // force) or "S" (superseded). It names the state of the edition, not the
+  // edition, so it is parsed and dropped. "S" is also the Spanish language
+  // suffix, so it is a status ONLY in the full "T-REC-…" id, where ITU
+  // always writes one; after an "ITU-T …-YYYYMM" print form only "I" is,
+  // and "-S" stays the language ("ITU-T Z.100-199911-S").
+  rule("id_status", () => dash.then(match("[IS]"), match("[A-Za-z0-9]").absent()));
+  rule("print_id_status", () => dash.then(str("I"), match("[A-Za-z0-9]").absent()));
+  rule("yyyymm_date", () =>
+    dash.then(
+      rules["yyyymm_year"]!.as("year"),
+      rules["yyyymm_month"]!.as("month"),
+      digit.absent(),
     ),
   );
+  rule("id_date", () => rules["yyyymm_date"]!.then(rules["print_id_status"]!.maybe()));
+
+  // Either date spelling of a Recommendation.
+  rule("document_date", () => rules["date_part"]!.or(rules["id_date"]!));
+
+  // "ITU-T REC T.4", "ITU-T REC-T.4" — the redundant type word of ITU's
+  // own URLs. Not captured: a Recommendation is the default type.
+  rule("rec_word", () => str("REC").then(space.or(dash)));
 
   // "(V14)" plus the bare spellings "V2", "v10", "v.1" — all
   // normalise to the parenthesised form on render.
@@ -215,6 +254,7 @@ function buildRules(): Record<string, P> {
       .then(
         rules["sector"]!,
         space,
+        rules["rec_word"]!.maybe(),
         rules["series"]!,
         dot,
         rules["code"]!,
@@ -224,7 +264,7 @@ function buildRules(): Record<string, P> {
         rules["series_word"]!.maybe(),
         rules["attachment"]!.maybe(),
         rules["version_part"]!.maybe(),
-        rules["date_part"]!.maybe(),
+        rules["document_date"]!.maybe(),
       ),
   );
 
@@ -237,7 +277,7 @@ function buildRules(): Record<string, P> {
         rules["code_suffixes"]!,
         rules["attachment"]!.maybe(),
         rules["version_part"]!.maybe(),
-        rules["date_part"]!.maybe(),
+        rules["document_date"]!.maybe(),
       ),
   );
 
@@ -451,6 +491,7 @@ function buildRules(): Record<string, P> {
       .then(
         rules["sector"]!,
         space,
+        rules["rec_word"]!.maybe(),
         rules["series"]!,
         dot,
         rules["code"]!,
@@ -460,7 +501,7 @@ function buildRules(): Record<string, P> {
         rules["series_word"]!.maybe(),
         rules["attachment"]!.maybe(),
         rules["version_part"]!.maybe(),
-        rules["date_part"]!.maybe(),
+        rules["document_date"]!.maybe(),
         rules["language"]!.maybe(),
       ),
   );
@@ -474,7 +515,7 @@ function buildRules(): Record<string, P> {
         rules["code_suffixes"]!,
         rules["attachment"]!.maybe(),
         rules["version_part"]!.maybe(),
-        rules["date_part"]!.maybe(),
+        rules["document_date"]!.maybe(),
         rules["language"]!.maybe(),
       ),
   );
@@ -485,13 +526,50 @@ function buildRules(): Record<string, P> {
 
   rule("ob_no_body", () => space.then(str("No."), space, rules["number"]!));
 
+  // "ITU OB 1000" — metanorma-itu's docidentifier ("Annex to ITU OB %").
+  // Accepted as an input spelling only; it renders "ITU OB No. 1000", the
+  // form ITU's own bulletin site uses.
+  rule("ob_bare_body", () => space.then(rules["number"]!));
+
+  // The date as a bulletin prints it — "ITU-T OB.1096 - 15.III.2016": day,
+  // Roman month, year. The months are tried longest first, because PEG
+  // takes the first alternative that matches and "I" would otherwise win
+  // on "III"; "XIII" matches "XII", then fails on the required dot.
+  rule("roman_month", () =>
+    str("XII")
+      .or(str("XI"))
+      .or(str("X"))
+      .or(str("IX"))
+      .or(str("VIII"))
+      .or(str("VII"))
+      .or(str("VI"))
+      .or(str("V"))
+      .or(str("IV"))
+      .or(str("III"))
+      .or(str("II"))
+      .or(str("I")),
+  );
+
+  rule("ob_roman_date", () =>
+    str(" - ")
+      .then(
+        digit.repeat(2, 2).as("day"),
+        dot,
+        rules["roman_month"]!.as("roman_month"),
+        dot,
+        digit.repeat(4, 4).as("year"),
+      ),
+  );
+
+  rule("ob_date", () => rules["date_part"]!.or(rules["ob_roman_date"]!));
+
   rule("ob_with_sector", () =>
     rules["itu_prefix"]!
       .then(
         rules["sector"]!.then(space).maybe(),
         rules["ob_series"]!,
-        rules["ob_dot_body"]!.or(rules["ob_no_body"]!),
-        rules["date_part"]!.maybe(),
+        rules["ob_dot_body"]!.or(rules["ob_no_body"]!).or(rules["ob_bare_body"]!),
+        rules["ob_date"]!.maybe(),
         rules["language"]!.maybe(),
       ),
   );
@@ -505,7 +583,7 @@ function buildRules(): Record<string, P> {
         str("No."),
         space,
         rules["number"]!,
-        rules["date_part"]!.maybe(),
+        rules["ob_date"]!.maybe(),
         rules["language"]!.maybe(),
       ),
   );
@@ -573,6 +651,45 @@ function buildRules(): Record<string, P> {
       .as("common_text_twin"),
   );
 
+  // ITU's publication id — "T-REC-T.4-200307-I",
+  // "R-REC-BO.1130-5-202602-I": <sector>-REC-<number>[-<edition>]-<YYYYMM>
+  // [-<status>], the name ITU gives each edition in its URLs and PDF
+  // files. It builds the plain Recommendation it names and renders in the
+  // print form ("ITU-T T.4 (07/2003)"). The date is required: without it
+  // the string names no edition. No other rule starts with a bare sector
+  // letter, so the slot is free.
+  rule("publication_id", () =>
+    rules["sector"]!
+      .then(
+        dash,
+        str("REC"),
+        dash,
+        rules["series"]!,
+        dot,
+        rules["code"]!,
+        rules["yyyymm_date"]!,
+        rules["id_status"]!.maybe(),
+        rules["language"]!.maybe(),
+      ),
+  );
+
+  // The Radio Regulations — "ITU-R RR", "ITU-R RR (2020)", and the URL
+  // spelling "ITU-R RR-2020". Always ITU-R. The trailing any.absent? is
+  // load-bearing: PEG ordered choice never re-enters the alternation once
+  // an alternative succeeds, so a partial match on "ITU-R RR.1" must fail
+  // here and fall through to with_series.
+  rule("radio_regulations", () =>
+    rules["itu_prefix"]!
+      .then(
+        str("R").as("sector"),
+        space,
+        str("RR").as("radio_regulations"),
+        rules["date_part"]!.or(dash.then(digit.repeat(4, 4).as("year"))).maybe(),
+        rules["language"]!.maybe(),
+        match(".").absent(),
+      ),
+  );
+
   rule("identifier", () =>
     rules["annex_to_identifier"]!
       .or(
@@ -584,10 +701,12 @@ function buildRules(): Record<string, P> {
         rules["handbook"]!,
         rules["numeric_question"]!,
         rules["letter_question"]!,
+        rules["radio_regulations"]!,
         rules["with_series"]!,
         rules["contribution"]!,
         rules["series_code_identifier"]!,
         rules["without_series"]!,
+        rules["publication_id"]!,
       ),
   );
 
