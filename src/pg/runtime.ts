@@ -56,12 +56,21 @@ export type Schema = Record<string, EntrySchema>;
 export class PgRuntime {
   readonly artifact: PgArtifactJs;
   readonly schema: Schema;
+  readonly renderSpec: Record<string, RenderSegment[]>;
   readonly entry: string;
+
+  readonly defaultEntry: string | null;
 
   constructor(artifactJson: string, entry?: string) {
     this.artifact = new wasm.PgArtifactJs(artifactJson);
     this.schema = JSON.parse(this.artifact.schema()) as Schema;
-    this.entry = entry ?? this.artifact.entryNames()[0];
+    this.renderSpec =
+      (JSON.parse(artifactJson)["render"] as Record<string, RenderSegment[]>) ?? {};
+    // The compiler bakes default_entry: JSON key order is not preserved
+    // across engines, so the sorted entry list cannot rederive it.
+    this.defaultEntry =
+      (JSON.parse(artifactJson)["default_entry"] as string | undefined) ?? null;
+    this.entry = entry ?? this.defaultEntry ?? this.artifact.entryNames()[0];
   }
 
   /** Load an artifact JSON file and verify its checksum. */
@@ -114,10 +123,49 @@ export class PgRuntime {
     return materializeFromSchema(schema, bound);
   }
 
+  /** Render the identifier string from a bound map (F6). */
+  render(bound: Record<string, unknown>, variant = "default"): string {
+    return renderSegments(
+      (this.renderSpec[variant] ?? null) as RenderSegment[] | null,
+      bound,
+    );
+  }
+
+  /** Parse, bind, and render in one step. */
+  renderString(input: string, variant = "default"): string | null {
+    const bound = this.parseAndBind(input);
+    return bound === null ? null : this.render(bound, variant);
+  }
+
   /** Run the artifact's embedded tests; empty list means green. */
   runTests(): string[] {
     return JSON.parse(this.artifact.runTests()) as string[];
   }
+}
+
+export type RenderSegment =
+  | { type: "field"; field: string }
+  | { type: "literal"; text: string }
+  | { type: "cond"; field: string; then: RenderSegment[] };
+
+/** F6 v1 generic renderer: field / literal / cond-presence segments. */
+export function renderSegments(
+  segments: RenderSegment[] | null,
+  bound: Record<string, unknown>,
+): string {
+  let out = "";
+  for (const segment of segments ?? []) {
+    if (segment.type === "field") {
+      const value = bound[segment.field];
+      out += value === undefined || value === null ? "" : String(value);
+    } else if (segment.type === "literal") {
+      out += segment.text;
+    } else if (segment.type === "cond") {
+      const value = bound[segment.field];
+      if (value !== undefined && value !== null) out += renderSegments(segment.then, bound);
+    }
+  }
+  return out;
 }
 
 /** A schema-materialized identifier: typed fields plus provenance. */
