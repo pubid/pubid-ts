@@ -103,11 +103,12 @@ class IecBuilder {
     Object.assign(attrs, numberComponents(tree["number_with_part"]));
     // Letters-prefixed numbers (IECEE "CAB", "AD") only take digit-first
     // parts — "CAB-G01" rejects (Ruby parity; digit numbers like 61158-X
-    // keep letter parts).
+    // keep letter parts). "DIR" is the exception: the Directives number
+    // is its own grammar branch and takes letter parts ("DIR-IEC-SUP").
     const number = attrs["number"] as string | undefined;
     const part = attrs["part"] as string | undefined;
     if (
-      number !== undefined && /^[A-Z]{2,4}$/.test(number) &&
+      number !== undefined && /^[A-Z]{2,4}$/.test(number) && number !== "DIR" &&
       part !== undefined && /^[A-Za-z]/.test(part)
     ) {
       throw new ParseFailed(`IEC: letter part ${part} after letters number ${number}`, 0);
@@ -539,7 +540,18 @@ export function iecGrammarImplementation(): FlavorImplementation {
     parseUrn(urn: string): Identifier {
       const parsed = urnToCode(urn);
       if (!parsed) throw new Error(`Invalid IEC URN: ${urn}`);
-      const [code, lang, allParts] = parsed;
+      let [code, lang, allParts] = parsed;
+      // The "ser" slot names every part of the document: the reference
+      // wraps via to_all_parts, which strips the part and the date (a
+      // series names the document across editions, "IEC 60034 (all
+      // parts)"). The part rides dash-joined on the number, the date in
+      // its own slot.
+      if (allParts) {
+        code = code
+          .replace(/:[^:]*$/, "")
+          .replace(/\s(19|20)\d\d(-\d\d)?$/, "")
+          .replace(/-[^\s:-]+$/, "");
+      }
       // The reference parses the unprefixed rebuild and its grammar
       // defaults the IEC publisher; the ts grammar needs it explicit.
       const id = this.parse(code);
