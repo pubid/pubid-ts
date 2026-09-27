@@ -21,11 +21,12 @@ const IMPLEMENTED = new Set(Object.keys(fixture).filter((flavor) => {
   return impl !== undefined && typeof impl.parseUrn === "function";
 }));
 
-// Flavors where the REFERENCE's own nist round-trip is broken: its
-// renders embed debug artifacts ("{revision_simple: ...}") and its
-// grammar rejects supplement-stripped rebuilds. The ts stays faithful
-// to parse_urn; the divergent rows are counted, not asserted.
-const KNOWN_DIVERGENT = new Set(["nist", "iec"]);
+// One nist row where the REFERENCE's own render is broken: the dotted
+// revision spelling "8278.r1" leaks the raw parse subtree into the
+// number ("{revision_simple: ...}"), a nist builder defect — the ts
+// mirrors the parse, but the two engines' artifact strings cannot match
+// byte-for-byte. Counted, not asserted.
+const KNOWN_DIVERGENT = new Set(["nist"]);
 
 for (const [flavor, rows] of Object.entries(fixture)) {
   if (!IMPLEMENTED.has(flavor)) continue;

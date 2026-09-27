@@ -11,7 +11,8 @@ import { Language, PubidDate, Iteration } from "../../model/component.js";
 
 export type IecTypeCode =
   | "is" | "tr" | "ts" | "pas" | "srd" | "od" | "guide" | "ish"
-  | "frag" | "trf" | "tec" | "wp" | "sttr" | "amd" | "cor";
+  | "frag" | "trf" | "tec" | "wp" | "sttr" | "amd" | "cor"
+  | "cs" | "ca";
 
 export interface TypedStage {
   code: string;
@@ -40,7 +41,15 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("trf", "published", "trf", "TRF"),
   TS("amd", "published", "amd", "AMD"),
   TS("cor", "published", "cor", "COR"),
-  TS("np", "np", "is", "NP", "10.20"),
+  // IEC CS (Component Specifications) and IEC CA (Conformity Assessment):
+  // the abbreviation leads the code and the publisher renders as its
+  // default ("IEC CS 033200-TW0001", "IEC CA 01") — gem
+  // ComponentSpecification/ConformityAssessment.
+  TS("cs", "published", "cs", "CS"),
+  TS("ca", "published", "ca", "CA"),
+  // PNW owns harmonized 10.20 (gem: NP stages are 10.00/10.60/… — the
+  // URN "stage-10.20" slot resolves to PNW, not NP).
+  TS("np", "np", "is", "NP"),
   TS("pnw", "pnw", "is", "PNW", "10.20"),
   TS("pwi", "pwi", "is", "PWI", "00.00"),
   TS("anw", "anw", "is", "ANW"),
@@ -87,6 +96,8 @@ const TYPE_NAMES: Record<IecTypeCode, string | undefined> = {
   ts: "technical-specification",
   pas: "publicly-available-specification",
   srd: "systems-reference-document",
+  cs: "component-specification",
+  ca: "conformity-assessment",
   od: "operational-document",
   guide: "guide",
   ish: "interpretation-sheet",
@@ -534,7 +545,7 @@ function iecFragmentClass(): IdentifierStatic {
   return IecFragmentIdentifier as unknown as IdentifierStatic;
 }
 
-const SINGLE_KINDS: IecTypeCode[] = ["is", "tr", "ts", "pas", "srd", "od", "guide"];
+const SINGLE_KINDS: IecTypeCode[] = ["is", "tr", "ts", "pas", "srd", "od", "guide", "cs", "ca"];
 
 const KIND_CLASSES: Partial<Record<IecTypeCode, IdentifierStatic>> = {};
 for (const kind of SINGLE_KINDS) {

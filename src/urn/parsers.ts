@@ -529,7 +529,11 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       const revMatch = stripped.match(/^(.*)\.(r\d+)$/i);
       const code = revMatch ? revMatch[1] : stripped;
       const revision = revMatch ? revMatch[2] : undefined;
-      let text = `NIST ${label} ${code}`;
+      // The NBS-era series carry the NBS imprint in their canonical form
+      // ("NBS CSM 1") — the rebuild names the publisher the document
+      // carries, or the flavor parse rejects its own URN's rebuild.
+      const publisher = typeToken.toLowerCase() === "csm" ? "NBS" : "NIST";
+      let text = `${publisher} ${label} ${code}`;
       if (revision) text += revision;
       return parse(text);
     },
