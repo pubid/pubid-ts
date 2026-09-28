@@ -1,20 +1,20 @@
 /* @ts-self-types="./parsanol.d.ts" */
 
 /**
- * A verified PG artifact exposed to JavaScript: checksum-verified load,
+ * A verified PARG artifact exposed to JavaScript: checksum-verified load,
  * native parse, bindings application, embedded-suite runs and the
  * binding-requirements schema (PN 2/4).
  */
-class PgArtifactJs {
+class PargArtifactJs {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        PgArtifactJsFinalization.unregister(this);
+        PargArtifactJsFinalization.unregister(this);
         return ptr;
     }
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_pgartifactjs_free(ptr, 0);
+        wasm.__wbg_pargartifactjs_free(ptr, 0);
     }
     /**
      * Apply an entry's bindings to a parsanol-shape tree (JSON text).
@@ -27,7 +27,7 @@ class PgArtifactJs {
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(shape_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.pgartifactjs_applyBindings(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.pargartifactjs_applyBindings(this.__wbg_ptr, ptr0, len0, ptr1, len1);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -38,7 +38,7 @@ class PgArtifactJs {
      * @returns {string[]}
      */
     entryNames() {
-        const ret = wasm.pgartifactjs_entryNames(this.__wbg_ptr);
+        const ret = wasm.pargartifactjs_entryNames(this.__wbg_ptr);
         var v1 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
         return v1;
@@ -50,12 +50,12 @@ class PgArtifactJs {
     constructor(artifact_json) {
         const ptr0 = passStringToWasm0(artifact_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.pgartifactjs_new(ptr0, len0);
+        const ret = wasm.pargartifactjs_new(ptr0, len0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         this.__wbg_ptr = ret[0] >>> 0;
-        PgArtifactJsFinalization.register(this, this.__wbg_ptr, this);
+        PargArtifactJsFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
     /**
@@ -69,7 +69,7 @@ class PgArtifactJs {
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.pgartifactjs_parseAndBind(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.pargartifactjs_parseAndBind(this.__wbg_ptr, ptr0, len0, ptr1, len1);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -87,7 +87,7 @@ class PgArtifactJs {
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.pgartifactjs_parseShape(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        const ret = wasm.pargartifactjs_parseShape(this.__wbg_ptr, ptr0, len0, ptr1, len1);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -99,7 +99,7 @@ class PgArtifactJs {
      * @returns {string}
      */
     runTests() {
-        const ret = wasm.pgartifactjs_runTests(this.__wbg_ptr);
+        const ret = wasm.pargartifactjs_runTests(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -110,7 +110,7 @@ class PgArtifactJs {
      * @returns {string}
      */
     schema() {
-        const ret = wasm.pgartifactjs_schema(this.__wbg_ptr);
+        const ret = wasm.pargartifactjs_schema(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -121,15 +121,15 @@ class PgArtifactJs {
      * @returns {string}
      */
     schemaTypescript() {
-        const ret = wasm.pgartifactjs_schemaTypescript(this.__wbg_ptr);
+        const ret = wasm.pargartifactjs_schemaTypescript(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
 }
-if (Symbol.dispose) PgArtifactJs.prototype[Symbol.dispose] = PgArtifactJs.prototype.free;
-exports.PgArtifactJs = PgArtifactJs;
+if (Symbol.dispose) PargArtifactJs.prototype[Symbol.dispose] = PargArtifactJs.prototype.free;
+exports.PargArtifactJs = PargArtifactJs;
 
 /**
  * WASM parser instance
@@ -155,13 +155,13 @@ class WasmParser {
         wasm.__wbg_wasmparser_free(ptr, 0);
     }
     /**
-     * Create a new parser from a PG artifact envelope and entry name.
+     * Create a new parser from a PARG artifact envelope and entry name.
      *
      * The artifact's canonical checksum is verified before any parsing;
      * a mismatched or corrupt artifact is rejected (PN 2).
      *
      * # Arguments
-     * * `artifact_json` - JSON text of the PG artifact envelope
+     * * `artifact_json` - JSON text of the PARG artifact envelope
      * * `entry` - entry point name declared in the artifact
      * @param {string} artifact_json
      * @param {string} entry
@@ -381,9 +381,9 @@ function __wbg_get_imports() {
     };
 }
 
-const PgArtifactJsFinalization = (typeof FinalizationRegistry === 'undefined')
+const PargArtifactJsFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_pgartifactjs_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_pargartifactjs_free(ptr >>> 0, 1));
 const WasmParserFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_wasmparser_free(ptr >>> 0, 1));

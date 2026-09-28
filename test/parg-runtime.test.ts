@@ -9,12 +9,12 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { PgRuntime } from "../src/pg/runtime.js";
-import { loadSuites, runSuite, suitesDir } from "../src/pg/suite.js";
+import { PgRuntime } from "../src/parg/runtime.js";
+import { loadSuites, runSuite, suitesDir } from "../src/parg/suite.js";
 
 const skipReason = existsSync(join(PgRuntime.artifactsDir(), "iso.json"))
   ? false
-  : "pubid-grammar artifacts not available (PG_ARTIFACT_DIR unset, sibling checkout absent)";
+  : "pubid-grammar artifacts not available (PARG_ARTIFACT_DIR unset, sibling checkout absent)";
 
 test(
   "iso artifact loads with verified checksum and exposes entries",
