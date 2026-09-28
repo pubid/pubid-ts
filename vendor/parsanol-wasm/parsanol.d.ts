@@ -2,11 +2,11 @@
 /* eslint-disable */
 
 /**
- * A verified PG artifact exposed to JavaScript: checksum-verified load,
+ * A verified PARG artifact exposed to JavaScript: checksum-verified load,
  * native parse, bindings application, embedded-suite runs and the
  * binding-requirements schema (PN 2/4).
  */
-export class PgArtifactJs {
+export class PargArtifactJs {
     free(): void;
     [Symbol.dispose](): void;
     /**
@@ -54,13 +54,13 @@ export class WasmParser {
     free(): void;
     [Symbol.dispose](): void;
     /**
-     * Create a new parser from a PG artifact envelope and entry name.
+     * Create a new parser from a PARG artifact envelope and entry name.
      *
      * The artifact's canonical checksum is verified before any parsing;
      * a mismatched or corrupt artifact is rejected (PN 2).
      *
      * # Arguments
-     * * `artifact_json` - JSON text of the PG artifact envelope
+     * * `artifact_json` - JSON text of the PARG artifact envelope
      * * `entry` - entry point name declared in the artifact
      */
     static fromArtifact(artifact_json: string, entry: string): WasmParser;

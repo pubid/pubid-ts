@@ -1,7 +1,7 @@
 //! PG artifact runtime for TypeScript (TODO 12 / T1): checksum-verified
 //! artifact load, native wasm parse, bindings application, and
 //! schema-driven materialization. The engine is the vendored
-//! parsanol wasm package (PgArtifactJs, C9) — no grammar code lives in
+//! parsanol wasm package (PargArtifactJs, C9) — no grammar code lives in
 //! this repo; the artifact is the contract.
 
 import { createRequire } from "node:module";
@@ -10,10 +10,10 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PgArtifactJs = any;
+type PargArtifactJs = any;
 
 interface WasmModule {
-  PgArtifactJs: new (artifactJson: string) => PgArtifactJs;
+  PargArtifactJs: new (artifactJson: string) => PargArtifactJs;
 }
 
 /** Walk up from this module to the package root (which holds package.json). */
@@ -54,7 +54,7 @@ export type Schema = Record<string, EntrySchema>;
  * Construction throws when the checksum does not verify.
  */
 export class PgRuntime {
-  readonly artifact: PgArtifactJs;
+  readonly artifact: PargArtifactJs;
   readonly schema: Schema;
   readonly renderSpec: Record<string, RenderSegment[]>;
   readonly entry: string;
@@ -65,7 +65,7 @@ export class PgRuntime {
 
   constructor(artifactJson: string, entry?: string) {
     this.envelope = JSON.parse(artifactJson) as Record<string, unknown>;
-    this.artifact = new wasm.PgArtifactJs(artifactJson);
+    this.artifact = new wasm.PargArtifactJs(artifactJson);
     this.schema = JSON.parse(this.artifact.schema()) as Schema;
     this.renderSpec =
       (this.envelope["render"] as Record<string, RenderSegment[]>) ?? {};
@@ -83,7 +83,7 @@ export class PgRuntime {
 
   /** The default artifacts directory (the pubid-grammar checkout). */
   static artifactsDir(): string {
-    const env = process.env.PG_ARTIFACT_DIR;
+    const env = process.env.PARG_ARTIFACT_DIR;
     if (env) return env;
     // pubid-grammar is a sibling checkout in the pubid workspace.
     return join(packageRoot(), "..", "pubid-grammar", "artifacts");
