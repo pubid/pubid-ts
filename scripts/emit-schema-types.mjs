@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const wasm = require(createRequire(import.meta.url).resolve("../vendor/parsanol-wasm/parsanol.js"));
+const wasm = require(createRequire(import.meta.url).resolve("parsanol/vendor/parsanol-wasm/parsanol.cjs"));
 
 const dir = process.env.PARG_ARTIFACT_DIR ?? new URL("../../../pubid/pubid-grammar/artifacts", import.meta.url).pathname;
 const outDir = new URL("../src/parg/generated/", import.meta.url).pathname;

@@ -1,234 +1,41 @@
-//! PG artifact runtime for TypeScript (TODO 12 / T1): checksum-verified
-//! artifact load, native wasm parse, bindings application, and
-//! schema-driven materialization. The engine is the vendored
-//! parsanol wasm package (PargArtifactJs, C9) — no grammar code lives in
-//! this repo; the artifact is the contract.
+//! The PARG artifact runtime for pubid: a thin adapter over the
+//! published `parsanol` npm package (the wasm engine), adding the
+//! pubid-workspace artifacts directory convention. No grammar code and
+//! no vendored engine copy live in this repo; the baked artifact is
+//! the contract and the engine ships from the registry.
 
-import { createRequire } from "node:module";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { PargRuntime as EngineRuntime } from "parsanol";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PargArtifactJs = any;
-
-interface WasmModule {
-  PargArtifactJs: new (artifactJson: string) => PargArtifactJs;
-}
+export type { FieldRequirement, EntrySchema, Schema } from "parsanol";
+export { PargRuntime } from "parsanol";
 
 /** Walk up from this module to the package root (which holds package.json). */
 function packageRoot(): string {
   let dir = dirname(fileURLToPath(import.meta.url));
   for (; !existsSync(join(dir, "package.json")); dir = dirname(dir)) {
-    if (dir === dirname(dir)) throw new Error("package.json not found above pg runtime");
+    if (dir === dirname(dir)) throw new Error("package.json not found above the parg runtime");
   }
   return dir;
 }
 
-// The vendored wasm glue is CommonJS and lives outside the compiled tree,
-// so resolve it against the package root at runtime.
-const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const wasm: WasmModule = require(
-  join(packageRoot(), "vendor", "parsanol-wasm", "parsanol.js"),
-);
-
-/** A field requirement from the binding-requirements schema. */
-export interface FieldRequirement {
-  type: string;
-  card: string;
-  preprocess?: string;
+/** The artifacts directory: PARG_ARTIFACT_DIR, else the sibling
+ * pubid-grammar checkout of the pubid workspace. */
+export function artifactsDir(): string {
+  const env = process.env.PARG_ARTIFACT_DIR;
+  if (env) return env;
+  return join(packageRoot(), "..", "pubid-grammar", "artifacts");
 }
 
-/** The binding-requirements schema record for one entry. */
-export interface EntrySchema {
-  root: string;
-  fields: Record<string, FieldRequirement>;
-  examples: { input: string; captures: Record<string, unknown> }[];
-}
-
-export type Schema = Record<string, EntrySchema>;
-
-/**
- * A loaded, checksum-verified PG artifact with its schema.
- * Construction throws when the checksum does not verify.
- */
-export class PgRuntime {
-  readonly artifact: PargArtifactJs;
-  readonly schema: Schema;
-  readonly renderSpec: Record<string, RenderSegment[]>;
-  readonly entry: string;
-
-  readonly defaultEntry: string | null;
-
-  readonly envelope: Record<string, unknown>;
-
-  constructor(artifactJson: string, entry?: string) {
-    this.envelope = JSON.parse(artifactJson) as Record<string, unknown>;
-    this.artifact = new wasm.PargArtifactJs(artifactJson);
-    this.schema = JSON.parse(this.artifact.schema()) as Schema;
-    this.renderSpec =
-      (this.envelope["render"] as Record<string, RenderSegment[]>) ?? {};
-    // The compiler bakes default_entry: JSON key order is not preserved
-    // across engines, so the sorted entry list cannot rederive it.
-    this.defaultEntry =
-      (JSON.parse(artifactJson)["default_entry"] as string | undefined) ?? null;
-    this.entry = entry ?? this.defaultEntry ?? this.artifact.entryNames()[0];
-  }
-
-  /** Load an artifact JSON file and verify its checksum. */
-  static fromFile(path: string, entry?: string): PgRuntime {
-    return new PgRuntime(readFileSync(path, "utf8"), entry);
-  }
-
-  /** The default artifacts directory (the pubid-grammar checkout). */
+/** The pubid flavor runtime: loads baked artifacts from the workspace. */
+export class PubidRuntime extends EngineRuntime {
   static artifactsDir(): string {
-    const env = process.env.PARG_ARTIFACT_DIR;
-    if (env) return env;
-    // pubid-grammar is a sibling checkout in the pubid workspace.
-    return join(packageRoot(), "..", "pubid-grammar", "artifacts");
+    return artifactsDir();
   }
 
-  static load(grammar: string, entry?: string): PgRuntime {
-    return PgRuntime.fromFile(join(PgRuntime.artifactsDir(), `${grammar}.json`), entry);
+  static load(grammar: string, entry?: string): EngineRuntime {
+    return EngineRuntime.fromFile(join(artifactsDir(), `${grammar}.json`), entry);
   }
-
-  /** Parse with the native wasm engine; returns the parsanol-shape tree. */
-  parseShape(input: string): unknown {
-    return JSON.parse(this.artifact.parseShape(this.entry, input));
-  }
-
-  /** Apply the entry's bindings to a parsanol-shape tree. */
-  applyBindings(shape: unknown): Record<string, unknown> {
-    return JSON.parse(this.artifact.applyBindings(this.entry, JSON.stringify(shape)));
-  }
-
-  /** Parse and bind in one step. */
-  parseAndBind(input: string): Record<string, unknown> | null {
-    try {
-      return JSON.parse(this.artifact.parseAndBind(this.entry, input));
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Schema-driven materialization: the schema (from the artifact, not
-   * hand-written model code) declares the fields a data model must
-   * implement; the bound captures populate a structurally-typed object.
-   * Card `1*`/`*` fields become arrays; `0..1` fields become nullable.
-   */
-  materialize(input: string): Materialized | null {
-    const bound = this.parseAndBind(input);
-    if (bound === null) return null;
-    const schema = this.schema[this.entry];
-    if (!schema) throw new Error(`artifact has no schema for entry ${this.entry}`);
-    return materializeFromSchema(schema, bound);
-  }
-
-  /** Render the identifier string from a bound map (F6). */
-  render(bound: Record<string, unknown>, variant = "default"): string {
-    return renderSegments(
-      (this.renderSpec[variant] ?? null) as RenderSegment[] | null,
-      bound,
-    );
-  }
-
-  /** Parse, bind, and render in one step. */
-  renderString(input: string, variant = "default"): string | null {
-    const bound = this.parseAndBind(input);
-    return bound === null ? null : this.render(bound, variant);
-  }
-
-  /** Evaluate a named derive spec against a bound map (F6). */
-  derive(name: string, bound: Record<string, unknown>): string {
-    return deriveTemplate(
-      (this.envelope["derive"] ?? {}) as Record<string, string>,
-      name,
-      bound,
-    );
-  }
-
-  /** Parse, bind, and evaluate a derive spec in one step. */
-  deriveString(input: string, name: string): string | null {
-    const bound = this.parseAndBind(input);
-    return bound === null ? null : this.derive(name, bound);
-  }
-
-  /** Run the artifact's embedded tests; empty list means green. */
-  runTests(): string[] {
-    return JSON.parse(this.artifact.runTests()) as string[];
-  }
-}
-
-/** F6 v1 derive evaluator: {field} interpolates from the bound map. */
-export function deriveTemplate(
-  derive: Record<string, string>,
-  name: string,
-  bound: Record<string, unknown>,
-): string {
-  const template = derive[name];
-  if (template === undefined) throw new Error(`derive spec ${name} not declared`);
-  return template.replace(/\{(\w+)\}/g, (_, field: string) => {
-    const value = bound[field];
-    return value === undefined || value === null ? "" : String(value);
-  });
-}
-
-export type RenderSegment =
-  | { type: "field"; field: string }
-  | { type: "literal"; text: string }
-  | { type: "cond"; field: string; then: RenderSegment[] };
-
-/** F6 v1 generic renderer: field / literal / cond-presence segments. */
-export function renderSegments(
-  segments: RenderSegment[] | null,
-  bound: Record<string, unknown>,
-): string {
-  let out = "";
-  for (const segment of segments ?? []) {
-    if (segment.type === "field") {
-      const value = bound[segment.field];
-      out += value === undefined || value === null ? "" : String(value);
-    } else if (segment.type === "literal") {
-      out += segment.text;
-    } else if (segment.type === "cond") {
-      const value = bound[segment.field];
-      if (value !== undefined && value !== null) out += renderSegments(segment.then, bound);
-    }
-  }
-  return out;
-}
-
-/** A schema-materialized identifier: typed fields plus provenance. */
-export interface Materialized {
-  entry: string;
-  attributes: Record<string, unknown>;
-}
-
-/**
- * Schema-driven materialization independent of any wasm handle —
- * the same function the model layer will build on (T2 codegen emits the
- * static view of exactly these fields).
- */
-export function materializeFromSchema(
-  schema: EntrySchema,
-  bound: Record<string, unknown>,
-): Materialized {
-  const attributes: Record<string, unknown> = {};
-  for (const [path, requirements] of Object.entries(schema.fields)) {
-    const leaf = path.includes("[]")
-      ? (path.split("].").pop() ?? path)
-      : path;
-    const value = bound[leaf];
-    if (requirements.card.endsWith("*")) {
-      const list = Array.isArray(value) ? value : value === undefined ? [] : [value];
-      attributes[leaf] = list;
-    } else if (requirements.card === "0..1") {
-      attributes[leaf] = value === undefined ? null : value;
-    } else {
-      attributes[leaf] = value;
-    }
-  }
-  return { entry: schema.root, attributes };
 }
