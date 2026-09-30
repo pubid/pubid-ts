@@ -9,10 +9,10 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { PgRuntime } from "../src/parg/runtime.js";
+import { PubidRuntime } from "../src/parg/runtime.js";
 import { loadSuites, runSuite, suitesDir } from "../src/parg/suite.js";
 
-const skipReason = existsSync(join(PgRuntime.artifactsDir(), "iso.json"))
+const skipReason = existsSync(join(PubidRuntime.artifactsDir(), "iso.json"))
   ? false
   : "pubid-grammar artifacts not available (PARG_ARTIFACT_DIR unset, sibling checkout absent)";
 
@@ -20,7 +20,7 @@ test(
   "iso artifact loads with verified checksum and exposes entries",
   { skip: skipReason },
   () => {
-    const runtime = PgRuntime.load("iso");
+    const runtime = PubidRuntime.load("iso");
     assert.deepEqual(runtime.artifact.entryNames(), ["identifier", "idf.identifier"]);
   },
 );
@@ -29,7 +29,7 @@ test(
   "schema-driven materialization produces typed attributes (T1)",
   { skip: skipReason },
   () => {
-    const runtime = PgRuntime.load("iso");
+    const runtime = PubidRuntime.load("iso");
     const materialized = runtime.materialize("ISO 5537:2025");
     assert.ok(materialized, "ISO 5537:2025 must parse");
     assert.equal(materialized.entry, "identifier");
@@ -48,12 +48,12 @@ test(
 );
 
 test("embedded tests run green through the wasm engine (T3)", { skip: skipReason }, () => {
-  const runtime = PgRuntime.load("iso");
+  const runtime = PubidRuntime.load("iso");
   assert.deepEqual(runtime.runTests(), []);
 });
 
 test("external *.pgtest suites run green through wasm (T3)", { skip: skipReason }, () => {
-  const runtime = PgRuntime.load("iso", "identifier");
+  const runtime = PubidRuntime.load("iso", "identifier");
   const suites = loadSuites(suitesDir());
   assert.ok(suites.length >= 1, "at least one suite file expected");
   for (const suite of suites) {
@@ -63,11 +63,11 @@ test("external *.pgtest suites run green through wasm (T3)", { skip: skipReason 
 });
 
 test("reject inputs are rejected by the wasm engine", { skip: skipReason }, () => {
-  const runtime = PgRuntime.load("iso");
+  const runtime = PubidRuntime.load("iso");
   assert.equal(runtime.parseAndBind("nonsense"), null);
 });
 
 test("derived URN matches the Ruby reference (F6 derive)", { skip: skipReason }, () => {
-  const runtime = PgRuntime.load("iso");
+  const runtime = PubidRuntime.load("iso");
   assert.equal(runtime.deriveString("ISO 5537:2025", "urn"), "urn:iso:std:5537:2025");
 });
