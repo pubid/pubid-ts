@@ -724,7 +724,34 @@ class IeeeBuilder {
 
     if (parsed["draft_version"] !== undefined) {
       const draftVer = (extractValue(parsed["draft_version"]) ?? "").replace(/^D/, "");
-      if (draftVer !== "") attributes["ieee_draft"] = `D${draftVer}`;
+      if (draftVer !== "") {
+        // A date trailing the draft (", June 2010") belongs to the draft
+        // component (canonical month, comma form); the identity
+        // year/month the promotion filled from the same captures are
+        // vacated. Stage-first ISO rows are exempt: their canonical is
+        // the ISO face, which prints the date from the identity slots
+        // (", March 2017", pubid#216).
+        if (parsed["draft_month"] !== undefined && parsed["iso_stage"] === undefined) {
+          const draftObj = new IeeeDraft({
+            version: draftVer,
+            month: extractValue(parsed["draft_month"]),
+            year: extractValue(parsed["draft_year"]),
+            comma_before_month: true,
+          });
+          attributes["draft"] = draftObj.render();
+          if (parsed["year"] === undefined) delete attributes["year"];
+          if (parsed["month"] === undefined) delete attributes["month"];
+        } else if (parsed["draft_year"] !== undefined && parsed["iso_stage"] === undefined) {
+          // The comma-year tail captures its separator (", 2013") —
+          // strip it (the #471 separator-in-capture rule). The stored
+          // form keeps the comma so it re-parses through the same tail.
+          const draftYear = (extractValue(parsed["draft_year"]) ?? "").replace(/^[, ]+/, "");
+          attributes["draft"] = `/D${draftVer}, ${draftYear}`;
+          if (parsed["year"] === undefined) delete attributes["year"];
+        } else {
+          attributes["ieee_draft"] = `D${draftVer}`;
+        }
+      }
     }
 
     // The "(E)" edition marker of an ISO/IEC label rides on the joint
@@ -838,6 +865,31 @@ class IeeeBuilder {
       attributes["type"] = "P";
       const record = locateStage("P");
       if (record !== undefined) attributes["typed_stage"] = new IeeeTypedStage(record);
+    }
+
+    // A plain IEEE-designator draft on joint publishers ("/D8, June
+    // 2010") carries no ISO stage machinery: it builds as the project
+    // draft its bare-IEEE twin and the D= designator rows already pin
+    // (pubid#430) rather than the joint-development model.
+    if (
+      attributes["draft"] !== undefined &&
+      parsed["iso_stage"] === undefined &&
+      parsed["iec_stage"] === undefined &&
+      parsed["amd_number"] === undefined
+    ) {
+      const pubs = (attributes["publishers"] ?? []) as string[];
+      const projectAttrs: Record<string, unknown> = {
+        code: attributes["code"],
+        draft: attributes["draft"],
+      };
+      if (pubs.length > 0) {
+        projectAttrs["publisher"] = pubs[0];
+        if (pubs.length > 1) projectAttrs["copublisher"] = pubs.slice(1);
+      }
+      if (attributes["draft_status"] !== undefined) {
+        projectAttrs["draft_status"] = attributes["draft_status"];
+      }
+      return new ProjectDraftIdentifierClass(projectAttrs as never) as unknown as Identifier;
     }
 
     const joint = new JointDevelopmentClass(attributes) as unknown as Identifier;

@@ -140,6 +140,16 @@ export class IeeeCode {
   }
 }
 
+// Canonical month spelling (mirrors the gem's CANONICAL_ABBREVIATIONS):
+// full names normalize onto the crawl abbreviation, and "September"
+// keeps its IEEE "Sept" form — the 3-letter "Sep" folds onto it, so
+// every spelling of September renders and hashes alike.
+const DRAFT_MONTH_CANONICAL: Record<string, string> = {
+  January: "Jan", February: "Feb", March: "Mar", April: "Apr",
+  June: "Jun", July: "Jul", August: "Aug", September: "Sept",
+  October: "Oct", November: "Nov", December: "Dec", Sep: "Sept",
+};
+
 const DRAFT_MONTH_NAMES: Record<string, string> = {
   January: "1", February: "2", March: "3", April: "4", May: "5", June: "6",
   July: "7", August: "8", September: "9", October: "10", November: "11",
@@ -167,9 +177,15 @@ export class IeeeDraft {
     this.isoStage = attrs["iso_stage"] as string | undefined;
     this.isoIteration = attrs["iso_iteration"] as string | undefined;
     this.year = attrs["year"] as string | undefined;
-    this.originalMonth = attrs["month"] as string | undefined;
-    this.month = attrs["month"] !== undefined
-      ? DRAFT_MONTH_NAMES[String(attrs["month"])] ?? String(attrs["month"])
+    // Canonical month spelling: the crawl abbreviation ("September" →
+    // "Sept"); the 3-letter "Sep" folds onto the IEEE "Sept" form, so
+    // every spelling of September renders — and hashes — alike.
+    const rawMonth = attrs["month"] as string | undefined;
+    this.originalMonth = rawMonth !== undefined
+      ? DRAFT_MONTH_CANONICAL[rawMonth.replace(/\.$/, "")] ?? rawMonth
+      : undefined;
+    this.month = rawMonth !== undefined
+      ? DRAFT_MONTH_NAMES[String(this.originalMonth)] ?? String(this.originalMonth)
       : undefined;
     this.day = attrs["day"] as string | undefined;
     this.commaBeforeMonth = attrs["comma_before_month"] === true;
