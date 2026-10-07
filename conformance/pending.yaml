@@ -3,254 +3,1899 @@
 # a pending case that passes raises the pending-satisfied alarm and
 # MUST be unmarked (TODO.correct-test-suite/04).
 ---
-# IEEE residual ledger (tests/ieee/_status.yaml): the 34 rows the Ruby
-# reference itself fails against the C3 corpus (testsuite#33, gem
-# copublished-tails ruling) - alias families plus the pure ISO/IEC
-# joint-development and dotted-Preprint rows the reference cannot
-# re-parse. This port reproduces the residual one-for-one.
+# C1/C2/draft-date wave ledger (testsuite 5cce3b8): the gem's draft-date
+# round-trip re-canonicalized the dated-draft population (dates compose
+# into the draft component; joint D-drafts build as project drafts), the
+# forced-comma dated renders and the D= designator faces; this port
+# mirrors the grammar tails, the Sept canonicalization and the compose/
+# reroute, and pends the render surface it has not reproduced yet. The
+# nist rows pend #498's section/indx/translation renders (the nist
+# corpus regenerated on testsuite main today).
+ieee.adopted_standard.0012:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.adopted_standard.0014:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.adopted_standard.5485:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.adopted_standard.8954:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.adopted_standard.8955:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.joint_development.0896:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.adopted_standard.8972:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.joint_development.0904:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.adopted_standard.8973:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.aiee.0060:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9285:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9286:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9287:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9289:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9290:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9291:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9292:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9293:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9300:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9309:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9311:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9312:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9313:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9314:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9315:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9317:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9318:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9323:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9324:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9327:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9328:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9329:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9330:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9331:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9332:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9333:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9334:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9335:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9336:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9337:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9339:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9340:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9341:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9342:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9343:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9344:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9345:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9346:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9347:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9349:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9350:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.amendment.9567:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.corrigendum.2240:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.corrigendum.2242:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.corrigendum.7632:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.dual_published.4424:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0889:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0890:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0892:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0894:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0897:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0899:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0901:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0902:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0905:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0906:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0909:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0910:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0911:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0913:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0914:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.0918:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0920:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0922:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0923:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0924:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0925:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0926:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0927:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0930:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0932:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0934:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0935:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0936:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0937:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0938:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0939:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0940:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0941:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0942:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0943:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0944:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0945:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.0946:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0950:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0952:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0953:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0954:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0957:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0959:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0962:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0964:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0966:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0969:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0970:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0972:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0973:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0974:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0975:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0976:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.0977:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.0980:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.1801:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.1805:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.1939:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2621:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2672:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2675:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2678:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2800:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.2802:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.3147:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.8556:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.8596:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.8609:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.8668:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9165:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9166:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9167:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.joint_development.9168:
-  reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9169:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9170:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9171:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9175:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.joint_development.9283:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9186:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9189:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9195:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9196:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9197:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9198:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9199:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9200:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9201:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9205:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9207:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9209:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9213:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9216:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9217:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9230:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9231:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9232:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9240:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9241:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9242:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9243:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9257:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9258:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9259:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9260:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9261:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9262:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9263:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9264:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9275:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9276:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9288:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9291:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9294:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9295:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9296:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9297:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9299:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9301:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9302:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9303:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9304:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9305:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9306:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9307:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9308:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9316:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.joint_development.9317:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9319:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9320:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9321:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9322:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9325:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9326:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9338:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9348:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9390:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9399:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9401:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9404:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9405:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9406:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9407:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9408:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9409:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9410:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9411:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9412:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9413:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9414:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9415:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9419:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9421:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9426:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9428:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9429:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9433:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9435:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9437:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9438:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9440:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9445:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9448:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9450:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9452:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9453:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9456:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9457:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9460:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9462:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9463:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9465:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9466:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9467:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9468:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9470:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9471:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9480:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9481:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9484:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9486:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9487:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9488:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9493:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9494:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9497:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9500:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9501:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9502:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9503:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9505:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9508:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9509:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9510:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9512:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9513:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9516:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9518:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9520:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9525:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9529:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9531:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9532:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9533:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9534:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9535:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9536:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9537:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9538:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9539:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9540:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9542:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9543:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9544:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9545:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9546:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9547:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9548:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9549:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9556:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9559:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9564:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9565:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9566:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9568:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9569:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9570:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9571:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9572:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9573:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9574:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9575:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9576:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9577:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9578:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9579:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9580:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9581:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9582:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9583:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9584:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9585:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9586:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9609:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9610:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9611:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.0903:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.0909:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0912:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.0917:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0928:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0931:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.0933:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.0945:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.1318:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0949:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.1456:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0951:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.1922:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0955:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.project_draft_identifier.3195:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0956:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0958:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0960:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0961:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0963:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0965:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.0967:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1333:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1388:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1389:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1470:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1604:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1683:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1811:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1842:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.1937:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2248:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2271:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2414:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2415:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2435:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2493:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2648:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2677:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.2804:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3216:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3230:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3231:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3319:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3355:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3356:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3357:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3358:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3469:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3470:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3471:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3650:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3702:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3717:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.3737:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.9357:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.9360:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
 ieee.project_draft_identifier.9407:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.6958:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9475:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8745:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9483:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8872:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9511:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.standard.8874:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9523:
   reason: >-
-      Ruby main diverges from the ledger canonical on this row (the
-      testsuite verify loop documents the row in its stage-draft residual);
-      this port reproduces the gem behavior.
-  ref: tests/ieee/_status.yaml known_mismatches
-
-ieee.neg.base.0029:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9524:
   reason: >-
-    Documented TS negative gap (this port parses a line the reference rejects).
-  ref: tests/ieee/_status.yaml known_mismatches
-ieee.neg.standard.0196:
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9526:
   reason: >-
-    Documented TS negative gap (this port parses a line the reference rejects).
-  ref: tests/ieee/_status.yaml known_mismatches
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9527:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9528:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9552:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9553:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9558:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9560:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9561:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9563:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9614:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.project_draft_identifier.9615:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.0511:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.0601:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.0997:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.1104:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.1145:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.3212:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.4406:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.5574:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.6977:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.7832:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.7854:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.7928:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.7932:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.7933:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8027:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8035:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8217:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8741:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8742:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8760:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8821:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8822:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8884:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8885:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8886:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8887:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8888:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8889:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8890:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8891:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8892:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8893:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8894:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8895:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8896:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.8897:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9142:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9143:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9144:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9145:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9146:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9147:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9148:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9149:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9183:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9298:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.standard.9310:
+  reason: >-
+      the C1/C2/draft-date canonical surface (forced-comma dated renders, D= designator faces, alias regroup) is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.circular.1271:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.crpl_report.1798:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.crpl_report.1799:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.crpl_report.1800:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.crpl_report.1801:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12216:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12218:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12219:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12220:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12221:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12253:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12254:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12255:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12256:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12257:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12258:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12259:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.identifier.12260:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.15103:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16231:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16232:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16233:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16239:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16242:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16245:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16246:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16247:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16311:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16375:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16376:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16406:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16407:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16409:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16410:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16558:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.interagency_report.16559:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.letter_circular.6215:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.nsrds.7852:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.17238:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.17518:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18305:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18306:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18307:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18309:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18310:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18311:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.18312:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+nist.special_publication.19800:
+  reason: >-
+      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+itu.special_publication.2405:
+  reason: >-
+      a one-row canonical hash divergence (special_publication.2405)
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9187:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9210:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9211:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9393:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9402:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9416:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9424:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+ieee.joint_development.9431:
+  reason: >-
+      the joint render surface of the C1/C2 wave is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)

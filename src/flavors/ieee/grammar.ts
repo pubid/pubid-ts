@@ -229,7 +229,9 @@ function buildRules(): Record<string, P> {
 
   rule("draft_date", () =>
     (
-      comma.or(space).then(monthName().as("month")).then(space).then(R("year_digits").as("year"))
+      // The canonical forced-comma render (", Feb, 2011") comma-joins
+      // the month and year, matching the joint tails.
+      comma.or(space).then(monthName().as("month")).then(space.or(comma)).then(R("year_digits").as("year"))
     ).or(
       // Space-separated bare year after the draft designator
       // ("IEEE Draft Std P14764/D1 2004, Nov 2004" - the "D1 2004" draft
@@ -638,7 +640,7 @@ function buildRules(): Record<string, P> {
             .then(match("[0-9.]").repeat(1, Infinity).as("draft_version"))
             .then(
               (
-                (comma.or(space)).then(monthName().as("draft_month")).then(space)
+                (comma.or(space)).then(monthName().as("draft_month")).then(space.or(comma))
                   .then(R("year_digits").as("draft_year"))
               ).or(comma.then(R("year_digits").as("draft_year"))).maybe(),
             ),

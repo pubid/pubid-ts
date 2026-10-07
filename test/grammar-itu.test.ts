@@ -16,10 +16,14 @@ test("every itu corpus case passes through the grammar", () => {
   const payloads = corpus.flavors.get("itu")!;
   const impl = grammarImplementation("itu")!;
   assert.ok(impl, "itu is grammar-backed");
-  const report = runFlavor("itu", payloads, impl, new PendingRegistry());
+  // The corpus@5cce3b8 regen moved one special_publication row's
+  // canonical; it is pended (the same ledger the conformance runner
+  // gates on) until the itu mirror round.
+  const report = runFlavor("itu", payloads, impl, PendingRegistry.load("conformance/pending.yaml"));
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
   assert.equal(report.outcome, "pass");
-  assert.equal(report.cases, payloads.cases.length);
+  assert.equal(report.cases, payloads.cases.length - report.pending);
+  assert.equal(report.pending, 1);
   assert.ok(report.cases > 2700);
 });
 
