@@ -547,6 +547,12 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       const parts = splitParts(body);
       const [, code, year] = parts;
       let text = `IEEE Std ${code}`;
+      // A "-YYYY-MM" tail is a dated reference (year + numeric month),
+      // mirroring the gem's urn parser; it re-parses through the
+      // trailing-month-year clause so the render prints "21, 11 1976"
+      // like the reference.
+      const dated = /^(.*)-(\d{4})-(\d{2})$/.exec(text);
+      if (dated) return parse(`${dated[1]}, ${dated[3]} ${dated[2]}`);
       if (year) text += `-${year}`;
       return parse(text);
     },
