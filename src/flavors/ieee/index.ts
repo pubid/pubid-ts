@@ -306,7 +306,14 @@ class IeeeBuilder {
         /^IEEE\s/.test(this.originalInput)) {
       typeValue = "Std";
     }
-    if (typeValue !== undefined) attributes["type"] = typeValue;
+    // The canonical type word is the short form (C2 ruling):
+    // "IEEE Standard 495-2007" and "IEEE Std 495-2007" are the same
+    // identifier. A DRAFT type word never reaches the wire (the
+    // draft-ness rides draft_status + the draft component; "Draft Std"
+    // is banned from canonical output) - it still feeds
+    // determineStageAbbr below (the version-less D1 fabrication).
+    if (typeValue === "Standard") typeValue = "Std";
+    if (typeValue !== undefined && !/^Draft/.test(typeValue)) attributes["type"] = typeValue;
 
     const typedStageAbbr = this.determineStageAbbr(typeValue, parsed);
     if (typedStageAbbr !== undefined) {

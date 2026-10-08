@@ -557,6 +557,11 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
   ) {
     let typeStr = id.type;
     if (typeStr.startsWith("P")) typeStr = typeStr.slice(1);
+    // A draft carries the word Draft alone in every face (the C2
+    // ruling): Std/Standard never renders on a draft - a status-less
+    // draft ("IEEE Draft Std P802.3/D2.0") renders "IEEE Draft
+    // P802.3/D2.0".
+    if (id.draft !== undefined && id.draft_status === undefined) typeStr = "Draft";
     if (typeStr.trim() !== "") parts.push(typeStr);
   }
 
@@ -580,7 +585,13 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     ) {
       result = `P${result}`;
     }
-    if (id.year !== undefined && draftObj === undefined && id.edition === undefined && id.month === undefined) {
+    // A base year dash-attaches to the code when nothing else carries
+    // it: no edition, no identity-month date - and either no draft at
+    // all, or a draft that carries its OWN date (the draft+corrigendum
+    // family: "PC37.09-1999/D7.2, Nov 2006").
+    const yearOnCode = id.year !== undefined && id.edition === undefined &&
+      id.month === undefined && (draftObj === undefined || draftObj.year !== undefined);
+    if (yearOnCode) {
       result += `-${id.year}`;
     }
     if (id.revision !== undefined) result += `Rev${id.revision}`;
@@ -624,6 +635,15 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     result += `, ${id.month}`;
     if (id.day !== undefined) result += ` ${id.day}`;
     if (id.year !== undefined && id.edition === undefined) result += ` ${id.year}`;
+  } else if (
+    id.year !== undefined && draftObj !== undefined && id.edition === undefined &&
+    draftObj?.year === undefined && !iecIeeOnly
+  ) {
+    // A year-only date trailing the draft ("ANSI N42.34/D9a, 2015")
+    // keeps its comma form instead of being silently dropped; a year
+    // whose draft carries its own date dash-attached to the code above
+    // and never repeats.
+    result += `, ${id.year}`;
   }
 
   const parentheticals: string[] = [];
