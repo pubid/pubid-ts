@@ -1274,6 +1274,9 @@ export const JointDevelopmentClass = ieeeClass(
         if (marker !== undefined && /^[A-Z](?:\s*[/&]\s*[A-Z])*$/.test(marker)) {
           result += ` (${marker})`;
         }
+        // The joint ISO-print redline is a distinct document (pubid#215):
+        // "15289:2015(E) - Redline".
+        if (id.redline === true) result += " - Redline";
         return result;
       }
       // IEEE format
@@ -1289,6 +1292,7 @@ export const JointDevelopmentClass = ieeeClass(
       if (codeStr !== "") parts.push(codeStr);
       let result = parts.join(" ");
       if (id.year !== undefined) result += `-${id.year}`;
+      if (id.redline === true) result += " - Redline";
       return result;
     },
   },
