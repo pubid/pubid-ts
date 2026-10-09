@@ -653,9 +653,15 @@ function buildRules(): Record<string, P> {
             .then((str(":").or(dash)).then(R("year_digits").as("amd_year")).maybe())
         ).maybe(),
       )
+      // The ISO print's dotted corrigendum tail (pubid#215):
+      // "8802-1AC:2018/Cor.1:2020(E)".
+      .then(ref(rules, "corrigendum").maybe())
       .then(ref(rules, "edition").maybe())
       .then(ref(rules, "revision_suffix").maybe())
-      .then(ref(rules, "parenthetical").maybe());
+      .then(ref(rules, "parenthetical").maybe())
+      // The joint ISO-print redline is a distinct document (pubid#215):
+      // "15289:2015(E) - Redline".
+      .then(ref(rules, "redline").maybe());
   });
 
   // The stage-less ISO/IEC label with a colon year and the ISO/IEC
