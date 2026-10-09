@@ -21,22 +21,36 @@ function aieeRuntime(): ReturnType<typeof PubidRuntime.load> {
   return cachedAieeRuntime;
 }
 
-// The gem's builder reads separator-carrying part captures verbatim
-// ("part" is ".3" for "802.3"); this port's builder grew on bare parts,
-// so the adapter strips the separator back off — the one known shape
-// difference between the artifact tree and the hand-port's tree.
-function stripPartSeparators(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(stripPartSeparators);
-  if (typeof node === "object" && node !== null) {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
-      out[k] = k === "part" || k === "subpart" || k === "part_number"
-        ? String(v).replace(/^[._-]+/, "")
-        : stripPartSeparators(v);
+// The artifact binds a RULE INVOCATION under the rule's name, where the
+// hand-port's grammar inlined the same captures flat; its part captures
+// also carry their separator (".3" for "802.3") where the hand-port's
+// were bare. The builders below read the hand-port's conventions, so
+// the adapter restores them: strip part separators, hoist the draft
+// rule hash, unwrap the aiee entry.
+function adaptTree(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(adaptTree);
+  if (typeof node !== "object" || node === null) return node;
+  const src = node as Record<string, unknown>;
+  let out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(src)) {
+    if (k === "draft" && typeof v === "object" && v !== null && !Array.isArray(v)) {
+      Object.assign(out, adaptTree(v) as Record<string, unknown>);
+      continue;
     }
-    return out;
+    out[k] = adaptTree(v);
   }
-  return node;
+  out = Object.fromEntries(
+    Object.entries(out).map(([k, v]) => [
+      k,
+      (k === "part" || k === "subpart" || k === "part_number") && typeof v === "string"
+        ? v.replace(/^[._-]+/, "")
+        : v,
+    ]),
+  );
+  if (Object.keys(out).length === 1 && typeof out["aiee"] === "object" && out["aiee"] !== null) {
+    return out["aiee"];
+  }
+  return out;
 }
 
 function parseArtifact(input: string, aieeEntry = false): Tree {
@@ -44,7 +58,7 @@ function parseArtifact(input: string, aieeEntry = false): Tree {
   const tree = toBuilderTree(
     aieeEntry ? aieeRuntime().parseShape(base) : artifactRuntime().parseShape(base),
   );
-  const stripped = stripPartSeparators(tree) as TreeObject;
+  const stripped = adaptTree(tree) as TreeObject;
   return base !== input
     ? { ...stripped, all_parts: true } as unknown as Tree
     : stripped as Tree;
