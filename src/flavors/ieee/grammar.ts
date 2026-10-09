@@ -609,9 +609,20 @@ function buildRules(): Record<string, P> {
       .then(str("P").as("project_marker").maybe())
       .then(digits.as("number"))
       .then(
+        // Digits-only parts keep their tree under any date spelling. A
+        // letter-suffixed part is the ISO print with a COLON year only
+        // (pubid#215: "8802-1AC:2018") - a dash-year letter part
+        // ("8802-1AC-2018") belongs to the later joint-IEEE rules, so
+        // the colon lookahead gates it.
         (dot.then(absent(R("year_digits"))).then(digits.as("part")))
           .or(dash.then(str("").as("part_dash")).then(absent(R("year_digits")))
             .then(digits.as("part")))
+          .or(dot.then(absent(R("year_digits")))
+            .then(digits.then(match("[A-Za-z]").repeat(1, Infinity)).as("part"))
+            .then(str(":").present()))
+          .or(dash.then(str("").as("part_dash")).then(absent(R("year_digits")))
+            .then(digits.then(match("[A-Za-z]").repeat(1, Infinity)).as("part"))
+            .then(str(":").present()))
           .maybe(),
       )
       .then(dateClause())

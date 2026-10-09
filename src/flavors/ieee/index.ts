@@ -774,6 +774,10 @@ class IeeeBuilder {
       attributes["parenthetical_content"] = extractValue(parsed["edition_marker"]);
     }
 
+    // A joint ISO-print redline is a distinct document of the same standard
+    // (pubid#215) - same flag semantics as the generic path.
+    if (parsed["redline"] !== undefined) attributes["redline"] = true;
+
     // The joint stage-draft clause (docs/IEEE-DRAFT-STAGES.md §1.3):
     // variant 1's compound tail composes onto the IEEE ordinal
     // ("D5=DIS.3"); variant 1b is the ordinal-less stage draft whose
