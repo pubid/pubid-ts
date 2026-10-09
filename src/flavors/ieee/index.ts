@@ -1,9 +1,54 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
-import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
+import { ParseFailed } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { grammarImplementation } from "../index.js";
-import { ieeeGrammar } from "./grammar.js";
+import { PargRuntime, PubidRuntime, artifactsDir, toBuilderTree } from "../../parg/runtime.js";
+
+// The grammar runtime is the baked PARG artifact (pubid-grammar
+// artifacts/ieee.json via the parsanol engine) — the same artifact the
+// gem runs, so grammar changes land once and this port cannot drift.
+// Only the preprocessor, builder and model are ported code.
+let cachedRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
+let cachedAieeRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
+function artifactRuntime(): ReturnType<typeof PubidRuntime.load> {
+  cachedRuntime ??= PubidRuntime.load("ieee");
+  return cachedRuntime;
+}
+function aieeRuntime(): ReturnType<typeof PubidRuntime.load> {
+  cachedAieeRuntime ??= PargRuntime.fromFile(
+    `${artifactsDir()}/ieee.json`, "aiee.aiee_identifier");
+  return cachedAieeRuntime;
+}
+
+// The gem's builder reads separator-carrying part captures verbatim
+// ("part" is ".3" for "802.3"); this port's builder grew on bare parts,
+// so the adapter strips the separator back off — the one known shape
+// difference between the artifact tree and the hand-port's tree.
+function stripPartSeparators(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(stripPartSeparators);
+  if (typeof node === "object" && node !== null) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      out[k] = k === "part" || k === "subpart" || k === "part_number"
+        ? String(v).replace(/^[._-]+/, "")
+        : stripPartSeparators(v);
+    }
+    return out;
+  }
+  return node;
+}
+
+function parseArtifact(input: string, aieeEntry = false): Tree {
+  const base = input.replace(/\s*\(all parts\)\s*$/, "");
+  const tree = toBuilderTree(
+    aieeEntry ? aieeRuntime().parseShape(base) : artifactRuntime().parseShape(base),
+  );
+  const stripped = stripPartSeparators(tree) as TreeObject;
+  return base !== input
+    ? { ...stripped, all_parts: true } as unknown as Tree
+    : stripped as Tree;
+}
 import { preParse, preprocessIeee } from "./preprocessor.js";
 import { applyUpdateCodes } from "./update_codes.js";
 import {
@@ -1229,7 +1274,7 @@ function ieeeParseSingle(input: string): Identifier {
     if (re.dispatch === "dual_semicolon") return buildDual(re.parts);
   }
   const cleaned = preprocessIeee(normalized);
-  const tree = parseGrammar(ieeeGrammar, cleaned);
+  const tree = parseArtifact(cleaned);
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
@@ -1240,7 +1285,7 @@ function ieeeParseSingle(input: string): Identifier {
 // update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
 // a line parse that the reference rejects.
 function ieeeParseSingleNoCodes(input: string): Identifier {
-  const tree = parseGrammar(ieeeGrammar, preprocessIeee(input));
+  const tree = parseArtifact(preprocessIeee(input));
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
@@ -1253,7 +1298,7 @@ function ieeeParseSingleNoCodes(input: string): Identifier {
 function parseAieeDirect(input: string): Identifier {
   const builder = new IeeeBuilder();
   builder.originalInput = input;
-  const tree = parseGrammar({ rules: ieeeGrammar.rules, root: "aiee_identifier" }, input);
+  const tree = parseArtifact(input, true);
   return builder.buildAiee(asHash(tree as Tree));
 }
 

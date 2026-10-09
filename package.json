@@ -17,12 +17,12 @@
     "artifact": "tsc -p tsconfig.json && node scripts/build-artifact.mjs"
   },
   "dependencies": {
-    "yaml": "^2.5.0",
-    "parsanol": "^0.10.0"
+    "parsanol": "^0.10.3",
+    "yaml": "^2.5.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.0",
-    "@types/node": "^20.14.0"
+    "@types/node": "^20.14.0",
+    "typescript": "^5.6.0"
   },
   "files": [
     "dist",

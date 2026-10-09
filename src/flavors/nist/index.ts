@@ -1,8 +1,18 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
-import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
+import { ParseFailed } from "../../grammar/engine.js";
+import { PubidRuntime, toBuilderTree } from "../../parg/runtime.js";
+
+// The grammar runtime is the baked PARG artifact (pubid-grammar
+// artifacts/nist.json via the parsanol engine) — the same artifact the
+// gem runs, so grammar changes land once and this port cannot drift.
+// Only the preprocessor, builder and model are ported code.
+let cachedNistRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
+function cachedRuntime(input: string): unknown {
+  cachedNistRuntime ??= PubidRuntime.load("nist");
+  return cachedNistRuntime.parseShape(input);
+}
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import { BaseIdentifier } from "../../model/identifier.js";
-import { nistGrammar } from "./grammar.js";
 import { preprocessNist } from "./preprocessor.js";
 import {
   NIST_CLASSES,
@@ -1315,11 +1325,12 @@ export function nistGrammarImplementation(): FlavorImplementation {
   return {
     parse(input: string): Identifier {
       const { cleaned, format } = preprocessNist(input);
-      const tree = parseGrammar(nistGrammar, cleaned);
-      if (typeof tree !== "object" || tree === null) {
-        throw new ParseFailed("NIST: unexpected parse tree", 0);
-      }
-      return builder.build(tree, format) as unknown as Identifier;
+      const base = cleaned.replace(/\s*\(all parts\)\s*$/, "");
+      const tree = toBuilderTree(cachedRuntime(base)) as TreeObject;
+      const marked = base !== cleaned
+        ? ({ ...tree, all_parts: true } as unknown as TreeObject)
+        : tree;
+      return builder.build(marked, format) as unknown as Identifier;
     },
   };
 }
