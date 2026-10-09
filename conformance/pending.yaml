@@ -2809,3 +2809,40 @@ ieee.joint_development.9291:
       the joint render surface of the C2 regroup wave is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 #
+#
+# pubid#215 wave ledger (testsuite b4294547): the 14 joint ISO-print
+# Redline / dotted-Cor rows. The hand-ported grammar does not carry
+# the tails; the artifact-backed runtime (PARG) does and lands with
+# the ieee builder port - until then these rows are pended.
+ieee.joint_development.9480:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.joint_development.9481:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.joint_development.9482:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8990:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8991:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8992:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8993:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8994:
+  reason: >-
+      the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
+  ref: pubid#215 (gem pubid#510)

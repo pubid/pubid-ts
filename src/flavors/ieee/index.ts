@@ -1,68 +1,9 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
-import { ParseFailed } from "../../grammar/engine.js";
+import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { grammarImplementation } from "../index.js";
-import { PargRuntime, PubidRuntime, artifactsDir, toBuilderTree } from "../../parg/runtime.js";
-
-// The grammar runtime is the baked PARG artifact (pubid-grammar
-// artifacts/ieee.json via the parsanol engine) — the same artifact the
-// gem runs, so grammar changes land once and this port cannot drift.
-// Only the preprocessor, builder and model are ported code.
-let cachedRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
-let cachedAieeRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
-function artifactRuntime(): ReturnType<typeof PubidRuntime.load> {
-  cachedRuntime ??= PubidRuntime.load("ieee");
-  return cachedRuntime;
-}
-function aieeRuntime(): ReturnType<typeof PubidRuntime.load> {
-  cachedAieeRuntime ??= PargRuntime.fromFile(
-    `${artifactsDir()}/ieee.json`, "aiee.aiee_identifier");
-  return cachedAieeRuntime;
-}
-
-// The artifact binds a RULE INVOCATION under the rule's name, where the
-// hand-port's grammar inlined the same captures flat; its part captures
-// also carry their separator (".3" for "802.3") where the hand-port's
-// were bare. The builders below read the hand-port's conventions, so
-// the adapter restores them: strip part separators, hoist the draft
-// rule hash, unwrap the aiee entry.
-function adaptTree(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(adaptTree);
-  if (typeof node !== "object" || node === null) return node;
-  const src = node as Record<string, unknown>;
-  let out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(src)) {
-    if (k === "draft" && typeof v === "object" && v !== null && !Array.isArray(v)) {
-      Object.assign(out, adaptTree(v) as Record<string, unknown>);
-      continue;
-    }
-    out[k] = adaptTree(v);
-  }
-  out = Object.fromEntries(
-    Object.entries(out).map(([k, v]) => [
-      k,
-      (k === "part" || k === "subpart" || k === "part_number") && typeof v === "string"
-        ? v.replace(/^[._-]+/, "")
-        : v,
-    ]),
-  );
-  if (Object.keys(out).length === 1 && typeof out["aiee"] === "object" && out["aiee"] !== null) {
-    return out["aiee"];
-  }
-  return out;
-}
-
-function parseArtifact(input: string, aieeEntry = false): Tree {
-  const base = input.replace(/\s*\(all parts\)\s*$/, "");
-  const tree = toBuilderTree(
-    aieeEntry ? aieeRuntime().parseShape(base) : artifactRuntime().parseShape(base),
-  );
-  const stripped = adaptTree(tree) as TreeObject;
-  return base !== input
-    ? { ...stripped, all_parts: true } as unknown as Tree
-    : stripped as Tree;
-}
+import { ieeeGrammar } from "./grammar.js";
 import { preParse, preprocessIeee } from "./preprocessor.js";
 import { applyUpdateCodes } from "./update_codes.js";
 import {
@@ -1288,7 +1229,7 @@ function ieeeParseSingle(input: string): Identifier {
     if (re.dispatch === "dual_semicolon") return buildDual(re.parts);
   }
   const cleaned = preprocessIeee(normalized);
-  const tree = parseArtifact(cleaned);
+  const tree = parseGrammar(ieeeGrammar, cleaned);
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
@@ -1299,7 +1240,7 @@ function ieeeParseSingle(input: string): Identifier {
 // update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
 // a line parse that the reference rejects.
 function ieeeParseSingleNoCodes(input: string): Identifier {
-  const tree = parseArtifact(preprocessIeee(input));
+  const tree = parseGrammar(ieeeGrammar, preprocessIeee(input));
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
@@ -1312,7 +1253,7 @@ function ieeeParseSingleNoCodes(input: string): Identifier {
 function parseAieeDirect(input: string): Identifier {
   const builder = new IeeeBuilder();
   builder.originalInput = input;
-  const tree = parseArtifact(input, true);
+  const tree = parseGrammar({ rules: ieeeGrammar.rules, root: "aiee_identifier" }, input);
   return builder.buildAiee(asHash(tree as Tree));
 }
 

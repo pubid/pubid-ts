@@ -669,7 +669,18 @@ function buildRules(): Record<string, P> {
       .then(ref(rules, "corrigendum").maybe())
       .then(ref(rules, "edition").maybe())
       .then(ref(rules, "revision_suffix").maybe())
-      .then(ref(rules, "parenthetical").maybe())
+      // The joint rule's trailing parenthetical is the NARROW one (a
+      // language/edition marker or P&V) - the reference's relationship
+      // vocabulary does not accept mis-typed narratives ("Revison of…"),
+      // so the loose catch-all would over-accept ahead of the redline.
+      .then(
+        (
+          spaceMaybe().then(str("("))
+            .then(match("[A-Z]").then(match("[/][A-Z]").repeat(0, Infinity)).as("edition_marker"))
+            .then(str(")"))
+            .or(spaceMaybe().then(str("(P&V)")).as("parenthetical_content"))
+        ).maybe(),
+      )
       // The joint ISO-print redline is a distinct document (pubid#215):
       // "15289:2015(E) - Redline".
       .then(ref(rules, "redline").maybe());
