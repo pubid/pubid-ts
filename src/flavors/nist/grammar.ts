@@ -99,13 +99,19 @@ function buildRules(): Record<string, P> {
     str("U")
       .then(lowerLetter)
       .or(
-        letter.then(
-          literalAlternation([
-            "ec", "ndex", "nsert", "rrata", "raft", "pp", "s", "t",
-            "hi", "iet", "ort", "r", "p",
-          ]).absent(),
-          digits.maybe(),
-        ),
+        // An "r" directly followed by a digit is the revision marker
+        // (pubid#170), not a suffix — leave it for the edition rules.
+        str("r")
+          .then(digit)
+          .absent()
+          .then(
+            letter,
+            literalAlternation([
+              "ec", "ndex", "ndx", "nsert", "rrata", "raft", "pp", "s", "t",
+              "hi", "iet", "ort", "r", "p",
+            ]).absent(),
+            digits.maybe(),
+          ),
       ),
   );
 
@@ -202,7 +208,10 @@ function buildRules(): Record<string, P> {
             .or(
               digits.then(str("r"), digits, str("U"), lowerLetter),
               digits.then(str("r"), digits, letter),
-              digits.as("number_only").then(str("r"), digits.as("edition_id")),
+              digits.as("number_only").then(
+                str("r"),
+                digits.then(dot.then(digits).maybe()).as("edition_id"),
+              ),
               digits.then(str("_"), digits, dash, digits, upperLetter.maybe()),
               lowerLetter.then(dash, digits),
               digits.then(str("pt"), digits, dash.absent()),
@@ -212,7 +221,9 @@ function buildRules(): Record<string, P> {
                 .then(str("r"), letter.as("letter"))
                 .as("revision_letter"),
               str("r").then(letter).as("revision_letter_suffix"),
-              str("r").then(digits.as("edition_id")).as("revision_simple"),
+              str("r")
+                .then(digits.then(dot.then(digits).maybe()).as("edition_id"))
+                .as("revision_simple"),
               str("NCNR"),
               str("PERMIS"),
               str("BFRL"),
@@ -225,20 +236,22 @@ function buildRules(): Record<string, P> {
       ),
   );
 
+  const dottedDigits = () => digits.then(dot.then(digits).maybe());
+
   const editionInner = () =>
     space
       .maybe()
-      .then(str("e"), digits.as("edition_id"))
+      .then(str("e"), dottedDigits().as("edition_id"))
       .as("edition_e")
       .or(
         space
-          .then(str("r"), digits.as("edition_id"), letter.as("edition_letter"))
+          .then(str("r"), dottedDigits().as("edition_id"), letter.as("edition_letter"))
           .as("edition_r_with_space_letter"),
-        space.then(str("r"), digits.as("edition_id")).as("edition_r_with_space"),
+        space.then(str("r"), dottedDigits().as("edition_id")).as("edition_r_with_space"),
         str("r")
-          .then(digits.as("edition_id"), letter.as("edition_letter"))
+          .then(dottedDigits().as("edition_id"), letter.as("edition_letter"))
           .as("edition_r_no_space_letter"),
-        str("r").then(digits.as("edition_id")).as("edition_r_no_space"),
+        str("r").then(dottedDigits().as("edition_id")).as("edition_r_no_space"),
         space
           .maybe()
           .then(str("rev"), space.maybe(), digits.as("edition_id"))

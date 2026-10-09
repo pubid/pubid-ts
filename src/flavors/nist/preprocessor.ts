@@ -214,8 +214,17 @@ export function preprocessNist(input: string): PreprocessorResult {
   cleaned = cleaned.replace(/(\d)(v\d+[A-Z])/g, "$1 $2");
   cleaned = cleaned.replace(/(v\d+)([A-Z])-([A-Z])/g, (_m, v: string, a: string, b: string) => `${v}${a}-${b.toLowerCase()}`);
 
-  // normalize_edition_year_suffix
+  // normalize_edition_year_suffix — a dotted minor after the dot stays
+  // attached (pubid#170): "2006ed.1" → "e2006.1", never "e20061".
+  cleaned = cleaned.replace(/(\d{4})ed\.(\d+)/g, "e$1.$2");
   cleaned = cleaned.replace(/(\d{4})ed\./g, "e$1");
+
+  // normalize_glued_dotted_edition — a glued dotted e-edition needs the
+  // space the spaced form has (pubid#170): "800-53e2.1" → "800-53 e2.1".
+  // The minor is 1-2 digits; a 4-digit tail is the additional-text year of
+  // "NBS CIRC 11e2.1915", which keeps its existing tree. Dot-less "800-53e2"
+  // keeps its number-bound tree.
+  cleaned = cleaned.replace(/(\d)e(\d+\.\d{1,2})(?!\d)/g, "$1 e$2");
 
   // normalize_revision_with_letter
   cleaned = cleaned.replace(/(\d+)(r\d{1,2})([a-z])(?=-|[A-Z]|$)/g, (_m, n: string, r: string, l: string) => `${n}${r}${l.toUpperCase()}`);
