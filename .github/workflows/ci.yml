@@ -11,6 +11,10 @@ env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
   # changes always land in pubid (Ruby) PRs first, then this pin bumps.
   TESTSUITE_REF: b42945471b2bfed51e17eeee5638c7ef3f451658
+  # Same law for the grammar runtime: the baked PARG artifacts are
+  # consumed at a pinned pubid-grammar ref (grammar PRs land first, then
+  # this pin bumps). PARG_ARTIFACT_DIR points src/parg/runtime.ts there.
+  PARG_GRAMMAR_REF: b052d61c5daf76d593127763b938e76c080f78b5
 
 jobs:
   # The per-flavor corpus loops dominate wall time (ieee alone ~6.5 min
@@ -29,6 +33,11 @@ jobs:
           repository: pubid/pubid-testsuite
           ref: ${{ env.TESTSUITE_REF }}
           path: pubid-testsuite
+      - uses: actions/checkout@v7
+        with:
+          repository: pubid/pubid-grammar
+          ref: ${{ env.PARG_GRAMMAR_REF }}
+          path: pubid-grammar
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -37,6 +46,7 @@ jobs:
       - run: node --test --test-shard=${{ matrix.shard }}/4 dist-test/test/*.test.js
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+          PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
 
   conformance:
     runs-on: ubuntu-latest
@@ -47,6 +57,11 @@ jobs:
           repository: pubid/pubid-testsuite
           ref: ${{ env.TESTSUITE_REF }}
           path: pubid-testsuite
+      - uses: actions/checkout@v7
+        with:
+          repository: pubid/pubid-grammar
+          ref: ${{ env.PARG_GRAMMAR_REF }}
+          path: pubid-grammar
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -57,3 +72,4 @@ jobs:
         working-directory: .
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+          PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
