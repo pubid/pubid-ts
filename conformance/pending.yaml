@@ -2808,3 +2808,62 @@ ieee.joint_development.9291:
   reason: >-
       the joint render surface of the C2 regroup wave is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
+#
+# pubid#215 wave ledger (testsuite b4294547): the 14 joint ISO-print
+# Redline / dotted-Cor rows the port has not reproduced yet.
+ieee.joint_development.9475:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9476:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9477:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9478:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9479:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9480:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9481:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9482:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.joint_development.9483:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.corrigendum.8990:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.corrigendum.8991:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.corrigendum.8992:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.corrigendum.8993:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
+ieee.corrigendum.8994:
+  reason: >-
+      the joint ISO-print Redline/Cor tail mirror (pubid#215) is not complete in this port: the letter-part corrigenda and the redline-flag rows do not round-trip yet
+  ref: pubid#215 (gem pubid#510; ts mirror in progress)
