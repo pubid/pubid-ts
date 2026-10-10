@@ -458,7 +458,6 @@ export function preprocessIeee(input: string): string {
     cleaned = `IEEE P${cleaned}`;
   }
 
-  cleaned = cleaned.replace(/\/Preprint\b/g, "");
   cleaned = cleaned.replaceAll("Proposed Revision of", "Revision of");
   cleaned = cleaned.replace(/\bammended\b/gi, "amended");
   cleaned = cleaned.replace(/(\/INT|\/Cor\s+\d+-\d{4})\./g, "$1");

@@ -1020,9 +1020,45 @@ function buildRules(): Record<string, P> {
       .then(digit.repeat(4, 4).as("year")),
   );
 
+  // Preprint is a draft STAGE of the C2 code (NESC terminology for its
+  // pre-edition drafts), not a variant: dotted is the canonical spelling
+  // (C2.2012.Preprint); dash (C2-2012-Preprint) and the catalogue's
+  // slash tail (C2-2002/Preprint) are aliases. The verbose
+  // "Preprint Proposal(s) for the YYYY Edition of ..." forms cite the
+  // same draft by its target edition year. Longest literal first —
+  // "Proposals" / "Proposal" — the choice does not retry the shorter
+  // alternative when the continuation fails.
+  rule("nesc_c2_preprint", () =>
+    ref(rules, "nesc_c2_code")
+      .then(
+        str(".").then(digit.repeat(4, 4).as("year")).then(str("."))
+          .or(dash.then(digit.repeat(4, 4).as("year")).then(dash))
+          .or(dash.then(digit.repeat(4, 4).as("year")).then(str("/"))),
+      )
+      .then(str("Preprint").as("preprint")),
+  );
+
+  rule("nesc_preprint_proposal", () =>
+    str("Preprint").as("preprint")
+      .then(space)
+      .then(str("Proposals").or(str("Proposal")))
+      .then(space)
+      .then(str("for")).then(space).then(str("the")).then(space)
+      .then(digit.repeat(4, 4).as("year"))
+      .then(space).then(str("Edition")).then(space)
+      .then(str("of")).then(space).then(str("the")).then(space)
+      .then(ref(rules, "nesc_full_name"))
+      .then(
+        space.then(str("(")).then(str("NESC")).then(ref(rules, "nesc_registered").maybe())
+          .then(str(")")).maybe(),
+      ),
+  );
+
   rule("nesc_identifier", () =>
     ref(rules, "nesc_draft_nesc")
+      .or(ref(rules, "nesc_preprint_proposal"))
       .or(ref(rules, "nesc_name_first"))
+      .or(ref(rules, "nesc_c2_preprint"))
       .or(ref(rules, "nesc_c2_standard"))
       .or(ref(rules, "nesc_year_first")),
   );
@@ -1214,21 +1250,25 @@ function buildRules(): Record<string, P> {
   );
 
   rule("nesc_delegation", () =>
-    (
-      str("C2-").then(R("year_digits"))
-    ).or(
-      R("year_digits").then(space).then(str("NESC").or(str("National Electrical Safety Code"))),
-    ).or(
-      str("Draft").then(space).then(str("NESC").or(str("National Electrical Safety Code"))),
-    ).or(
-      str("National Electrical Safety Code").then(str(",")).then(space).then(str("C2-")),
-    ).or(
-      // Catalogue form: "IEEE Std YYYY NESC …" / "IEEE Std YYYY National
-      // Electrical Safety Code" - must not fall through to the generic
-      // standard grammar, which would read YYYY as a number.
-      str("IEEE").then(space).then(str("Std")).then(space).then(R("year_digits")).then(space)
-        .then(str("NESC").or(str("National Electrical Safety Code"))),
-    ).present()
+    // The optional "IEEE Std " prefix is consumed BEFORE the guard: the
+    // catalogue prints NESC documents with it ("IEEE Std C2.2012.Preprint",
+    // "IEEE Std 2017 NESC Handbook"), and a guard anchored at position 0
+    // rejects every prefixed spelling. nesc_year_first carries its own
+    // prefix .maybe(), so the consumed form still parses.
+    str("IEEE").then(space).then(str("Std")).then(space).maybe()
+      .then(
+        (
+          str("C2").then(str(".").or(str("-")))
+        ).or(
+          R("year_digits").then(space).then(str("NESC").or(str("National Electrical Safety Code"))),
+        ).or(
+          str("Draft").then(space).then(str("NESC").or(str("National Electrical Safety Code"))),
+        ).or(
+          str("Preprint"),
+        ).or(
+          str("National Electrical Safety Code").then(str(",")).then(space).then(str("C2-")),
+        ).present(),
+      )
       .then(ref(rules, "nesc_identifier").as("nesc")),
   );
 
