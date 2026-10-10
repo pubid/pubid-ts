@@ -27,6 +27,7 @@ import {
   NescDraftClass,
   NescEditionClass,
   NescHandbookClass,
+  NescPreprintClass,
   NescRedlineClass,
   NescStandardClass,
   ProjectDraftIdentifierClass,
@@ -1151,7 +1152,11 @@ class IeeeBuilder {
     // nested name_first variant captures as a hash) and reaches Standard
     // via the code check; Edition is only the no-code fallback.
     let klass: (new (attrs?: Record<string, unknown>) => unknown) = NescEditionClass;
-    if (parsedHash["draft"] !== undefined) {
+    if (parsedHash["preprint"] !== undefined) {
+      // Preprint is a draft STAGE of the C2 code — checked before the
+      // Standard route: the c2-preprint tree carries :code "C2" too.
+      klass = NescPreprintClass;
+    } else if (parsedHash["draft"] !== undefined) {
       klass = NescDraftClass;
     } else if (typeof parsedHash["variant"] === "string") {
       const variant = parsedHash["variant"];

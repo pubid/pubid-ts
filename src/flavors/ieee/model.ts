@@ -687,6 +687,15 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
 
     if (special === undefined && id.redline === true) push("redline");
     if (special === undefined && id.interpretation === true) push("int");
+    // A NESC preprint is a draft-stage document distinct from the
+    // published edition it precedes — without this component it would
+    // share the edition's URN (urn:ieee:ieee:C2:2012).
+    if (
+      (id.constructor as { polymorphicName: string }).polymorphicName ===
+      "pubid:ieee:nesc-preprint"
+    ) {
+      push("preprint");
+    }
 
     if (id.ashrae_number !== undefined) {
       let ashrae = `ashrae.${id.ashrae_number}`;
@@ -1477,6 +1486,21 @@ export const NescDraftClass = ieeeClass(
       if (id.month !== undefined && id.year !== undefined) parts.push(`, ${id.month} ${id.year}`);
       return parts.join("");
     },
+  },
+);
+
+// The NESC's own term for its pre-edition drafts: a draft STAGE of the
+// C2 code, not a variant. Canonical spelling is dotted and prefixed;
+// the dash, catalogue slash-tail and verbose proposal spellings are
+// aliases.
+export const NescPreprintClass = ieeeClass(
+  { kind: "nesc-preprint" },
+  {
+    codeColumns: true,
+    extraDefs: NescDefs,
+    extraMappings: NescMappings,
+    render: (id) =>
+      `IEEE Std ${["C2", id.year, "Preprint"].filter((p) => p !== undefined).join(".")}`,
   },
 );
 
