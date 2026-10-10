@@ -2846,3 +2846,43 @@ ieee.corrigendum.8994:
   reason: >-
       the joint ISO-print Redline/Cor tail surface (pubid#215) is not reproduced by the hand-ported grammar; the artifact runtime switch is the follow-up (see PR discussion)
   ref: pubid#215 (gem pubid#510)
+ieee.corrigendum.8996:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.corrigendum.8997:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.joint_development.9484:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.project_draft_identifier.9484:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.project_draft_identifier.9485:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.project_draft_identifier.9486:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.project_draft_identifier.9487:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.standard.9171:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.standard.9172:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
+ieee.standard.9173:
+  reason: >-
+      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
+  ref: testsuite#43 (the #211 tail corpus round)
