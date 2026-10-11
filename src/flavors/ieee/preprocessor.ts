@@ -313,7 +313,6 @@ function normalizeJointStageSpellings(input: string): string {
   const tail = "(,? (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* \\d{4}|$|-\\d{4}(?:-\\d\\d)?)";
 
   cleaned = cleaned.replace(/(\d)_D(\d)/g, "$1/D$2");
-  cleaned = cleaned.replace(/,(?=[A-Za-z])/, ", ");
 
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/(D[\\d.]+)/ ?${stage}\\b`), "$1$4 $2/$3");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/ ${stage}${tail}`), "$1$3 $2$4");
@@ -332,7 +331,6 @@ function normalizeJointStageSpellings(input: string): string {
 export function preprocessIeee(input: string): string {
   let cleaned = input.replace(/\.pdf$/i, "");
 
-  cleaned = cleaned.replace(/_(FDIS|CDV|CD|DIS|WD|PWI|NP)/g, "/$1");
   cleaned = cleaned.replace(/\s+/g, " ");
 
   cleaned = cleaned.replace(
