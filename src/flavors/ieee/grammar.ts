@@ -36,6 +36,10 @@ function buildRules(): Record<string, P> {
   const dot = str(".");
   const slash = str("/");
   const comma = str(", ");
+  // The artifact's date tails use the bare "," literal with an optional
+  // space ("," [space]) / space), which accepts the glued "D3.0,May 2008"
+  // spellings the comma rule (", ") cannot see.
+  const commaGlued = () => str(",").then(spaceMaybe()).or(comma).or(space);
   const digit = match("[0-9]");
   const digits = digit.repeat(1, Infinity);
   const upper = match("[A-Z]");
@@ -76,12 +80,12 @@ function buildRules(): Record<string, P> {
 
   rule("trailing_month_year", () =>
     (
-      comma.or(space)
+      commaGlued()
         .then(monthName().as("trailing_month"))
         .then(space)
         .then(R("year_digits").as("trailing_year"))
     ).or(
-      comma.or(space)
+      str(",").or(space)
         .then(R("month_numeric").as("trailing_month"))
         .then(space.or(dash))
         .then(R("year_digits").as("trailing_year")),
@@ -186,7 +190,18 @@ function buildRules(): Record<string, P> {
       .or(str("No")),
   );
 
-  rule("part", () => (dot.or(dash)).then(match("[0-9A-Za-z]").repeat(1, Infinity).as("part")));
+  rule("part", () =>
+    (dot.or(dash)).then(
+      absent(
+        str("REV").or(str("Rev")).or(str("rev"))
+          .then(spaceMaybe())
+          .then(match("[0-9A-Za-z]")),
+      )
+        .then(match("[0-9A-Za-z]"))
+        .repeat(1, Infinity)
+        .as("part"),
+    ),
+  );
 
   rule("subpart", () =>
     (dot.or(dash).or(str("_"))).then(
@@ -231,14 +246,14 @@ function buildRules(): Record<string, P> {
     (
       // The canonical forced-comma render (", Feb, 2011") comma-joins
       // the month and year, matching the joint tails.
-      comma.or(space).then(monthName().as("month")).then(space.or(comma)).then(R("year_digits").as("year"))
+      commaGlued().then(monthName().as("month")).then(space.or(comma)).then(R("year_digits").as("year"))
     ).or(
       // Space-separated bare year after the draft designator
       // ("IEEE Draft Std P14764/D1 2004, Nov 2004" - the "D1 2004" draft
       // carries its own year, with the print date still trailing).
       space.then(R("year_digits").as("year")),
     ).or(
-      comma.or(space).then(R("month_numeric").as("month")).then(space.or(dash)).then(R("year_digits").as("year")),
+      str(",").or(space).then(R("month_numeric").as("month")).then(space.or(dash)).then(R("year_digits").as("year")),
     ).or(
       (
         spaceMaybe().then(comma).then(spaceMaybe()).or(space)
@@ -255,11 +270,11 @@ function buildRules(): Record<string, P> {
 
   rule("fdraft", () =>
     (
-      slash
+      slash.or(str("_"))
         .then(literalAlternation(["FDIS", "CDV", "CD", "WD", "PWI", "NP"]))
         .then(
           (
-            comma.or(space).then(monthName().as("month")).then(space).then(R("year_digits").as("year"))
+            commaGlued().then(monthName().as("month")).then(space).then(R("year_digits").as("year"))
           ).or(comma.or(space).then(R("year_digits").as("year"))).maybe(),
         )
         .then(ref(rules, "parenthetical").maybe())
@@ -1101,6 +1116,22 @@ function buildRules(): Record<string, P> {
       .then(ref(rules, "parenthetical").maybe()),
   );
 
+  // The generic tail minus the publisher (parg line 154): the publisherled
+  // alternative REQUIRES its publishers, so bare type-word/number forms
+  // route here instead — WITHOUT the redline/book_nickname slots the
+  // publisherled tail carries (the gem rejects "802.3-2012 - Redline").
+  rule("publisherless_ieee", () =>
+    (
+      ref(rules, "type_word").as("type").then(space).maybe()
+    )
+      .then(ref(rules, "number"))
+      .then(ref(rules, "part_subpart_year").or(ref(rules, "edition")).maybe())
+      .then(ref(rules, "corrigendum").maybe())
+      .then(ref(rules, "draft").maybe())
+      .then(ref(rules, "revision_suffix").maybe())
+      .then(ref(rules, "parenthetical").maybe()),
+  );
+
   rule("corrigendum_identifier", () =>
     (
       R("publisher").then(R("copublisher").repeat(0, Infinity).as("copublishers")).as("publishers")
@@ -1298,8 +1329,8 @@ function buildRules(): Record<string, P> {
       .or(
         (
           R("publisher").then(R("copublisher").repeat(0, Infinity).as("copublishers")).as("publishers")
-            .then(space).maybe()
-        ).maybe()
+            .then(space)
+        )
           .then(ref(rules, "draft_status").as("draft_status").maybe())
           .then(str("Draft Std").as("type").then(spaceMaybe()).maybe())
           .then(
@@ -1336,7 +1367,8 @@ function buildRules(): Record<string, P> {
           .then(ref(rules, "title_portion").maybe())
           .then(ref(rules, "approved_draft_suffix").maybe()),
       )
-      .or(ref(rules, "no_prefix_ieee")),
+      .or(ref(rules, "no_prefix_ieee"))
+      .or(ref(rules, "publisherless_ieee")),
   );
 
   return rules;

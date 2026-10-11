@@ -461,7 +461,11 @@ class IeeeBuilder {
   applyDefaultDraftVersion(attributes: Record<string, unknown>, typeValue: string | undefined): void {
     if (attributes["draft"] !== undefined) return;
     if (typeValue !== "Draft Std") return;
-    attributes["draft"] = new IeeeDraft({ version: "1", year: attributes["year"] as string | undefined }).render();
+    // The reference stores the fabricated designator comma-joined with the
+    // identity year ("D1, 2012" — the gem's Draft#to_s), not space-joined.
+    attributes["draft"] = attributes["year"] === undefined
+      ? "D1"
+      : `D1, ${attributes["year"]}`;
   }
 
   handleKeyedHash(
