@@ -78,6 +78,7 @@ function buildRules(): Record<string, P> {
       .or(R("year_digits").as("year")),
   );
 
+
   rule("trailing_month_year", () =>
     (
       commaGlued()
@@ -171,9 +172,6 @@ function buildRules(): Record<string, P> {
     (
       str("P").maybe()
         .then(upper.repeat(0, Infinity)).then(digits).then(digits.or(upper).repeat(0, Infinity))
-        .then(
-          dash.then(digits).then(absent(R("year_digits"))).then(dash.then(digits).repeat(0, Infinity)).maybe(),
-        )
         .then(lower.maybe())
     ).as("number"),
   );
@@ -191,16 +189,17 @@ function buildRules(): Record<string, P> {
   );
 
   rule("part", () =>
-    (dot.or(dash)).then(
-      absent(
-        str("REV").or(str("Rev")).or(str("rev"))
-          .then(spaceMaybe())
-          .then(match("[0-9A-Za-z]")),
-      )
-        .then(match("[0-9A-Za-z]"))
-        .repeat(1, Infinity)
-        .as("part"),
-    ),
+    (dot.or(dash)).as("part_sep")
+      .then(
+        absent(
+          str("REV").or(str("Rev")).or(str("rev"))
+            .then(spaceMaybe())
+            .then(match("[0-9A-Za-z]")),
+        )
+          .then(match("[0-9A-Za-z]"))
+          .repeat(1, Infinity)
+          .as("part"),
+      ),
   );
 
   rule("subpart", () =>
@@ -232,6 +231,9 @@ function buildRules(): Record<string, P> {
         (
           match("[0-9]").repeat(1, 2).then(dot).then(match("[0-9]").repeat(1, 2)).then(lower.maybe())
         ).or(dot.then(digits))
+          // The artifact's dot-led version: "." + non-year alnum/dot run
+          // (the ".D" of "/Ddraft.D=FDIS").
+          .or(dot.then(absent(R("year_digits"))).then(match("[0-9A-Za-z.]").repeat(1, Infinity)))
           .or(digits.then(str("+")).then(digits))
           .or(digits.then(dot.maybe()).then(str("e")).then(digits))
           .or(
