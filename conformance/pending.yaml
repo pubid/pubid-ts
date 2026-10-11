@@ -252,11 +252,6 @@ ieee.corrigendum.1330:
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.2669:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.corrigendum.2679:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
@@ -1718,11 +1713,6 @@ ieee.project_draft_identifier.2988:
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3079:
-  reason: >-
-      fails against the reference render on this row (rederive/cor-round surface)
-  ref: conformance/pending.yaml (round re-derive)
-
 ieee.project_draft_identifier.3088:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
@@ -1764,16 +1754,6 @@ ieee.project_draft_identifier.3607:
   ref: conformance/pending.yaml (wave ledger)
 
 ieee.project_draft_identifier.3653:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.project_draft_identifier.3667:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.project_draft_identifier.3668:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -1923,16 +1903,6 @@ ieee.project_draft_identifier.9155:
       the dated-draft render surface (forced-comma forms, D= designator faces, the year-only compose) is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9162:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.project_draft_identifier.9163:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.project_draft_identifier.9168:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
@@ -1988,27 +1958,12 @@ ieee.standard.0965:
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.0979:
-  reason: >-
-      the tail-round render surface (the D5-dated corrigendum base, the (E)-adoption Standard face, the CD joint part separators, the DConf/comma-dated draft tails) is not yet reproduced by this port
-  ref: testsuite#43 (the #211 tail corpus round)
-
 ieee.standard.0988:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
 ieee.standard.1106:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.1202:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.1203:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -2042,16 +1997,6 @@ ieee.standard.4504:
   reason: >-
       the dated-draft render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.4842:
-  reason: >-
-      the dated-draft render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.8160:
-  reason: >-
-      fails against the reference render on this row (rederive/cor-round surface)
-  ref: conformance/pending.yaml (round re-derive)
 
 ieee.standard.8169:
   reason: >-

@@ -260,7 +260,11 @@ class IeeeBuilder {
     }
 
     if (codeStr !== undefined && codeParts.length > 0) {
-      codeStr += `.${codeParts.join(".")}`;
+      // The part rule captures its separator (part_sep) beside the bare
+      // token, so the code joins with the ORIGINAL separator — a dashed
+      // "62271-37-082" stays dashed, a dotted "802.3" stays dotted.
+      const partSep = extractValue(parsed["part_sep"]) ?? ".";
+      codeStr += codeParts.map((cp) => `${partSep}${cp}`).join("");
     }
 
     if (
@@ -592,14 +596,15 @@ class IeeeBuilder {
       baseParts.push(extractValue(baseData["type"]) ?? "");
     }
     let numberStr = extractValue(baseData["number"]) ?? "";
+    const baseSep = extractValue(baseData["part_sep"]) ?? ".";
     if (baseData["part"] !== undefined) {
-      numberStr += `.${extractValue(baseData["part"]) ?? ""}`;
+      numberStr += `${baseSep}${extractValue(baseData["part"]) ?? ""}`;
     }
     if (baseData["subpart"] !== undefined) {
       const subparts = Array.isArray(baseData["subpart"]) ? (baseData["subpart"] as Tree[]) : [baseData["subpart"] as Tree];
       for (const sp of subparts) {
         const v = extractValue(sp);
-        if (v !== undefined) numberStr += `.${v}`;
+        if (v !== undefined) numberStr += `${baseSep}${v}`;
       }
     }
     if (baseData["year"] !== undefined) {
