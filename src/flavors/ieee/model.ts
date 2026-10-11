@@ -1263,14 +1263,25 @@ export const JointDevelopmentClass = ieeeClass(
       // P-state is identity-bearing and prints as spelled - it is never
       // added or stripped here.
       if (leadParty === "ISO") {
+        // A D= designator row ("P26511/D8=DDIS.3") prints the designator
+        // after the code, not the stage as a word; only genuine stage
+        // rows print the stage position.
+        const designatorDraft = (id as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
+        const printsDesignator = designatorDraft !== undefined && /^D\d*=/.test(designatorDraft);
         const parts: string[] = [];
         if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
-        if (id.typed_stage !== undefined) {
-          parts.push(id.typed_stage.record.iso_stage_equivalent ?? id.typed_stage.render());
-        } else if (isoStage !== undefined) {
-          parts.push(isoStage);
+        if (!printsDesignator) {
+          if (id.typed_stage !== undefined) {
+            parts.push(id.typed_stage.record.iso_stage_equivalent ?? id.typed_stage.render());
+          } else if (isoStage !== undefined) {
+            parts.push(isoStage);
+          }
         }
-        const codeStr = codeObj?.render() ?? "";
+        let codeStr = codeObj?.render() ?? "";
+        // A P-prefixed joint project prints its parts dot-joined on the
+        // ISO face ("ISO/IEEE DIS P15500.1"), whatever separator the
+        // parse captured ("IEC/IEEE FDIS P60214-2-2018(E)" aliases in).
+        if (codeStr.startsWith("P")) codeStr = codeStr.replaceAll("-", ".");
         if (codeStr !== "") parts.push(codeStr);
         let result = parts.join(" ");
         if (id.year !== undefined) result += `:${id.year}`;
@@ -1278,7 +1289,7 @@ export const JointDevelopmentClass = ieeeClass(
         // the ISO-led print; only the bare language/edition marker ("(E)")
         // prints - a relationship narrative is metadata, not identity.
         const jointDraft = (id as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
-        if (jointDraft !== undefined && jointDraft.startsWith("D=")) result += `/${jointDraft}`;
+        if (jointDraft !== undefined && /^D\d*=/.test(jointDraft)) result += `/${jointDraft}`;
         const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
         if (marker !== undefined && /^[A-Z](?:\s*[/&]\s*[A-Z])*$/.test(marker)) {
           result += ` (${marker})`;
