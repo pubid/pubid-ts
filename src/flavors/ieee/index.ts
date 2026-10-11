@@ -1,5 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
+import { PubidRuntime } from "../../parg/runtime.js";
+import { artifactToBuilderTree } from "./artifact_tree.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { grammarImplementation } from "../index.js";
@@ -74,6 +76,7 @@ class IeeeBuilder {
 
   build(parsed: Tree): Identifier {
     const d = Array.isArray(parsed) ? mergeParsedArray(parsed) : (parsed as TreeObject);
+    this.normalizeDraftDashYear(d);
 
     if (d["ieee_portion"] !== undefined && d["csa_portion"] !== undefined) {
       return this.buildCsaDualPublished(d);
@@ -92,6 +95,66 @@ class IeeeBuilder {
   }
 
   // --- single identifier -----------------------------------------------------
+
+  // The artifact binds a dash-year draft tail as a second draft element
+  // ({draft_version: {dash_year: ...}}); the reference's builder hoists
+  // the dash fields and rejoins the version ("D9-2006", "/DPub2-2012").
+  normalizeDraftDashYear(d: TreeObject): void {
+    const raw = d["draft"];
+    if (raw === undefined) return;
+    const drafts = Array.isArray(raw) ? raw : [raw];
+    // The compound-stage captures nest inside the draft elements (the
+    // artifact's binding); the hand mirror bound them top-level, so the
+    // joint-designator block reads them from `parsed` directly.
+    for (const key of ["draft_iso_stage", "draft_iso_iteration", "draft_stage_d", "draft_stage_year"] as const) {
+      if (d[key] === undefined) {
+        for (const e of drafts) {
+          if (isObj(e) && e[key] !== undefined) {
+            d[key] = e[key];
+            break;
+          }
+        }
+      }
+    }
+    for (const e of drafts) {
+      if (!isObj(e)) continue;
+      const dv = e["draft_version"];
+      if (!isObj(dv)) continue;
+      if (dv["dash_year"] !== undefined) e["dash_year"] = dv["dash_year"];
+      if (dv["dash_month"] !== undefined) e["dash_month"] = dv["dash_month"];
+      delete e["draft_version"];
+    }
+    const dash = drafts.find((e) => isObj(e) && e["dash_year"] !== undefined);
+    if (dash === undefined || d["year"] !== undefined) return;
+    const objs = drafts.filter(isObj);
+    const joined = objs
+      .map((e) => e["draft_version"])
+      .filter((v) => v !== undefined)
+      .map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v)))
+      .join("");
+    const bareJointDraft = d["joint_publishers"] !== undefined &&
+      d["part"] === undefined && d["iso_stage"] === undefined &&
+      objs.some((e) => e["draft_version"] !== undefined);
+    const dashLed = joined.startsWith("-");
+    const dashYear = extractValue((dash as TreeObject)["dash_year"] as Tree);
+    const dashMonth = (dash as TreeObject)["dash_month"];
+    if (bareJointDraft && dashLed) {
+      d["part"] = dashYear;
+    } else if (dashMonth !== undefined || dashLed) {
+      d["year"] = dashYear;
+      d["month"] = extractValue(dashMonth as Tree);
+    } else {
+      const host = objs.find((e) => e["draft_version"] !== undefined);
+      if (host !== undefined) {
+        host["draft_version"] = `${joined}-${dashYear}`;
+        delete (dash as TreeObject)["dash_year"];
+        delete (dash as TreeObject)["dash_month"];
+      } else {
+        d["year"] = dashYear;
+        d["month"] = extractValue(dashMonth as Tree);
+      }
+    }
+  }
 
   buildSingleIdentifier(parsed: TreeObject, buildingSecondary: boolean): unknown {
     const parsedHash = asHash(parsed as Tree);
@@ -141,6 +204,18 @@ class IeeeBuilder {
     }
     if (parsedHash["joint_publishers"] !== undefined || parsedHash["iso_stage"] !== undefined) {
       return this.buildJointDevelopment(parsedHash);
+    }
+    // A stage-bearing draft on a multi-publisher row is the joint
+    // compound form ("ISO/IEC/IEEE P26511/D8=DDIS.3"); an IEEE-led one
+    // stays a project draft ("IEEE P24748-5/D5=DIS.3").
+    if (parsedHash["draft_iso_stage"] !== undefined) {
+      const pubData = parsedHash["publishers"] !== undefined
+        ? asHash(parsedHash["publishers"] as Tree)
+        : undefined;
+      const copubs = pubData?.["copublishers"] !== undefined
+        ? (Array.isArray(pubData["copublishers"]) ? (pubData["copublishers"] as Tree[]) : [pubData["copublishers"] as Tree])
+        : [];
+      if (copubs.length > 0) return this.buildJointDevelopment(parsedHash);
     }
 
     const attributes = this.extractAttributes(parsedHash);
@@ -260,11 +335,12 @@ class IeeeBuilder {
     }
 
     if (codeStr !== undefined && codeParts.length > 0) {
-      // The part rule captures its separator (part_sep) beside the bare
-      // token, so the code joins with the ORIGINAL separator — a dashed
-      // "62271-37-082" stays dashed, a dotted "802.3" stays dotted.
+      // Captures carry their own separator when present (the artifact's
+      // part/subpart bind ".18" / "-10"); bare tokens fall back to the
+      // hand grammar's part_sep. Joins verbatim like the reference's
+      // extract_attributes — a dashed "62271-37-082" stays dashed.
       const partSep = extractValue(parsed["part_sep"]) ?? ".";
-      codeStr += codeParts.map((cp) => `${partSep}${cp}`).join("");
+      codeStr += codeParts.map((cp) => /^[._-]/.test(cp) ? cp : `${partSep}${cp}`).join("");
     }
 
     if (
@@ -598,13 +674,14 @@ class IeeeBuilder {
     let numberStr = extractValue(baseData["number"]) ?? "";
     const baseSep = extractValue(baseData["part_sep"]) ?? ".";
     if (baseData["part"] !== undefined) {
-      numberStr += `${baseSep}${extractValue(baseData["part"]) ?? ""}`;
+      const pv = extractValue(baseData["part"]) ?? "";
+      numberStr += /^[._-]/.test(pv) ? pv : `${baseSep}${pv}`;
     }
     if (baseData["subpart"] !== undefined) {
       const subparts = Array.isArray(baseData["subpart"]) ? (baseData["subpart"] as Tree[]) : [baseData["subpart"] as Tree];
       for (const sp of subparts) {
         const v = extractValue(sp);
-        if (v !== undefined) numberStr += `${baseSep}${v}`;
+        if (v !== undefined) numberStr += /^[._-]/.test(v) ? v : `${baseSep}${v}`;
       }
     }
     if (baseData["year"] !== undefined) {
@@ -698,6 +775,22 @@ class IeeeBuilder {
       attributes["publishers"] = pubs;
       attributes["publisher"] = pubs[0];
       attributes["copublisher"] = pubs.slice(1);
+    } else if (parsed["publishers"] !== undefined) {
+      // Stage-bearing rows the artifact routes without a
+      // joint_publishers capture ("ISO/IEC/IEEE P26511/D8=DDIS.3"):
+      // the publishers hash carries the same information.
+      const pubData = asHash(parsed["publishers"] as Tree);
+      const lead = extractValue(pubData["publisher"]) ?? "";
+      const copubs = pubData["copublishers"] !== undefined
+        ? (Array.isArray(pubData["copublishers"])
+          ? (pubData["copublishers"] as Tree[])
+          : [pubData["copublishers"] as Tree])
+            .map((cp) => extractValue(asHash(cp as Tree)["copublisher"]))
+            .filter((cp): cp is string => cp !== undefined)
+        : [];
+      attributes["publishers"] = [lead, ...copubs];
+      attributes["publisher"] = lead;
+      attributes["copublisher"] = copubs;
     }
 
     const codeParts: string[] = [];
@@ -705,9 +798,10 @@ class IeeeBuilder {
     let codeStr = extractValue(parsed["number"]);
     if (codeStr !== undefined && codeParts.length > 0) {
       // The ISO/IEC label's part may be dash-joined ("8802-9") - keep the
-      // printed separator.
+      // printed separator. Separator-carrying captures (the artifact's
+      // part binds ".2") join verbatim.
       const sep = parsed["iec_label_dash"] !== undefined ? "-" : ".";
-      codeStr += `${sep}${codeParts.join(sep)}`;
+      codeStr += codeParts.map((cp) => /^[._-]/.test(cp) ? cp : `${sep}${cp}`).join("");
     }
     // P = project (a draft): identity-bearing, preserved as spelled.
     if (parsed["project_marker"] !== undefined && codeStr !== undefined) {
@@ -795,14 +889,20 @@ class IeeeBuilder {
     // alias spelling echoes as spelled.
     if (parsed["draft_iso_stage"] !== undefined) {
       const stageText = `${extractValue(parsed["draft_stage_d"]) ?? ""}${extractValue(parsed["draft_iso_stage"]) ?? ""}`;
-      let jointDraft = parsed["draft_version"] !== undefined
-        ? `D${(extractValue(parsed["draft_version"]) ?? "").replace(/^D/, "")}=${stageText}`
+      const jointVersion = extractValue(parsed["draft_version"]) ??
+        (parsed["draft"] !== undefined
+          ? extractValue(asHash(parsed["draft"] as Tree)["draft_version"] as Tree)
+          : undefined);
+      let jointDraft = jointVersion !== undefined
+        ? `D${jointVersion.replace(/^D/, "")}=${stageText}`
         : `D=${stageText}`;
       if (parsed["draft_iso_iteration"] !== undefined) {
         jointDraft += `.${extractValue(parsed["draft_iso_iteration"])}`;
       }
       if (parsed["draft_stage_year"] !== undefined) {
-        jointDraft += `:${extractValue(parsed["draft_stage_year"])}`;
+        // The capture carries its separator (":2020") — strip it (the
+        // #471 separator-in-capture rule).
+        jointDraft += `:${(extractValue(parsed["draft_stage_year"]) ?? "").replace(/^[\-:]/, "")}`;
       }
       attributes["ieee_draft"] = jointDraft;
     }
@@ -1233,6 +1333,25 @@ function copublishedStructured(copublishedNumber: string | undefined): Record<st
 
 // --- parse orchestration -------------------------------------------------------
 
+// The grammar runtime is the baked PARG artifact (pubid-grammar
+// artifacts/ieee.json via the parsanol engine) — the same artifact the
+// gem runs, so grammar changes land once and this port cannot drift.
+// Only the preprocessor, builder, model and the AIEE sub-grammar root
+// (parseAieeDirect) remain hand-written.
+let cachedArtifactRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
+
+function parseSource(input: string): Tree {
+  cachedArtifactRuntime ??= PubidRuntime.load("ieee");
+  try {
+    return artifactToBuilderTree(cachedArtifactRuntime.parseShape(input));
+  } catch (e) {
+    // The engine throws its own error class; the reference's fallback
+    // logic keys on Parslet::ParseFailed, so normalize (the messageless
+    // wasm throws included).
+    throw new ParseFailed(e instanceof Error && e.message !== "" ? e.message : String(e), 0);
+  }
+}
+
 function ieeeParseSingle(input: string): Identifier {
   const normalized = applyUpdateCodes(input);
   // UpdateCodes may introduce the "; " double-label separator (the
@@ -1243,7 +1362,7 @@ function ieeeParseSingle(input: string): Identifier {
     if (re.dispatch === "dual_semicolon") return buildDual(re.parts);
   }
   const cleaned = preprocessIeee(normalized);
-  const tree = parseGrammar(ieeeGrammar, cleaned);
+  const tree = parseSource(cleaned);
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
@@ -1254,7 +1373,7 @@ function ieeeParseSingle(input: string): Identifier {
 // update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
 // a line parse that the reference rejects.
 function ieeeParseSingleNoCodes(input: string): Identifier {
-  const tree = parseGrammar(ieeeGrammar, preprocessIeee(input));
+  const tree = parseSource(preprocessIeee(input));
   const builder = new IeeeBuilder();
   builder.originalInput = input;
   return builder.build(tree);
