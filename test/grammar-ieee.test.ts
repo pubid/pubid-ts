@@ -117,10 +117,14 @@ test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
   assert.equal(compound.toHash().project_marker, true);
   const alias = impl.parse("IEEE P24748-5/D5=DDIS.3");
   assert.equal(alias.toHuman(), "IEEE P24748-5/D5=DIS.3");
-  // The joint route echoes the doubled-D spelling as spelled.
-  const joint = impl.parse("ISO/IEC/IEEE P26511/D8=DDIS.3");
-  assert.equal(joint.toHuman(), "ISO/IEC/IEEE P26511/D8=DDIS.3");
-  assert.equal(joint.toHash().ieee_draft, "D8=DDIS.3");
+  // The doubled-D alias normalizes on EVERY route (the designator
+  // carries its own D-ordinal; the marker is notation, the stage the
+  // bare ISO/IEC token) - the ordinal compound is a project draft
+  // whatever the publishers.
+  const isoLed = impl.parse("ISO/IEC/IEEE P26511/D8=DDIS.3");
+  assert.equal(isoLed.toHuman(), "ISO/IEC/IEEE P26511/D8=DIS.3");
+  assert.equal(isoLed.toHash().draft, "D8=DIS.3");
+  assert.equal(isoLed.toHash().stage, "DIS");
   // P = project (a draft): the marker is identity on an ISO-led
   // publisher, preserved through the hash and re-rendered.
   const led = impl.parse("ISO/IEC/IEEE P24774/DIS, July 2020");

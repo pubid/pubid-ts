@@ -174,8 +174,17 @@ export class IeeeDraft {
     this.commaBeforeMonthSet = "comma_before_month" in attrs;
     this.version = String(attrs["version"] ?? "");
     this.revision = attrs["revision"] as string | undefined;
-    this.isoStage = attrs["iso_stage"] as string | undefined;
     this.isoIteration = attrs["iso_iteration"] as string | undefined;
+    // The grammar's ordered alternation captures the stage WITH its
+    // draft-marker D when the spelling doubles it ("=DDIS"): the marker
+    // is notation, the stage is the bare ISO/IEC token (the reference's
+    // Draft constructor strips it).
+    let stage = attrs["iso_stage"] as string | undefined;
+    if (stage !== undefined && stage.startsWith("D") &&
+        ["PWI", "NP", "WD", "CD", "CDV", "DIS", "FDIS"].includes(stage.slice(1))) {
+      stage = stage.slice(1);
+    }
+    this.isoStage = stage;
     this.year = attrs["year"] as string | undefined;
     // Canonical month spelling: the crawl abbreviation ("September" →
     // "Sept"); the 3-letter "Sep" folds onto the IEEE "Sept" form, so
