@@ -205,17 +205,25 @@ class IeeeBuilder {
     if (parsedHash["joint_publishers"] !== undefined || parsedHash["iso_stage"] !== undefined) {
       return this.buildJointDevelopment(parsedHash);
     }
-    // A stage-bearing draft on a multi-publisher row is the joint
-    // compound form ("ISO/IEC/IEEE P26511/D8=DDIS.3"); an IEEE-led one
-    // stays a project draft ("IEEE P24748-5/D5=DIS.3").
+    // The ORDINAL-LESS D= designator on a multi-publisher row is the
+    // joint compound form ("ISO/IEC/IEEE P16326:2017/D=WD.4a"); the
+    // ordinal compound ("D8=DIS.3") is a project draft whatever the
+    // publishers — the D-ordinal is the draft, the stage the target.
     if (parsedHash["draft_iso_stage"] !== undefined) {
-      const pubData = parsedHash["publishers"] !== undefined
-        ? asHash(parsedHash["publishers"] as Tree)
+      const draftHash = parsedHash["draft"] !== undefined
+        ? asHash(parsedHash["draft"] as Tree)
         : undefined;
-      const copubs = pubData?.["copublishers"] !== undefined
-        ? (Array.isArray(pubData["copublishers"]) ? (pubData["copublishers"] as Tree[]) : [pubData["copublishers"] as Tree])
-        : [];
-      if (copubs.length > 0) return this.buildJointDevelopment(parsedHash);
+      const hasOrdinal = extractValue(parsedHash["draft_version"]) !== undefined ||
+        extractValue(draftHash?.["draft_version"] as Tree) !== undefined;
+      if (!hasOrdinal) {
+        const pubData = parsedHash["publishers"] !== undefined
+          ? asHash(parsedHash["publishers"] as Tree)
+          : undefined;
+        const copubs = pubData?.["copublishers"] !== undefined
+          ? (Array.isArray(pubData["copublishers"]) ? (pubData["copublishers"] as Tree[]) : [pubData["copublishers"] as Tree])
+          : [];
+        if (copubs.length > 0) return this.buildJointDevelopment(parsedHash);
+      }
     }
 
     const attributes = this.extractAttributes(parsedHash);
@@ -888,7 +896,13 @@ class IeeeBuilder {
     // date rides inside the designator ("D=CDV:2020"). The doubled-D
     // alias spelling echoes as spelled.
     if (parsed["draft_iso_stage"] !== undefined) {
-      const stageText = `${extractValue(parsed["draft_stage_d"]) ?? ""}${extractValue(parsed["draft_iso_stage"]) ?? ""}`;
+      // The doubled-D alias ("=DDIS") is notation: the designator carries
+      // its own D-ordinal, the stage is the bare ISO/IEC token.
+      const rawStage = `${extractValue(parsed["draft_stage_d"]) ?? ""}${extractValue(parsed["draft_iso_stage"]) ?? ""}`;
+      const stageText = rawStage.startsWith("D") &&
+        ["PWI", "NP", "WD", "CD", "CDV", "DIS", "FDIS"].includes(rawStage.slice(1))
+        ? rawStage.slice(1)
+        : rawStage;
       const jointVersion = extractValue(parsed["draft_version"]) ??
         (parsed["draft"] !== undefined
           ? extractValue(asHash(parsed["draft"] as Tree)["draft_version"] as Tree)
