@@ -439,6 +439,14 @@ class IeeeBuilder {
     if (parsed["interpretation"] !== undefined) attributes["interpretation"] = true;
     if (parsed["redline"] !== undefined) attributes["redline"] = true;
 
+    // Glued identity year-month provenance (gem#520): the input tail is
+    // the glued "-YYYY-MM" on a draft-free, revision-free identity.
+    if (attributes["month"] !== undefined && attributes["year"] !== undefined &&
+        attributes["draft"] === undefined && attributes["revision"] === undefined &&
+        /-\d{4}-\d{2}$/.test(this.originalInput ?? "")) {
+      attributes["month_glued"] = true;
+    }
+
     return attributes;
   }
 
