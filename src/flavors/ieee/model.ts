@@ -422,6 +422,11 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
     month: { type: "string" },
     day: { type: "string" },
     redline: { type: "boolean", default: false },
+    // Provenance (gem#520): the month arrived glued to the identity year
+    // on the code ("ANSI/IEEE 21-1976-11") rather than as a trailing
+    // print date. The render keys on the month being numeric; this
+    // records how it arrived.
+    month_glued: { type: "boolean", default: false },
     edition_month: { type: "string" },
     space_before_draft: { type: "boolean", default: false },
     typed_stage: { type: IeeeTypedStage },
@@ -451,6 +456,7 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
     { wire: "month", to: "month" },
     { wire: "day", to: "day" },
     { wire: "redline", to: "redline" },
+    { wire: "month_glued", to: "month_glued" },
     { wire: "edition_month", to: "edition_month" },
     { wire: "space_before_draft", to: "space_before_draft" },
     typedStageWire,
@@ -495,6 +501,7 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
   declare readonly month: string | undefined;
   declare readonly day: string | undefined;
   declare readonly redline: boolean | undefined;
+  declare readonly month_glued: boolean | undefined;
   declare readonly edition_month: string | undefined;
   declare readonly space_before_draft: boolean | undefined;
   declare readonly typed_stage: IeeeTypedStage | undefined;
@@ -580,6 +587,8 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
   // dates (catalogue metadata, not identity); wider sets and
   // space-separated dates print as spelled.
   const iecIeeOnly = id.publisher === "IEC" && JSON.stringify(id.copublisher) === '["IEEE"]';
+  // Short format = numeric month (glued face); the comma face is a month name.
+  const gluedMonth = /^\d{1,2}$/.test(id.month ?? "");
   if (codeObj !== undefined) {
     let result = codeObj.render();
     // Prepend P if this is a project AND code doesn't already have P.
@@ -598,10 +607,17 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     // it: no edition, no identity-month date - and either no draft at
     // all, or a draft that carries its OWN date (the draft+corrigendum
     // family: "PC37.09-1999/D7.2, Nov 2006").
+    // A numeric identity month is the SHORT format: the year stays on
+    // the code and the month dash-joins after it, whatever the input
+    // spelling ("IEEE P15026.1, 05 2014" renders "P15026.1-2014-05").
     const yearOnCode = id.year !== undefined && id.edition === undefined &&
-      id.month === undefined && (draftObj === undefined || draftObj.year !== undefined);
+      (id.month === undefined || gluedMonth) &&
+      (draftObj === undefined || draftObj.year !== undefined);
     if (yearOnCode) {
       result += `-${id.year}`;
+    }
+    if (gluedMonth && id.month !== undefined) {
+      result += `-${id.month}`;
     }
     if (id.revision !== undefined) result += `Rev${id.revision}`;
     if (draftObj !== undefined) {
@@ -640,7 +656,7 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
 
   let result = parts.join(" ");
 
-  if (id.month !== undefined && !iecIeeOnly) {
+  if (id.month !== undefined && !gluedMonth && !iecIeeOnly) {
     result += `, ${id.month}`;
     if (id.day !== undefined) result += ` ${id.day}`;
     if (id.year !== undefined && id.edition === undefined) result += ` ${id.year}`;
@@ -1041,8 +1057,12 @@ export const SiStandardClass = ieeeClass(
           result += ` ${part}`;
         }
       }
-      if (id.month !== undefined && id.year !== undefined) result += `, ${id.month} ${id.year}`;
-      else if (id.year !== undefined) result += `-${id.year}`;
+      if (id.month !== undefined && id.year !== undefined) {
+        // Short format (numeric month) renders glued; the comma marks a
+        // month name (the long format).
+        if (/^\d{1,2}$/.test(id.month)) result += `-${id.year}-${id.month}`;
+        else result += `, ${id.month} ${id.year}`;
+      } else if (id.year !== undefined) result += `-${id.year}`;
       return result;
     },
   },
@@ -1503,7 +1523,10 @@ export const NescDraftClass = ieeeClass(
     extraMappings: NescMappings,
     render: (id) => {
       const parts = ["Draft National Electrical Safety Code"];
-      if (id.month !== undefined && id.year !== undefined) parts.push(`, ${id.month} ${id.year}`);
+      if (id.month !== undefined && id.year !== undefined) {
+        if (/^\d{1,2}$/.test(id.month)) parts.push(` ${id.number}-${id.year}-${id.month}`);
+        else parts.push(`, ${id.month} ${id.year}`);
+      }
       return parts.join("");
     },
   },
