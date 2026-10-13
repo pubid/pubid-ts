@@ -10,7 +10,7 @@ on:
 env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
   # changes always land in pubid (Ruby) PRs first, then this pin bumps.
-  TESTSUITE_REF: 9bb57e2d7b7f5ade1c1aba75d171050b801b154b
+  TESTSUITE_REF: 6aac10c0cbcd377e142ad9bad9190cb82c8a32d3
   # Same law for the grammar runtime: the baked PARG artifacts are
   # consumed at a pinned pubid-grammar ref (grammar PRs land first, then
   # this pin bumps). PARG_ARTIFACT_DIR points src/parg/runtime.ts there.
