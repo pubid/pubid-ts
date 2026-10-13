@@ -126,6 +126,7 @@ export abstract class CenIdentifier extends BaseIdentifier {
   static attributes = extendAttributes(BaseIdentifier, {
     number: { type: "string" },
     part: { type: "string" },
+    version: { type: "string" },
     date: { type: PubidDate },
     typedStage: { type: "string" },
     type: { type: "string" },
@@ -143,6 +144,7 @@ export abstract class CenIdentifier extends BaseIdentifier {
 
   declare readonly number: string | undefined;
   declare readonly part: string | undefined;
+  declare readonly version: string | undefined;
   declare readonly date: PubidDate | undefined;
   declare readonly typedStage: CenTypedStage | undefined;
   declare readonly type: string | undefined;
@@ -210,6 +212,7 @@ function renderSingle(id: CenIdentifier, classShort: string): string {
 
   if (id.number !== undefined) {
     parts.push(id.part !== undefined ? `${id.number}-${id.part}` : id.number);
+    if (id.version !== undefined) parts[parts.length - 1] += id.version;
   }
 
   let result = "";

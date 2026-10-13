@@ -1,5 +1,5 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
-import { parseGrammar } from "../../grammar/engine.js";
+import { parseGrammar, ParseFailed } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import { grammarImplementation } from "../index.js";
 import { cenCenelecGrammar, preprocessCenCenelec } from "./grammar.js";
@@ -49,6 +49,15 @@ class CenBuilder {
 
     if (d["fragment_number"] !== undefined) {
       return this.buildFragmentIdentifier(d);
+    }
+
+    // "TR" is a CEN or CLC technical report ("CEN/TR", "CLC/TR") — the
+    // EN publisher never carries it (pubid ruling 2026-10-13).
+    if (str(d["type"]) === "TR" && str(d["publisher"]) === "EN") {
+      throw new ParseFailed(
+        '"EN" cannot be "TR": a technical report is "CEN/TR" or "CLC/TR"',
+        0,
+      );
     }
 
     const base = this.buildBaseDocument(d);
@@ -127,11 +136,24 @@ class CenBuilder {
     if (baseData["publisher"] !== undefined) {
       attrs["publisher"] = str(baseData["publisher"]);
     }
+    if (Array.isArray(baseData["copublishers"])) {
+      const copubs = (baseData["copublishers"] as TreeObject[])
+        .map((c) => str(c["copublisher"]))
+        .filter((c): c is string => c !== undefined);
+      if (copubs.length > 0) attrs["copublishers"] = copubs;
+    }
     if (baseData["copublisher"] !== undefined) {
       attrs["copublishers"] = [str(baseData["copublisher"])];
     }
     if (baseData["number"] !== undefined) {
       attrs["number"] = str(baseData["number"]);
+    }
+    if (baseData["version"] !== undefined) {
+      const v = baseData["version"] as TreeObject;
+      // the gem's parg capture includes the leading space (" V2.2.1")
+      attrs["version"] = isObj(v)
+        ? ` V${str(v["v_major"])}.${str(v["v_minor"])}.${str(v["v_patch"])}`
+        : str(v);
     }
     if (Array.isArray(baseData["parts"]) && baseData["parts"].length > 0) {
       const first = baseData["parts"][0];
