@@ -51,5 +51,7 @@ test("evs rejects non-identifiers", () => {
   const impl = grammarImplementation("evs")!;
   assert.throws(() => impl.parse("EVS"));
   assert.throws(() => impl.parse("EN 18216:2026"));
-  assert.throws(() => impl.parse("EVS-ISO 1234:2015"));
+  // EVS-ISO is supported now (the EVS prefix list); an unknown national
+  // adoption org still rejects.
+  assert.throws(() => impl.parse("EVS-XX 1234:2015"));
 });
