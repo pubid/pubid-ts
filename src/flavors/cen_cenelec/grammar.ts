@@ -25,22 +25,32 @@ function buildRules(): Record<string, P> {
   rule("publisher", () =>
     publisherToken("CWA").or(publisherToken("HD"), publisherToken("ES"), publisherToken("CR"), publisherToken("ENV")).as("publisher")
       .or(
-        publisherToken("EN").as("publisher").then(slash.then(publisherToken("CLC").as("copublisher")).maybe()),
+        publisherToken("EN").as("publisher").then(ref(rules, "copublishers").maybe()),
       )
       .or(
-        publisherToken("CEN").as("publisher").then(slash.then(publisherToken("CLC").as("copublisher")).maybe()),
+        publisherToken("CEN").as("publisher").then(ref(rules, "copublishers").maybe()),
       )
       .or(
-        publisherToken("CLC").as("publisher").then(slash.then(publisherToken("CEN").as("copublisher")).maybe()),
+        publisherToken("CLC").as("publisher").then(ref(rules, "copublishers").maybe()),
       )
       .or(publisherToken("EN").as("publisher")),
   );
 
   rule("stage_prefix", () => str("FprEN").or(str("prEN")).as("type_with_stage"));
 
+  rule("copublishers", () => ref(rules, "copublisher").repeat(1, Infinity).as("copublishers"));
+
+  rule("copublisher", () =>
+    slash.then(publisherToken("CLC").or(publisherToken("ETSI")).as("copublisher")));
+
+  rule("version", () =>
+    space.then(str("V")).then(digits.as("v_major")).then(str(".").then(digits.as("v_minor")))
+      .then(str(".").then(digits.as("v_patch")))
+      .as("version"));
+
   rule("type", () => str("Guide").or(str("GUIDE"), str("TR"), str("TS")).as("type"));
 
-  rule("number", () => digits.as("number"));
+  rule("number", () => digits.then(match(" [0-9]").then(digits).repeat(0, Infinity)).as("number"));
 
   rule("part", () => dash.then(match("[0-9-]").repeat(1, Infinity).as("part")));
 
@@ -134,6 +144,7 @@ function buildRules(): Record<string, P> {
         )
         .then(
           space.then(ref(rules, "number")).then(ref(rules, "parts"))
+            .then(ref(rules, "version").maybe())
             .then(ref(rules, "year").maybe())
             .maybe(),
         )

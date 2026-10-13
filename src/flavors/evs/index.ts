@@ -24,8 +24,17 @@ function buildIdentifier(tree: Tree, language: string | undefined): Identifier {
 
   let id: Identifier;
   if (d["adopted"] !== undefined) {
+    // The adopted TS face carries no TS marker ("EVS-EN 16798-1:2019"):
+    // the TS-ness of an EN adoption is metadata, not identity — strip the
+    // type capture before the CEN builder routes on it.
+    const adoptedData = d["adopted"] as TreeObject;
+    const tsAdopted = adoptedData["type"] === "TS" &&
+      adoptedData["publisher"] === "EN";
+    const cenTree = tsAdopted
+      ? (Object.fromEntries(Object.entries(adoptedData).filter(([k]) => k !== "type")) as TreeObject)
+      : adoptedData;
     id = new NationalAdoption({
-      base: buildCenIdentifier(d["adopted"] as Tree),
+      base: buildCenIdentifier(cenTree as Tree),
       separator, draft_prefix: draft,
     }) as unknown as Identifier;
   } else if (d["intl"] !== undefined) {
