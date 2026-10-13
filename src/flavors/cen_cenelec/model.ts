@@ -126,8 +126,8 @@ export abstract class CenIdentifier extends BaseIdentifier {
   static attributes = extendAttributes(BaseIdentifier, {
     number: { type: "string" },
     part: { type: "string" },
-    version: { type: "string" },
     date: { type: PubidDate },
+    version: { type: "string" },
     typedStage: { type: "string" },
     type: { type: "string" },
     publisher: { type: "string" },
@@ -137,6 +137,7 @@ export abstract class CenIdentifier extends BaseIdentifier {
     { wire: "number", to: "number" },
     { wire: "part", to: "part" },
     dateWire,
+    { wire: "version", to: "version" },
     stageWire,
     { wire: "publisher", to: "publisher" },
     { wire: "copublishers", to: "copublishers" },
