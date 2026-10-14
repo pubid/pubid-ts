@@ -17,16 +17,31 @@
 # a pending case that passes raises the pending-satisfied alarm and
 # MUST be unmarked (TODO.correct-test-suite/04).
 #
+# renumbered; entries transferred by content (hash + human) from the
+# Cases this port explicitly cannot handle yet.
+# Rules (mirrored from the Ruby reference): entries need reason + ref;
+# a pending case that passes raises the pending-satisfied alarm and
+# MUST be unmarked (TODO.correct-test-suite/04).
+#
+# renumbered; entries transferred by content (hash + human) from the
+# Re-derived for the 2-digit draft-year corpus round (testsuite#50): ids
+# renumbered; entries transferred by content (hash + human) from the
+# REV-lettered ledger.
+# Cases this port explicitly cannot handle yet.
+# Rules (mirrored from the Ruby reference): entries need reason + ref;
+# a pending case that passes raises the pending-satisfied alarm and
+# MUST be unmarked (TODO.correct-test-suite/04).
+#
 # Re-derived for the REV-lettered corpus round (testsuite#49): ids
 # renumbered; entries transferred by content (hash + human) from the
 # testsuite#48 ledger.
 
-ieee.adopted_standard.8707:
+ieee.adopted_standard.8747:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.adopted_standard.8708:
+ieee.adopted_standard.8748:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -36,37 +51,37 @@ ieee.corrigendum.0964:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.1330:
+ieee.corrigendum.1342:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.2679:
+ieee.corrigendum.2694:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.2680:
+ieee.corrigendum.2695:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.3887:
+ieee.corrigendum.3903:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.8618:
+ieee.corrigendum.8656:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.8684:
+ieee.corrigendum.8724:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.corrigendum.8780:
+ieee.corrigendum.8827:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -226,272 +241,167 @@ ieee.joint_development.0942:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.2241:
+ieee.joint_development.2254:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.2244:
+ieee.joint_development.2257:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.2366:
+ieee.joint_development.2380:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.2377:
+ieee.joint_development.2391:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3061:
+ieee.joint_development.3076:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3111:
+ieee.joint_development.3126:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3114:
+ieee.joint_development.3129:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3236:
+ieee.joint_development.3251:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3237:
+ieee.joint_development.3252:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.3582:
+ieee.joint_development.3597:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8294:
+ieee.joint_development.8315:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8334:
+ieee.joint_development.8356:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8347:
+ieee.joint_development.8369:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8406:
+ieee.joint_development.8432:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8902:
+ieee.joint_development.8953:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8918:
+ieee.joint_development.8969:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8919:
+ieee.joint_development.8970:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8920:
+ieee.joint_development.8971:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8926:
+ieee.joint_development.8977:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8927:
+ieee.joint_development.8978:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8928:
+ieee.joint_development.8979:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8929:
+ieee.joint_development.8980:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8930:
+ieee.joint_development.8981:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8931:
+ieee.joint_development.8982:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8932:
+ieee.joint_development.8983:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8936:
+ieee.joint_development.8987:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8938:
+ieee.joint_development.8989:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8939:
+ieee.joint_development.8990:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8940:
+ieee.joint_development.8991:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.8941:
+ieee.joint_development.8992:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9010:
+ieee.joint_development.9061:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9011:
+ieee.joint_development.9062:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9012:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9046:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9076:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9077:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9079:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9080:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9081:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9082:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9083:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9084:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9085:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9086:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9087:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9088:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9089:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9090:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9091:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9092:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9093:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9094:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9095:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9096:
+ieee.joint_development.9063:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -501,117 +411,12 @@ ieee.joint_development.9097:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9098:
+ieee.joint_development.9127:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9099:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9100:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9101:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9102:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9103:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9104:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9105:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9109:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9111:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9112:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9113:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9114:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9115:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9117:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9118:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9119:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9120:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9121:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9122:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9123:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9124:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9129:
+ieee.joint_development.9128:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -621,7 +426,22 @@ ieee.joint_development.9130:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9131:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9132:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9133:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9134:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -636,6 +456,26 @@ ieee.joint_development.9136:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9137:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9138:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9139:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9140:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9141:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -646,7 +486,27 @@ ieee.joint_development.9142:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9143:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9144:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9145:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9146:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9147:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -676,6 +536,11 @@ ieee.joint_development.9152:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9153:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9154:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -691,12 +556,7 @@ ieee.joint_development.9156:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9158:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9159:
+ieee.joint_development.9160:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -706,12 +566,37 @@ ieee.joint_development.9162:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9163:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9164:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9165:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9166:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9168:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9169:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9170:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -726,17 +611,17 @@ ieee.joint_development.9172:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9176:
+ieee.joint_development.9173:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9178:
+ieee.joint_development.9174:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9179:
+ieee.joint_development.9175:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -751,22 +636,7 @@ ieee.joint_development.9181:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9182:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9183:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.joint_development.9184:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9185:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -781,22 +651,22 @@ ieee.joint_development.9187:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.joint_development.9189:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9190:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.joint_development.9191:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.joint_development.9192:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9193:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9196:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9199:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -806,7 +676,72 @@ ieee.joint_development.9200:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
+ieee.joint_development.9201:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9202:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9203:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9205:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9206:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
 ieee.joint_development.9207:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9209:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9210:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9213:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9215:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9217:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9222:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9223:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9227:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -822,6 +757,86 @@ ieee.joint_development.9230:
   ref: conformance/pending.yaml (wave ledger)
 
 ieee.joint_development.9231:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9232:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9233:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9234:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9235:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9236:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9237:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9238:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9240:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9241:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9242:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9243:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9251:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9258:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9280:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9281:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.joint_development.9282:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -1031,257 +1046,257 @@ ieee.project_draft_identifier.0949:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.1772:
+ieee.project_draft_identifier.1784:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.1909:
+ieee.project_draft_identifier.1921:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.1996:
+ieee.project_draft_identifier.2008:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2044:
+ieee.project_draft_identifier.2056:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2123:
+ieee.project_draft_identifier.2135:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2189:
+ieee.project_draft_identifier.2201:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2375:
+ieee.project_draft_identifier.2389:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2588:
+ieee.project_draft_identifier.2603:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2686:
+ieee.project_draft_identifier.2701:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2852:
+ieee.project_draft_identifier.2867:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2853:
+ieee.project_draft_identifier.2868:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2946:
+ieee.project_draft_identifier.2961:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2950:
+ieee.project_draft_identifier.2965:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2985:
+ieee.project_draft_identifier.3000:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.2988:
+ieee.project_draft_identifier.3003:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3097:
+ieee.project_draft_identifier.3112:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3115:
+ieee.project_draft_identifier.3130:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3238:
+ieee.project_draft_identifier.3253:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3316:
+ieee.project_draft_identifier.3331:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3421:
+ieee.project_draft_identifier.3436:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3587:
+ieee.project_draft_identifier.3602:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3607:
+ieee.project_draft_identifier.3622:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3653:
+ieee.project_draft_identifier.3669:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3739:
+ieee.project_draft_identifier.3755:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3906:
+ieee.project_draft_identifier.3922:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3907:
+ieee.project_draft_identifier.3923:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.3908:
+ieee.project_draft_identifier.3924:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.4058:
+ieee.project_draft_identifier.4076:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.8894:
+ieee.project_draft_identifier.8945:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.8895:
+ieee.project_draft_identifier.8946:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.8896:
+ieee.project_draft_identifier.8947:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.8897:
+ieee.project_draft_identifier.8948:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.8898:
+ieee.project_draft_identifier.8949:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9125:
+ieee.project_draft_identifier.9176:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9132:
+ieee.project_draft_identifier.9183:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9157:
+ieee.project_draft_identifier.9208:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9161:
+ieee.project_draft_identifier.9212:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9169:
+ieee.project_draft_identifier.9220:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9170:
+ieee.project_draft_identifier.9221:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9173:
+ieee.project_draft_identifier.9224:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9174:
+ieee.project_draft_identifier.9225:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9175:
+ieee.project_draft_identifier.9226:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9188:
+ieee.project_draft_identifier.9239:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9201:
+ieee.project_draft_identifier.9252:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9202:
+ieee.project_draft_identifier.9253:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9203:
+ieee.project_draft_identifier.9254:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9204:
+ieee.project_draft_identifier.9255:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9206:
+ieee.project_draft_identifier.9257:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9232:
+ieee.project_draft_identifier.9283:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9233:
+ieee.project_draft_identifier.9284:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9237:
+ieee.project_draft_identifier.9288:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -1291,157 +1306,162 @@ ieee.standard.0602:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.0988:
+ieee.standard.0991:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.1106:
+ieee.standard.1118:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.1482:
+ieee.standard.1494:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.1483:
+ieee.standard.1495:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.3649:
+ieee.standard.3665:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.4516:
+ieee.standard.4535:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.4534:
+ieee.standard.4553:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8496:
+ieee.standard.8526:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8497:
+ieee.standard.8527:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8620:
+ieee.standard.8658:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8621:
+ieee.standard.8659:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8622:
+ieee.standard.8660:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8623:
+ieee.standard.8661:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8624:
+ieee.standard.8662:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8625:
+ieee.standard.8663:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8626:
+ieee.standard.8664:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8627:
+ieee.standard.8665:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8805:
+ieee.standard.8666:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8876:
+ieee.standard.8853:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8877:
+ieee.standard.8927:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8878:
+ieee.standard.8928:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8879:
+ieee.standard.8929:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8880:
+ieee.standard.8930:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8881:
+ieee.standard.8931:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8882:
+ieee.standard.8932:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8883:
+ieee.standard.8933:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8903:
+ieee.standard.8934:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8904:
+ieee.standard.8954:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.8921:
+ieee.standard.8955:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.9014:
+ieee.standard.8972:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.9029:
+ieee.standard.9065:
+  reason: >-
+      the REV-lettered render surface is not yet reproduced by this port
+  ref: conformance/pending.yaml (wave ledger)
+
+ieee.standard.9080:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)

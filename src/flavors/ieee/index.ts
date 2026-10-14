@@ -568,6 +568,12 @@ class IeeeBuilder {
       isoIteration = extractValue(draftData["draft_iso_iteration"]);
       month = extractValue(draftData["month"]);
       year = extractValue(draftData["year"]);
+      // The apostrophe-year catalogue convention ("P1484.20.1/D7,
+      // May 07"): the 2-digit year expands with the <30 pivot so the
+      // hash carries an unambiguous year (the reference's builder).
+      if (year !== undefined && /^\d{2}$/.test(year)) {
+        year = `${Number(year) < 30 ? 20 : 19}${year}`;
+      }
       day = extractValue(draftData["day"]);
       if (this.originalInput !== "" && month !== undefined) {
         commaBeforeMonth = new RegExp(`,\\s+${month.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i")
