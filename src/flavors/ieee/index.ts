@@ -32,6 +32,7 @@ import {
   NescPreprintClass,
   NescRedlineClass,
   NescStandardClass,
+  DRAFT_MONTH_NAMES,
   ProjectDraftIdentifierClass,
   SiStandardClass,
   StandardClass,
@@ -124,7 +125,34 @@ class IeeeBuilder {
       if (dv["dash_month"] !== undefined) e["dash_month"] = dv["dash_month"];
       delete e["draft_version"];
     }
-    const dash = drafts.find((e) => isObj(e) && e["dash_year"] !== undefined);
+    // A numeric month trailing a draft is the draft's own date: it embeds
+    // in the designator ("D09, 04 2011" -> "D09-2011-04") rather than
+    // printing the long-format comma face (a month name keeps the comma,
+    // "D7.2, Nov 2006") - pubid ruling 2026-10-13.
+    if (d["dash_year"] === undefined && d["draft"] !== undefined) {
+      const m = d["month"] ?? d["trailing_month"];
+      const y = d["year"] ?? d["trailing_year"];
+      const mVal = extractValue(m as Tree);
+      const yVal = extractValue(y as Tree);
+      if (mVal !== undefined && /^\d{1,2}$/.test(String(mVal)) && yVal !== undefined) {
+        const host = drafts.find((e) => isObj(e) && e["draft_version"] !== undefined);
+        if (host !== undefined && isObj(host)) {
+          const hv = host["draft_version"];
+          const joined = Array.isArray(hv)
+            ? hv.map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v))).join("")
+            : String(extractValue(hv as Tree) ?? "");
+          host["draft_version"] = [joined, String(yVal), String(mVal)]
+            .filter((s) => s !== "")
+            .join("-");
+          delete d["month"];
+          delete d["year"];
+          delete d["trailing_month"];
+          delete d["trailing_year"];
+        }
+      }
+    }
+    const dash = drafts.find((e) => isObj(e) && e["dash_year"] !== undefined) ??
+      (d["dash_year"] !== undefined ? d : undefined);
     if (dash === undefined || d["year"] !== undefined) return;
     const objs = drafts.filter(isObj);
     const joined = objs
@@ -141,8 +169,23 @@ class IeeeBuilder {
     if (bareJointDraft && dashLed) {
       d["part"] = dashYear;
     } else if (dashMonth !== undefined || dashLed) {
-      d["year"] = dashYear;
-      d["month"] = extractValue(dashMonth as Tree);
+      // A dash_month beside a draft host is the draft's own date
+      // ("/R-i-2011-04" -> "D09-2011-04"); with no host it is the
+      // identifier's year/month.
+      const host = objs.find((e) => e["draft_version"] !== undefined);
+      const dm = extractValue(dashMonth as Tree);
+      if (dm !== undefined && host !== undefined) {
+        const hv = host["draft_version"];
+        const joined = Array.isArray(hv)
+          ? hv.map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v))).join("")
+          : String(extractValue(hv as Tree) ?? "");
+        host["draft_version"] = [joined, dashYear, String(dm)].join("-");
+        delete (dash as TreeObject)["dash_year"];
+        delete (dash as TreeObject)["dash_month"];
+      } else {
+        d["year"] = dashYear;
+        d["month"] = dm;
+      }
     } else {
       const host = objs.find((e) => e["draft_version"] !== undefined);
       if (host !== undefined) {
@@ -412,10 +455,11 @@ class IeeeBuilder {
 
     attributes["draft_status"] = draftStatusValue;
 
-    for (const key of ["edition", "revision"] as const) {
+    for (const key of ["edition", "revision", "rev_sep"] as const) {
       const value = extractValue(parsed[key]);
       if (value !== undefined) attributes[key] = value;
     }
+    if (parsed["rev_bare"] !== undefined) attributes["rev_bare"] = true;
     if (attributes["edition_month"] === undefined) {
       const month = extractValue(parsed["month"]);
       if (month !== undefined) attributes["month"] = month;
@@ -537,6 +581,23 @@ class IeeeBuilder {
       }
     } else {
       version = extractValue(draftData);
+    }
+
+    // A REV-carrying draft embeds its print date into the designator
+    // with the month canonicalized numeric (pubid ruling 2026-10-14):
+    // "P802.11-REVmc/D8.0, Aug 2016" renders ".../D8.0-2016-08".
+    // Drafts without a REV keep the comma face.
+    if (
+      (attributes["revision"] !== undefined || attributes["rev_bare"] === true) &&
+      month !== undefined && year !== undefined && version !== undefined
+    ) {
+      const monthNumber = DRAFT_MONTH_NAMES[String(month).replace(/\.$/, "")];
+      if (monthNumber !== undefined) {
+        // The canonical face zero-pads ("D8.0-2016-08"), matching the
+        // reference's REV_MONTH_NUMBERS.
+        version = `${version}-${year}-${monthNumber.padStart(2, "0")}`;
+        month = year = day = undefined;
+      }
     }
 
     if (version !== undefined || (isObj(draftData) && draftData["draft_iso_stage"] !== undefined)) {

@@ -150,7 +150,7 @@ const DRAFT_MONTH_CANONICAL: Record<string, string> = {
   October: "Oct", November: "Nov", December: "Dec", Sep: "Sept",
 };
 
-const DRAFT_MONTH_NAMES: Record<string, string> = {
+export const DRAFT_MONTH_NAMES: Record<string, string> = {
   January: "1", February: "2", March: "3", April: "4", May: "5", June: "6",
   July: "7", August: "8", September: "9", October: "10", November: "11",
   December: "12", Jan: "1", Feb: "2", Mar: "3", Apr: "4", Jun: "6",
@@ -418,6 +418,8 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
     draft_status: { type: "string" },
     draft: { type: "string" },
     revision: { type: "string" },
+    rev_sep: { type: "string" },
+    rev_bare: { type: "boolean" },
     edition: { type: "string" },
     month: { type: "string" },
     day: { type: "string" },
@@ -452,6 +454,8 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
     { wire: "draft_status", to: "draft_status" },
     draftWire,
     { wire: "revision", to: "revision" },
+    { wire: "rev_sep", to: "rev_sep" },
+    { wire: "rev_bare", to: "rev_bare" },
     { wire: "edition", to: "edition" },
     { wire: "month", to: "month" },
     { wire: "day", to: "day" },
@@ -497,6 +501,8 @@ export abstract class IeeeIdentifier extends BaseIdentifier {
   declare readonly draft_status: string | undefined;
   declare readonly draft: string | undefined;
   declare readonly revision: string | undefined;
+  declare readonly rev_sep: string | undefined;
+  declare readonly rev_bare: boolean | undefined;
   declare readonly edition: string | undefined;
   declare readonly month: string | undefined;
   declare readonly day: string | undefined;
@@ -619,7 +625,11 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     if (gluedMonth && id.month !== undefined) {
       result += `-${id.month}`;
     }
-    if (id.revision !== undefined) result += `Rev${id.revision}`;
+    // The lettered revision keeps its printed separator ("P802.11-REVmc"
+    // renders "P802.11-Revmc"); the bare word with no id still prints
+    // "Rev" (pubid ruling 2026-10-14).
+    if (id.revision !== undefined) result += `${id.rev_sep ?? ""}Rev${id.revision}`;
+    if (id.rev_bare === true) result += `${id.rev_sep ?? ""}Rev`;
     if (draftObj !== undefined) {
       let printed = draftObj.render();
       // The draft designator carries its date on every lead
