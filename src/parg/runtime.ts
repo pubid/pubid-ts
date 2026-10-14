@@ -22,11 +22,14 @@ function packageRoot(): string {
 }
 
 /** The artifacts directory: PARG_ARTIFACT_DIR, else the sibling
- * pubid-grammar checkout of the pubid workspace. */
+ * pubid-grammar checkout of the pubid workspace, else the vendored copy
+ * shipped in the published package (refreshed by `npm run artifact`). */
 export function artifactsDir(): string {
   const env = process.env.PARG_ARTIFACT_DIR;
   if (env) return env;
-  return join(packageRoot(), "..", "pubid-grammar", "artifacts");
+  const sibling = join(packageRoot(), "..", "pubid-grammar", "artifacts");
+  if (existsSync(sibling)) return sibling;
+  return join(packageRoot(), "vendor", "parg");
 }
 
 /** The pubid flavor runtime: loads baked artifacts from the workspace. */
