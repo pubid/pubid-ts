@@ -926,13 +926,29 @@ class IeeeBuilder {
         // the ISO face, which prints the date from the identity slots
         // (", March 2017", pubid#216).
         if (parsed["draft_month"] !== undefined && parsed["iso_stage"] === undefined) {
-          const draftObj = new IeeeDraft({
-            version: draftVer,
-            month: extractValue(parsed["draft_month"]),
-            year: extractValue(parsed["draft_year"]),
-            comma_before_month: true,
-          });
-          attributes["draft"] = draftObj.render();
+          const dm = extractValue(parsed["draft_month"]) ?? "";
+          const dy = extractValue(parsed["draft_year"]) ?? "";
+          const monthNum = DRAFT_MONTH_NAMES[dm.replace(/\.$/, "")];
+          if (
+            JSON.stringify(attributes["publishers"]) === JSON.stringify(["IEEE", "CSA"]) &&
+            monthNum !== undefined && dy !== ""
+          ) {
+            // The joint IEEE/CSA drafts glue their date into the
+            // designator with the month numeric (pubid ruling
+            // 2026-10-14: no comma dates on these rows).
+            const glued = new IeeeDraft({
+              version: `${draftVer}-${dy}-${monthNum.padStart(2, "0")}`,
+            });
+            attributes["draft"] = glued.render();
+          } else {
+            const draftObj = new IeeeDraft({
+              version: draftVer,
+              month: dm === "" ? undefined : dm,
+              year: dy === "" ? undefined : dy,
+              comma_before_month: true,
+            });
+            attributes["draft"] = draftObj.render();
+          }
           if (parsed["year"] === undefined) delete attributes["year"];
           if (parsed["month"] === undefined) delete attributes["month"];
         } else if (parsed["draft_year"] !== undefined && parsed["iso_stage"] === undefined) {
@@ -1089,9 +1105,19 @@ class IeeeBuilder {
     ) {
       const pubs = (attributes["publishers"] ?? []) as string[];
       const projectAttrs: Record<string, unknown> = {
-        code: attributes["code"],
         draft: attributes["draft"],
       };
+      // The code columns (number/parts/separator/prefix) are the
+      // ProjectDraft render/hash face; the spelled P is the project
+      // marker (identity), whatever the lead publisher.
+      for (const k of ["number", "prefix", "parts", "separator"] as const) {
+        // A "P" prefix is the project marker itself (the generic path
+        // deletes it on the strip) - it must not ride the code columns.
+        if (attributes[k] !== undefined && !(k === "prefix" && attributes[k] === "P")) {
+          projectAttrs[k] = attributes[k];
+        }
+      }
+      if (parsed["project_marker"] !== undefined) projectAttrs["project_marker"] = true;
       if (pubs.length > 0) {
         projectAttrs["publisher"] = pubs[0];
         if (pubs.length > 1) projectAttrs["copublisher"] = pubs.slice(1);
