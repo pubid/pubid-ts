@@ -26,7 +26,8 @@
   },
   "files": [
     "dist",
-    "artifact"
+    "artifact",
+    "vendor/parg"
   ],
   "keywords": [
     "pubid",

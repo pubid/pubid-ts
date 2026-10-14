@@ -18,6 +18,12 @@ permissions:
 env:
   # The corpus-backed tests read the pinned testsuite (same ref as ci.yml).
   TESTSUITE_REF: e0c07179f5ebee908f0bf4c74eb3d4fec9fb936a
+  # The grammar-runtime tests parse through the baked PARG artifacts —
+  # the same pinned pubid-grammar ref ci.yml runs against. Without this
+  # checkout the release test fails on every artifact-backed flavor (the
+  # artifact-port waves made those parse paths require the artifacts;
+  # the 0.1.9 dispatch was the first release to find out).
+  PARG_GRAMMAR_REF: e30212a26bb3efc2bb9a489f43219c6210c62d21
 
 jobs:
   publish:
@@ -29,6 +35,11 @@ jobs:
           repository: pubid/pubid-testsuite
           ref: ${{ env.TESTSUITE_REF }}
           path: pubid-testsuite
+      - uses: actions/checkout@v7
+        with:
+          repository: pubid/pubid-grammar
+          ref: ${{ env.PARG_GRAMMAR_REF }}
+          path: pubid-grammar
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -38,6 +49,7 @@ jobs:
       - run: npm test
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
+          PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
       - name: Set version from workflow input (patch release)
         if: github.event_name == 'workflow_dispatch'
         run: |
