@@ -17,13 +17,13 @@ permissions:
 
 env:
   # The corpus-backed tests read the pinned testsuite (same ref as ci.yml).
-  TESTSUITE_REF: e0c07179f5ebee908f0bf4c74eb3d4fec9fb936a
+  TESTSUITE_REF: bb4b376abd1feb524b484f190cf55afd37e86b36
   # The grammar-runtime tests parse through the baked PARG artifacts —
   # the same pinned pubid-grammar ref ci.yml runs against. Without this
   # checkout the release test fails on every artifact-backed flavor (the
   # artifact-port waves made those parse paths require the artifacts;
   # the 0.1.9 dispatch was the first release to find out).
-  PARG_GRAMMAR_REF: e30212a26bb3efc2bb9a489f43219c6210c62d21
+  PARG_GRAMMAR_REF: 70fbe38dcd6f49102a04ad12d98244a89c56d8cc
 
 jobs:
   publish:
