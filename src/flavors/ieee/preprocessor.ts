@@ -295,12 +295,9 @@ function normalizeRevisionNotation(input: string): string {
   cleaned = cleaned.replace(/[-/_.]?\s?[Rr][Ee][Vv][-\s]?(\d+)(\/D-?[0-9A-Za-z.]+)/, "$2/R-$1");
   cleaned = cleaned.replace(/(\d)[-._]?\s?[Rr][Ee][Vv]\s*(\d+)\s*$/, "$1/R-$2");
 
-  // Lettered inline revisions stripped.
-  cleaned = cleaned.replace(
-    /[-/_.]?\s?[Rr][Ee][Vv][-\s]?[A-Za-z0-9]+(?=\/D-?[0-9A-Za-z])/,
-    "",
-  );
-  cleaned = cleaned.replace(/(\d)[Rr][Ee][Vv][A-Za-z0-9]+\s*$/, "$1");
+  // Lettered inline revisions are IDENTITY (pubid ruling 2026-10-14):
+  // the grammar captures them natively with their separator; the former
+  // strip rewrite here dropped the letters and is gone.
   return cleaned;
 }
 
