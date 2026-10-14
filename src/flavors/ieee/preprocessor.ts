@@ -295,6 +295,11 @@ function normalizeRevisionNotation(input: string): string {
   cleaned = cleaned.replace(/[-/_.]?\s?[Rr][Ee][Vv][-\s]?(\d+)(\/D-?[0-9A-Za-z.]+)/, "$2/R-$1");
   cleaned = cleaned.replace(/(\d)[-._]?\s?[Rr][Ee][Vv]\s*(\d+)\s*$/, "$1/R-$2");
 
+  // The joint IEEE/CSA catalogue spells the type word before the
+  // project number ("IEEE/CSA Draft P844.1/D2, Sept, 2016"): the P
+  // already carries the project semantics (docs/IEEE-DRAFT-STAGES.md
+  // §1.1), so the redundant word drops and the joint route parses.
+  cleaned = cleaned.replace(/IEEE\/CSA Draft (P[A-Z0-9])/g, "IEEE/CSA $1");
   // The corrigendum's own draft rides before the ordinal in the house
   // order ("PC37.101-2006/D2, 2007/Cor. 1"): the catalogue spellings
   // ".../Cor 1, D4, July 2015" and ".../Cor 1-201x/D5, April 2012"
