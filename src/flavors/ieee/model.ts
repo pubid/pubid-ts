@@ -618,7 +618,8 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     // spelling ("IEEE P15026.1, 05 2014" renders "P15026.1-2014-05").
     const yearOnCode = id.year !== undefined && id.edition === undefined &&
       (id.month === undefined || gluedMonth) &&
-      (draftObj === undefined || draftObj.year !== undefined);
+      (draftObj === undefined || draftObj.year !== undefined ||
+        (draftObj.version ?? "").match(/-\d{4}-\d{2}$/) !== null);
     if (yearOnCode) {
       result += `-${id.year}`;
     }
@@ -672,7 +673,8 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
     if (id.year !== undefined && id.edition === undefined) result += ` ${id.year}`;
   } else if (
     id.year !== undefined && draftObj !== undefined && id.edition === undefined &&
-    draftObj?.year === undefined && !iecIeeOnly
+    draftObj?.year === undefined &&
+    (draftObj.version ?? "").match(/-\d{4}-\d{2}$/) === null && !iecIeeOnly
   ) {
     // A year-only date trailing the draft ("ANSI N42.34/D9a, 2015")
     // keeps its comma form instead of being silently dropped; a year

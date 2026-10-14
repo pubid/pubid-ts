@@ -295,6 +295,32 @@ function normalizeRevisionNotation(input: string): string {
   cleaned = cleaned.replace(/[-/_.]?\s?[Rr][Ee][Vv][-\s]?(\d+)(\/D-?[0-9A-Za-z.]+)/, "$2/R-$1");
   cleaned = cleaned.replace(/(\d)[-._]?\s?[Rr][Ee][Vv]\s*(\d+)\s*$/, "$1/R-$2");
 
+  // The corrigendum's own draft rides before the ordinal in the house
+  // order ("PC37.101-2006/D2, 2007/Cor. 1"): the catalogue spellings
+  // ".../Cor 1, D4, July 2015" and ".../Cor 1-201x/D5, April 2012"
+  // re-order into it, with the draft's date glued -YYYY-MM (pubid
+  // ruling 2026-10-14: no comma dates).
+  const COR_MONTHS: Record<string, string> = {
+    January: "01", February: "02", March: "03", April: "04", May: "05",
+    June: "06", July: "07", August: "08", September: "09", Sept: "09",
+    October: "10", November: "11", December: "12", Jan: "01", Feb: "02",
+    Mar: "03", Apr: "04", Jun: "06", Jul: "07", Aug: "08", Sep: "09",
+    Oct: "10", Nov: "11", Dec: "12",
+  };
+  cleaned = cleaned.replace(
+    /\/Cor(?:rigendum)? (\d+(?:-[0-9xX]{4})?)\/(D[A-Z0-9][^,]*), ([A-Za-z]+) (\d{4})/g,
+    (_m, cor: string, draft: string, mon: string, year: string) => {
+      const month = COR_MONTHS[mon.charAt(0).toUpperCase() + mon.slice(1).toLowerCase()];
+      return month === undefined ? _m : `/${draft}-${year}-${month}/Cor. ${cor}`;
+    },
+  );
+  cleaned = cleaned.replace(
+    /\/Cor(?:rigendum)? (\d+), (D[A-Z0-9][^,]*), ([A-Za-z]+) (\d{4})/g,
+    (_m, cor: string, draft: string, mon: string, year: string) => {
+      const month = COR_MONTHS[mon.charAt(0).toUpperCase() + mon.slice(1).toLowerCase()];
+      return month === undefined ? _m : `/${draft}-${year}-${month}/Cor. ${cor}`;
+    },
+  );
   // Lettered inline revisions are IDENTITY (pubid ruling 2026-10-14):
   // the grammar captures them natively with their separator; the former
   // strip rewrite here dropped the letters and is gone.

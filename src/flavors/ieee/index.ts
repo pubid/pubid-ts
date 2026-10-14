@@ -153,7 +153,7 @@ class IeeeBuilder {
     }
     const dash = drafts.find((e) => isObj(e) && e["dash_year"] !== undefined) ??
       (d["dash_year"] !== undefined ? d : undefined);
-    if (dash === undefined || d["year"] !== undefined) return;
+    if (dash === undefined) return;
     const objs = drafts.filter(isObj);
     const joined = objs
       .map((e) => e["draft_version"])
@@ -182,7 +182,7 @@ class IeeeBuilder {
         host["draft_version"] = [joined, dashYear, String(dm)].join("-");
         delete (dash as TreeObject)["dash_year"];
         delete (dash as TreeObject)["dash_month"];
-      } else {
+      } else if (d["year"] === undefined) {
         d["year"] = dashYear;
         d["month"] = dm;
       }
@@ -192,7 +192,7 @@ class IeeeBuilder {
         host["draft_version"] = `${joined}-${dashYear}`;
         delete (dash as TreeObject)["dash_year"];
         delete (dash as TreeObject)["dash_month"];
-      } else {
+      } else if (d["year"] === undefined) {
         d["year"] = dashYear;
         d["month"] = extractValue(dashMonth as Tree);
       }
