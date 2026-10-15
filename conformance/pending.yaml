@@ -1457,11 +1457,6 @@ ieee.project_draft_identifier.9348:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.project_draft_identifier.9349:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.project_draft_identifier.9384:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -1577,16 +1572,6 @@ ieee.standard.9024:
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-ieee.standard.9025:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.9026:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 ieee.standard.9027:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -1603,16 +1588,6 @@ ieee.standard.9029:
   ref: conformance/pending.yaml (wave ledger)
 
 ieee.standard.9030:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.9050:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-ieee.standard.9051:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -1827,3 +1802,65 @@ itu.special_publication.2405:
   reason: >-
       a one-row canonical hash divergence (special_publication.2405)
   ref: conformance/pending.yaml (wave ledger)
+
+# The word-stage joint tails (CD/DIS without the D= sign) render in the
+# ruby reference as the doubled-slash crawl face ("IEEE//ISO/IEC Draft
+# P15026-3/D=CD-202112" — the slash-prefixed copublisher joins and the
+# Draft word returns) and the dash-DIS/ED4 humans do not round-trip at
+# all; the ruby verify documents the divergence (tests/ieee/_status.yaml,
+# the bare ISO/IEC joint-rows family). The ts pends until the gem lands
+# the word-stage joint route (pubid#538 follow-up), then mirrors it.
+ieee.joint_development.9043:
+  reason: >-
+      the word-stage joint route (CD2 proposal spellings) composes the
+      ISO-LED face here; the ruby keeps the IEEE-led CD2 face and its
+      alias renders the doubled-slash crawl form
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9059:
+  reason: >-
+      same word-stage family: CD1/V1.0 spellings render ISO-led here vs
+      the ruby IEEE-led face
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9060:
+  reason: >-
+      same word-stage family: the FDIS word-order face
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9061:
+  reason: >-
+      the word-stage alias renders the doubled-slash crawl face in the
+      ruby; this port declines to mirror that face until the gem lands
+      the word-stage route
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9062:
+  reason: >-
+      dash-DIS alias: the ruby renders the doubled-slash crawl face
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9063:
+  reason: >-
+      dash-DIS alias: the ruby renders the doubled-slash crawl face
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.joint_development.9064:
+  reason: >-
+      dash-DIS alias: the ruby renders the doubled-slash crawl face
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.standard.9044:
+  reason: >-
+      the multi-dash number tail (P60076-57-129/D=FDIS) rejects in the
+      ruby itself; the corpus canonical human does not round-trip (the
+      ruby verify's known mismatches)
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.standard.9045:
+  reason: >-
+      the ED4/Ded4 spelling pair parses only from the ED4 alias in the
+      ruby; the canonical human does not round-trip (the ruby verify's
+      known mismatches)
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+ieee.project_draft_identifier.9349:
+  reason: >-
+      the corpus carries two identities for the same human
+      ("ISO/IEC/IEEE P42010/D4, 2019"): the promoted ruby parse
+      (year + D4 + stage) and the unpromoted comma-draft one; the ruby
+      parses to the promoted shape, so the unpromoted twin cannot
+      round-trip in any engine (the ruby verify's known mismatches)
+  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
+

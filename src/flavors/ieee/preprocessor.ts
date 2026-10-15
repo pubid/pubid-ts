@@ -300,6 +300,18 @@ function normalizeRevisionNotation(input: string): string {
   // already carries the project semantics (docs/IEEE-DRAFT-STAGES.md
   // §1.1), so the redundant word drops and the joint route parses.
   cleaned = cleaned.replace(/IEEE\/CSA Draft (P[A-Z0-9])/g, "IEEE/CSA $1");
+  // The same redundant word rides the wider joint lists
+  // ("IEEE//ISO/IEC Draft P29119-2/D=DIS-201112"); the crawl also
+  // doubles the publisher slash (the 2026-10-14 ruling: the list
+  // normalizes to single slashes). Drop the word and collapse the
+  // slash before the joint route sees either - scoped to the D=
+  // stage-draft tail (the doubled-D and stage-month tails route
+  // elsewhere until the grammar carries them).
+  cleaned = cleaned.replace(
+    /((?:IEEE|ISO|IEC)(?:\/(?:IEEE|ISO|IEC|CSA))+)\s+Draft\s+(P[A-Z0-9][A-Z0-9.-]*\/D=[A-Z])/g,
+    "$1 $2",
+  );
+  cleaned = cleaned.replace(/(IEEE|ISO|IEC)\/\//g, "$1/");
   // The corrigendum's own draft rides before the ordinal in the house
   // order ("PC37.101-2006/D2, 2007/Cor. 1"): the catalogue spellings
   // ".../Cor 1, D4, July 2015" and ".../Cor 1-201x/D5, April 2012"
@@ -516,7 +528,11 @@ export function preprocessIeee(input: string): string {
 
   cleaned = cleaned.replace(/^(IEC\/IEEE P[\w.-]+)_D/, "$1/D");
 
-  cleaned = cleaned.replace(/^IEEE\/ISO\/IEC\s+(P[\w.-]+)/, "ISO/IEC/IEEE $1");
+  // Scoped: the D= stage-draft rows keep the IEEE-led list (the ruby
+  // ieee_format routes them with the input publisher order and lead
+  // IEEE - "IEEE/ISO/IEC P29119-2/D=DIS-201112"); the other IEEE/ISO/IEC
+  // spellings print the ISO-led face.
+  cleaned = cleaned.replace(/^IEEE\/ISO\/IEC\s+(?!P[\w.-]+\/D=)(P[\w.-]+)/, "ISO/IEC/IEEE $1");
   cleaned = cleaned.replace(/^IEEE\/IEC\/ISO\s+(P[\w.-]+)/, "IEC/ISO/IEEE $1");
   cleaned = cleaned.replace(/^(IEEE\/IEC P[\w.-]+)\s+D(\d)/, "$1/D$2");
   cleaned = cleaned.replace(
