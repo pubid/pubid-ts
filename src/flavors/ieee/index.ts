@@ -958,6 +958,22 @@ class IeeeBuilder {
           const draftYear = (extractValue(parsed["draft_year"]) ?? "").replace(/^[, ]+/, "");
           attributes["draft"] = `/D${draftVer}, ${draftYear}`;
           if (parsed["year"] === undefined) delete attributes["year"];
+        } else if (
+          JSON.stringify(attributes["publishers"]) === JSON.stringify(["IEEE", "CSA"]) &&
+          parsed["iso_stage"] === undefined &&
+          /^(19|20)\d\d$/.test(extractValue(parsed["year"]) ?? "") &&
+          /^\d{1,2}$/.test(extractValue(parsed["month"]) ?? "")
+        ) {
+          // The glued face re-parses with the date in the identity
+          // slots ("D2-2016-09" -> year/month + a bare D2): it
+          // normalizes back onto the draft-embedded date so the
+          // round trip closes on the CSA canonical.
+          const glued = new IeeeDraft({
+            version: `${draftVer}-${extractValue(parsed["year"])}-${extractValue(parsed["month"])}`,
+          });
+          attributes["draft"] = glued.render();
+          delete attributes["year"];
+          delete attributes["month"];
         } else {
           attributes["ieee_draft"] = `D${draftVer}`;
         }
