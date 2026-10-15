@@ -26,7 +26,7 @@ test("every ieee corpus case passes through the grammar", () => {
     report.cases + report.pending + report.review,
     payloads.cases.length - report.errors,
   );
-  // The corpus@5cce3b8 C1/C2/draft-date round: 9,215 cases after the
+  // The corpus@e573556 CSA-glue round: 9,386 cases after the
   // wave's pend ledger (below).
   // The rederive round merged convergent spellings (aliases 10,245 -> 6,891;
   // testsuite#44) — the outright-pass count drops accordingly.
@@ -34,8 +34,8 @@ test("every ieee corpus case passes through the grammar", () => {
   // The wave ledger: the 34-row reference residual plus the render
   // surface this port has not reproduced yet (the forced-comma dated
   // renders, D= designator faces, alias regroup) - re-derived against
-  // tests/ieee/_status.yaml (known_mismatches 46) at TESTSUITE_REF
-  // 5cce3b8.
+  // tests/ieee/_status.yaml (known_mismatches 40) at TESTSUITE_REF
+  // e573556.
   assert.equal(report.pending, 317);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
