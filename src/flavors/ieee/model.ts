@@ -1042,8 +1042,15 @@ export const ProjectDraftIdentifierClass = ieeeClass(
     codeColumns: true,
     extraDefs: {
       project_marker: { type: "boolean", default: false },
+      // The ISO-led joint project drafts carry the designator as the
+      // stage ("ISO/IEC/IEEE P42010/D4, 2019" - stage D4), the same
+      // key the ruby identity serializes.
+      stage: { type: "string" },
     },
-    extraMappings: keyValue({ wire: "project_marker", to: "project_marker" }),
+    extraMappings: keyValue(
+      { wire: "project_marker", to: "project_marker" },
+      { wire: "stage", to: "stage" },
+    ),
   },
 );
 

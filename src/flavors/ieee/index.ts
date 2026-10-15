@@ -1021,9 +1021,10 @@ class IeeeBuilder {
         jointDraft += `.${extractValue(parsed["draft_iso_iteration"])}`;
       }
       if (parsed["draft_stage_year"] !== undefined) {
-        // The capture carries its separator (":2020") — strip it (the
-        // #471 separator-in-capture rule).
-        jointDraft += `:${(extractValue(parsed["draft_stage_year"]) ?? "").replace(/^[\-:]/, "")}`;
+        // The capture carries its separator verbatim (":2020" /
+        // "-201112" - the #471 separator-in-capture rule): the ruby
+        // builder appends it raw, so the face keeps the printed form.
+        jointDraft += extractValue(parsed["draft_stage_year"]) ?? "";
       }
       attributes["ieee_draft"] = jointDraft;
     }
@@ -1123,6 +1124,22 @@ class IeeeBuilder {
       const projectAttrs: Record<string, unknown> = {
         draft: attributes["draft"],
       };
+      // A comma-year riding the draft (", 2019") promotes to the
+      // identity year with a bare designator - the ruby
+      // ProjectDraftIdentifier splits it ("ISO/IEC/IEEE P42010/D4,
+      // 2019" carries year 2019, draft D4).
+      // Only the ISO-LED list promotes (ISO/IEC/IEEE P42010/D4,
+      // 2019 -> year 2019 + D4); the plain joint rows keep the comma
+      // draft face ("IEC/IEC P62704-2/D5, 2016").
+      const commaYear = (pubs[0] ?? "") === "ISO"
+        ? /^\/?(D[\d.]+),\s*((?:19|20)\d\d)$/.exec(String(attributes["draft"] ?? ""))
+        : null;
+      if (commaYear !== null) {
+        projectAttrs["draft"] = commaYear[1];
+        projectAttrs["year"] = commaYear[2];
+        projectAttrs["type"] = "P";
+        projectAttrs["stage"] = commaYear[1];
+      }
       // The code columns (number/parts/separator/prefix) are the
       // ProjectDraft render/hash face; the spelled P is the project
       // marker (identity), whatever the lead publisher.
