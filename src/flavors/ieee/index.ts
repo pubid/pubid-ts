@@ -483,37 +483,6 @@ class IeeeBuilder {
     if (parsed["interpretation"] !== undefined) attributes["interpretation"] = true;
     if (parsed["redline"] !== undefined) attributes["redline"] = true;
 
-    // The IEEE-led tail word-stage ("IEEE/ISO/IEC P15026-3/CD,
-    // December 2021") composes the D= designator with the glued
-    // 6-digit date - the identity its D= twin spelling parses to (the
-    // corpus canonical: joint-development, lead IEEE, stage P). The
-    // ISO-led lists converge to the published-Std identity (the issue
-    // #216 semantics).
-    if (parsed["tail_iso_stage"] && parsed["printed_month_year"] &&
-        parsed["part"] !== undefined) {
-      const stage = extractValue(parsed["tail_iso_stage"]);
-      const year = extractValue(parsed["year"]) ?? "";
-      const monthName = (extractValue(parsed["month"]) ?? "").replace(/\.$/, "");
-      const monthNum = DRAFT_MONTH_NAMES[monthName];
-      if (stage !== undefined && monthNum !== undefined) {
-        attributes["ieee_draft"] = `D=${stage}-${year}${monthNum.padStart(2, "0")}`;
-        parsed["year"] = undefined;
-        parsed["month"] = undefined;
-        parsed["printed_month_year"] = undefined;
-        delete attributes["year"];
-        delete attributes["month"];
-        // The ISO-led lists converge to the published-Std identity; the
-        // IEEE-led lists stay the live project draft (stage P).
-        if (attributes["publisher"] !== "IEEE") {
-          parsed["iso_published"] = { value: "" };
-          const stdRecord = locateStage("Std");
-          if (stdRecord !== undefined) {
-            attributes["typed_stage"] = new IeeeTypedStage(stdRecord);
-          }
-        }
-      }
-    }
-
     // Glued identity year-month provenance (gem#520): the input tail is
     // the glued "-YYYY-MM" on a draft-free, revision-free identity.
     if (attributes["month"] !== undefined && attributes["year"] !== undefined &&
