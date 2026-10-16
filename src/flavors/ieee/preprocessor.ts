@@ -312,6 +312,13 @@ function normalizeRevisionNotation(input: string): string {
     "$1 $2",
   );
   cleaned = cleaned.replace(/(IEEE|ISO|IEC)\/\//g, "$1/");
+  // The lettered REV spellings glue to the number ("P1310Rev3") or
+  // carry an after-word separator ("REV.ma", "REV-ma"); the rev rules
+  // read a space or a bare word, so the boundary normalizes (the
+  // render keeps the glued face). The before-word separator the Rev
+  // doctrine carries ("-REVmc") is untouched.
+  cleaned = cleaned.replace(/(REV|Rev|rev)[.\-](?=[A-Za-z])/g, "$1");
+  cleaned = cleaned.replace(/(\d)(REV|Rev|rev)/g, "$1 $2");
   // The corrigendum's own draft rides before the ordinal in the house
   // order ("PC37.101-2006/D2, 2007/Cor. 1"): the catalogue spellings
   // ".../Cor 1, D4, July 2015" and ".../Cor 1-201x/D5, April 2012"
