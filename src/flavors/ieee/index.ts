@@ -483,37 +483,6 @@ class IeeeBuilder {
     if (parsed["interpretation"] !== undefined) attributes["interpretation"] = true;
     if (parsed["redline"] !== undefined) attributes["redline"] = true;
 
-    // The IEEE-led tail word-stage ("IEEE/ISO/IEC P15026-3/CD,
-    // December 2021") composes the D= designator with the glued
-    // 6-digit date - the identity its D= twin spelling parses to (the
-    // corpus canonical: joint-development, lead IEEE, stage P). The
-    // ISO-led lists converge to the published-Std identity (the issue
-    // #216 semantics).
-    if (parsed["tail_iso_stage"] && parsed["printed_month_year"] &&
-        parsed["part"] !== undefined) {
-      const stage = extractValue(parsed["tail_iso_stage"]);
-      const year = extractValue(parsed["year"]) ?? "";
-      const monthName = (extractValue(parsed["month"]) ?? "").replace(/\.$/, "");
-      const monthNum = DRAFT_MONTH_NAMES[monthName];
-      if (stage !== undefined && monthNum !== undefined) {
-        attributes["ieee_draft"] = `D=${stage}-${year}${monthNum.padStart(2, "0")}`;
-        parsed["year"] = undefined;
-        parsed["month"] = undefined;
-        parsed["printed_month_year"] = undefined;
-        delete attributes["year"];
-        delete attributes["month"];
-        // The ISO-led lists converge to the published-Std identity; the
-        // IEEE-led lists stay the live project draft (stage P).
-        if (attributes["publisher"] !== "IEEE") {
-          parsed["iso_published"] = { value: "" };
-          const stdRecord = locateStage("Std");
-          if (stdRecord !== undefined) {
-            attributes["typed_stage"] = new IeeeTypedStage(stdRecord);
-          }
-        }
-      }
-    }
-
     // Glued identity year-month provenance (gem#520): the input tail is
     // the glued "-YYYY-MM" on a draft-free, revision-free identity.
     if (attributes["month"] !== undefined && attributes["year"] !== undefined &&
@@ -597,6 +566,15 @@ class IeeeBuilder {
       revision = extractValue(draftData["revision"]);
       isoStage = extractValue(draftData["draft_iso_stage"]);
       isoIteration = extractValue(draftData["draft_iso_iteration"]);
+      // FDIS/CDV/… are ISO/IEC stage tokens, not draft ordinals (C1
+      // ruling, testsuite#2). "/DDIS" and "/DFDIS" are hallucinated
+      // concatenations — the designator D does not merge onto a stage
+      // word. The draft of a stage rides the iso_stage slot, which
+      // Draft#to_s renders as the D= designator face ("…/D=DIS-2020").
+      if (version !== undefined && /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)$/.test(version)) {
+        isoStage = version;
+        version = undefined;
+      }
       month = extractValue(draftData["month"]);
       year = extractValue(draftData["year"]);
       // The apostrophe-year catalogue convention ("P1484.20.1/D7,
@@ -637,7 +615,8 @@ class IeeeBuilder {
       }
     }
 
-    if (version !== undefined || (isObj(draftData) && draftData["draft_iso_stage"] !== undefined)) {
+    if (version !== undefined || isoStage !== undefined ||
+        (isObj(draftData) && draftData["draft_iso_stage"] !== undefined)) {
       const draftObj = new IeeeDraft({
         version,
         revision,
@@ -942,6 +921,40 @@ class IeeeBuilder {
       if (attributes["month"] === undefined) attributes["month"] = extractValue(parsed["draft_month"]);
     }
 
+    // The IEEE-led tail word-stage ("IEEE/ISO/IEC P15026-3/CD,
+    // December 2021") composes the D= designator with the glued
+    // 6-digit date — the identity its D= twin spelling parses to (the
+    // corpus canonical: joint-development, lead IEEE, stage P). The
+    // ISO-led lists converge to the published-Std identity (the issue
+    // #216 semantics). The zero-width printed_month_year capture
+    // carries "" — truthy in the reference (nil-check), falsy in JS:
+    // test presence, not truth.
+    if (parsed["tail_iso_stage"] !== undefined &&
+        parsed["printed_month_year"] !== undefined &&
+        parsed["part"] !== undefined) {
+      const stage = extractValue(parsed["tail_iso_stage"]);
+      const year = extractValue(parsed["year"]) ?? "";
+      const monthName = (extractValue(parsed["month"]) ?? "").replace(/\.$/, "");
+      const monthNum = DRAFT_MONTH_NAMES[monthName];
+      if (stage !== undefined && monthNum !== undefined) {
+        attributes["ieee_draft"] = `D=${stage}-${year}${monthNum.padStart(2, "0")}`;
+        parsed["year"] = undefined;
+        parsed["month"] = undefined;
+        parsed["printed_month_year"] = undefined;
+        delete attributes["year"];
+        delete attributes["month"];
+        // The ISO-led lists converge to the published-Std identity; the
+        // IEEE-led lists stay the live project draft (stage P).
+        if (attributes["publisher"] !== "IEEE") {
+          parsed["iso_published"] = { value: "" };
+          const stdRecord = locateStage("Std");
+          if (stdRecord !== undefined) {
+            attributes["typed_stage"] = new IeeeTypedStage(stdRecord);
+          }
+        }
+      }
+    }
+
     if (parsed["edition"] !== undefined) attributes["edition"] = extractValue(parsed["edition"]);
     if (parsed["edition_month"] !== undefined) {
       attributes["edition_month"] = extractValue(parsed["edition_month"]);
@@ -1167,22 +1180,9 @@ class IeeeBuilder {
       const projectAttrs: Record<string, unknown> = {
         draft: attributes["draft"],
       };
-      // A comma-year riding the draft (", 2019") promotes to the
-      // identity year with a bare designator - the ruby
-      // ProjectDraftIdentifier splits it ("ISO/IEC/IEEE P42010/D4,
-      // 2019" carries year 2019, draft D4).
-      // Only the ISO-LED list promotes (ISO/IEC/IEEE P42010/D4,
-      // 2019 -> year 2019 + D4); the plain joint rows keep the comma
-      // draft face ("IEC/IEC P62704-2/D5, 2016").
-      const commaYear = (pubs[0] ?? "") === "ISO"
-        ? /^\/?(D[\d.]+),\s*((?:19|20)\d\d)$/.exec(String(attributes["draft"] ?? ""))
-        : null;
-      if (commaYear !== null) {
-        projectAttrs["draft"] = commaYear[1];
-        projectAttrs["year"] = commaYear[2];
-        projectAttrs["type"] = "P";
-        projectAttrs["stage"] = commaYear[1];
-      }
+      // The comma-year tail rides the draft verbatim ("D4, 2019" — the
+      // reference keeps the comma face on the joint project drafts; the
+      // year never promotes to the identity slots).
       // The code columns (number/parts/separator/prefix) are the
       // ProjectDraft render/hash face; the spelled P is the project
       // marker (identity), whatever the lead publisher.

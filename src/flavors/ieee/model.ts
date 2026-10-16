@@ -210,8 +210,11 @@ export class IeeeDraft {
     // The compound stage suffix (docs/IEEE-DRAFT-STAGES.md §1.3):
     // "=DIS.3" is canonical - D (draft) = DIS (the stage), iteration 3.
     // "=DDIS.3", "=DDIS3", "=DDIS-3" (the stage echoed with its own D)
-    // are accepted aliases. Captures [stage, iteration].
-    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(?:[.-]?(\d+))?$/;
+    // are accepted aliases. Captures [stage, iteration]. The iteration
+    // ordinal stays short (one or two digits): a glued D= date
+    // ("-201908", the pubid#203 convention) must ride the version body
+    // verbatim, not fold into the iteration slot.
+    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(?:[.-]?(\d{1,2}[a-z]?))?$/;
     let isoStage: string | undefined;
     let isoIteration: string | undefined;
     const cm = compound.exec(body);
@@ -226,7 +229,7 @@ export class IeeeDraft {
       .map((m) => `${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.?`)
       .join("|");
     const suffix = new RegExp(
-      `(?:(, | )(${monthAlt})(?: (\\d{1,2}))?(?:, | )| )((?:19|20)\\d{2}[a-z]{0,2})$`,
+      `(?:(, | )(${monthAlt})(?: (\\d{1,2}))?(?:, | )|, | )((?:19|20)\\d{2}[a-z]{0,2})$`,
     );
     const m = suffix.exec(body);
     if (m === null) {
@@ -244,13 +247,21 @@ export class IeeeDraft {
   }
 
   render(): string {
-    let result = `/D${this.version}`;
+    let result = `/D${this.version ?? ""}`;
     if (this.isoStage !== undefined) result += `=${this.isoStage}`;
     if (this.isoStage !== undefined && this.isoIteration !== undefined) {
       result += `.${this.isoIteration}`;
     }
     if (this.revision !== undefined) result += `.${this.revision}`;
     if (this.year !== undefined) {
+      if (this.isoStage !== undefined) {
+        // The D= designator face dash-joins its date in IEEE's
+        // convention: the year, and a draft month rides the
+        // designator zero-padded ("D=FDIS-201008", pubid#203).
+        result += `-${this.year}`;
+        if (this.month !== undefined) result += this.month.padStart(2, "0");
+        return result;
+      }
       const displayMonth = this.originalMonth;
       if (displayMonth !== undefined) {
         const useCommaBefore = this.commaBeforeMonthSet
@@ -260,7 +271,10 @@ export class IeeeDraft {
         if (this.day !== undefined) result += ` ${this.day}`;
         result += displayMonth.length <= 4 || displayMonth === "Sept" ? ` ${this.year}` : `, ${this.year}`;
       } else {
-        result += ` ${this.year}`;
+        // The year-only date joins with its comma - the grammar's
+        // comma-year draft tail (pubid-grammar 17244fc) - so the
+        // render re-parses through the same clause.
+        result += `, ${this.year}`;
       }
     }
     return result;
@@ -1305,39 +1319,54 @@ export const JointDevelopmentClass = ieeeClass(
       const isoStage = id["iso_stage"] as string | undefined;
       const ieeeDraft = id["ieee_draft"] as string | undefined;
       const codeObj = id.codeObj;
-      // ISO-led renders the ISO format ALWAYS (the stage-less published
+      // ISO-led renders the ISO format (the stage-less published
       // form "ISO/IEC/IEEE 12207.2:2020" prints colon-year, no stage).
       // IEEE semantics: P = project (a draft); no P = a standard. The
       // P-state is identity-bearing and prints as spelled - it is never
       // added or stripped here.
-      if (leadParty === "ISO") {
-        // A D= designator row ("P26511/D8=DDIS.3") prints the designator
-        // after the code, not the stage as a word; only genuine stage
-        // rows print the stage position.
-        const designatorDraft = (id as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
-        const printsDesignator = designatorDraft !== undefined && /^D\d*=/.test(designatorDraft);
-        const parts: string[] = [];
-        if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
-        if (!printsDesignator) {
-          if (id.typed_stage !== undefined) {
-            parts.push(id.typed_stage.record.iso_stage_equivalent ?? id.typed_stage.render());
-          } else if (isoStage !== undefined) {
-            parts.push(isoStage);
+      // A stage-tracked D= designator is IEEE draft notation — its
+      // canonical face is the designator spelling (§1.3 spelling 7),
+      // whatever the lead party (the reference's canonical_format).
+      if (leadParty === "ISO" && !(ieeeDraft ?? "").startsWith("D=")) {
+        // The stage word is the ISO format's own position convention —
+        // it prints whenever the identifier carries one, as stored,
+        // iteration included ("DIS2", "CD4" — the lossless face,
+        // pubid#477). A stage-tracked D= designator decomposes into its
+        // stage word and date ("D=CD-2020" → "CD", 2020); the P project
+        // stage is IEEE convention and never prints here.
+        let stageWord = isoStage ?? "";
+        let draftYear: string | undefined;
+        if (stageWord === "" && ieeeDraft !== undefined) {
+          const decomposed = /^D=([A-Z]+)(?:\.(\d+[a-z]?))?(?:[-:](\d{4}))?$/.exec(ieeeDraft);
+          if (decomposed !== null) {
+            stageWord = decomposed[1] ?? "";
+            draftYear = decomposed[3];
           }
         }
+        const parts: string[] = [];
+        if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
+        if (stageWord !== "") parts.push(stageWord);
         let codeStr = codeObj?.render() ?? "";
         // A P-prefixed joint project prints its parts dot-joined on the
         // ISO face ("ISO/IEEE DIS P15500.1"), whatever separator the
         // parse captured ("IEC/IEEE FDIS P60214-2-2018(E)" aliases in).
         if (codeStr.startsWith("P")) codeStr = codeStr.replaceAll("-", ".");
         if (codeStr !== "") parts.push(codeStr);
+        // The ISO-face date, in the spelling that parses back to the
+        // same year and month: the colon year (":2018"); a numeric
+        // month glued with dashes ("-2018-05"); a text month as
+        // ", February 2015".
         let result = parts.join(" ");
-        if (id.year !== undefined) result += `:${id.year}`;
-        // The joint stage-draft clause ("D=WD.5") rides after the year in
-        // the ISO-led print; only the bare language/edition marker ("(E)")
-        // prints - a relationship narrative is metadata, not identity.
-        const jointDraft = (id as unknown as Record<string, unknown>)["ieee_draft"] as string | undefined;
-        if (jointDraft !== undefined && /^D\d*=/.test(jointDraft)) result += `/${jointDraft}`;
+        const dateYear = id.year ?? draftYear;
+        if (dateYear !== undefined) {
+          if (id.month === undefined) {
+            result += `:${dateYear}`;
+          } else if (/^\d+$/.test(id.month)) {
+            result += `-${dateYear}-${id.month.padStart(2, "0")}`;
+          } else {
+            result += `, ${id.month} ${dateYear}`;
+          }
+        }
         const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
         if (marker !== undefined && /^[A-Z](?:\s*[/&]\s*[A-Z])*$/.test(marker)) {
           result += ` (${marker})`;
@@ -1353,13 +1382,32 @@ export const JointDevelopmentClass = ieeeClass(
       // The P-state prints as spelled (P = project draft; no P =
       // standard). Never added or stripped.
       let codeStr = codeObj?.render() ?? "";
-      if (ieeeDraft !== undefined) codeStr += `/${ieeeDraft}`;
-      else if (id.typed_stage?.ieeeDraftEquivalent !== undefined) {
+      let designatorCarriesYear = false;
+      if (ieeeDraft !== undefined && ieeeDraft.startsWith("D=") && id.year !== undefined) {
+        // The ordinal-less stage draft's canonical face (the
+        // UpdateCodes rewrite): the publication year colon-joins the
+        // code and the designator trails — "P16326:2017/D=WD.5".
+        codeStr += `:${id.year}`;
+        codeStr += `/${ieeeDraft}`;
+        designatorCarriesYear = true;
+      } else if (ieeeDraft !== undefined) {
+        codeStr += `/${ieeeDraft}`;
+      } else if (isoStage !== undefined) {
+        // The ordinal-less stage draft: an iteration glued onto the
+        // printed word ("CD2") renders in the doctrine's ".iter" slot
+        // ("D=CD.2" — docs/IEEE-DRAFT-STAGES.md §1.3).
+        const glued = /([A-Z]+?)(\d+)/.exec(isoStage);
+        codeStr += glued !== null ? `/D=${glued[1]}.${glued[2]}` : `/D=${isoStage}`;
+      } else if (id.typed_stage?.ieeeDraftEquivalent !== undefined &&
+                 !codeStr.startsWith(id.typed_stage.ieeeDraftEquivalent)) {
         codeStr += `/${id.typed_stage.ieeeDraftEquivalent}`;
       }
       if (codeStr !== "") parts.push(codeStr);
       let result = parts.join(" ");
-      if (id.year !== undefined) result += `-${id.year}`;
+      if (id.year !== undefined && !designatorCarriesYear &&
+          !(ieeeDraft ?? "").endsWith(`-${id.year}`)) {
+        result += `-${id.year}`;
+      }
       if (id.redline === true) result += " - Redline";
       return result;
     },
