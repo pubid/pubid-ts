@@ -26,17 +26,18 @@ test("every ieee corpus case passes through the grammar", () => {
     report.cases + report.pending + report.review,
     payloads.cases.length - report.errors,
   );
-  // The corpus@7daa271 wave-R round: 9,387 cases after the
-  // wave's pend ledger (below).
-  // The rederive round merged convergent spellings (aliases 10,245 -> 6,891;
-  // testsuite#44) — the outright-pass count drops accordingly.
+  // The corpus@79eb209 tail-stage round: 9,392 cases — the word-stage
+  // D= convergence joins the corpus (testsuite#60) and the port
+  // composes the tail word-stage onto the D= designator (the
+  // grammar#39/#40 clone + the gem#543 builder mirror).
   assert.ok(report.cases > 8500);
-  // The wave ledger: the 34-row reference residual plus the render
-  // surface this port has not reproduced yet (the forced-comma dated
-  // renders, D= designator faces, alias regroup) - re-derived against
-  // tests/ieee/_status.yaml (known_mismatches 38) at TESTSUITE_REF
-  // 7daa271.
-  assert.equal(report.pending, 317);
+  // The wave ledger: the reference residual plus the render surface
+  // this port has not reproduced yet (the glued stage-month draft
+  // tails, the wasm-parity D= tail, the same-human dual-identity
+  // pair) - re-derived against tests/ieee/_status.yaml (known
+  // mismatches 33) at TESTSUITE_REF 79eb209. 128 wave-satisfied marks
+  // unmarked this round.
+  assert.equal(report.pending, 175);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -126,11 +127,14 @@ test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
   assert.equal(isoLed.toHash().draft, "D8=DIS.3");
   assert.equal(isoLed.toHash().stage, "DIS");
   // P = project (a draft): the marker is identity on an ISO-led
-  // publisher, preserved through the hash and re-rendered.
+  // publisher, preserved through the hash and re-rendered. The
+  // stage-word draft composes onto the D= designator (the tail-stage
+  // wave: the identity its D= twin spelling parses to). The part-less
+  // alias builds the project draft the reference builds, with the D=
+  // face as its draft.
   const led = impl.parse("ISO/IEC/IEEE P24774/DIS, July 2020");
-  // The canonical month is the crawl abbreviation (the C2 ruling).
-  assert.equal(led.toHuman(), "ISO/IEC/IEEE P24774/DDIS, Jul 2020");
-  assert.equal(led.toHash().project_marker, true);
+  assert.equal(led.toHuman(), "ISO/IEC/IEEE P24774/D=DIS-202007");
+  assert.equal(led.toHash().draft, "D=DIS-202007");
 });
 
 test("ieee double-label and stage-draft rulings (gem #439/#440)", () => {
