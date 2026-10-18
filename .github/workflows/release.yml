@@ -17,18 +17,22 @@ permissions:
 
 env:
   # The corpus-backed tests read the pinned testsuite (same ref as ci.yml).
-  TESTSUITE_REF: 79eb20940448d630512aa416efc1042f384c3846
+  TESTSUITE_REF: ""
   # The grammar-runtime tests parse through the baked PARG artifacts —
   # the same pinned pubid-grammar ref ci.yml runs against. Without this
   # checkout the release test fails on every artifact-backed flavor (the
   # artifact-port waves made those parse paths require the artifacts;
   # the 0.1.9 dispatch was the first release to find out).
-  PARG_GRAMMAR_REF: eef2795d64235957ed51744e383cb7e4312da905
+  PARG_GRAMMAR_REF: ""
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve shared pins
+        run: |
+          echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
+          echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
@@ -63,6 +67,10 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve shared pins
+        run: |
+          echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
+          echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7
       - name: Determine version
         id: version
