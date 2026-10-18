@@ -1449,6 +1449,9 @@ ieee.project_draft_identifier.9356:
 
 ieee.standard.9044:
   reason: >-
-      the wasm engine rejects the joint iso-format D= tail the native engine parses (parsanol cross-runtime parity)
-  ref: conformance/pending.yaml (tail-stage wave ledger)
+      legacy catalogue spelling with no grammar route: the exporter recorded it
+      roundtrip:false with the gem rejection in _debt (unclassified) — the
+      reference itself no longer parses "IEEE/IEC <P-number>/D=<stage>-<date>";
+      an earlier draft of this entry wrongly blamed a wasm/native parity gap
+  ref: tests/ieee/_debt.yaml ieee.debt.89a9246d85af (roundtrip:false)
 
