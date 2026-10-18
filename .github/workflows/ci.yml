@@ -10,11 +10,11 @@ on:
 env:
   # Cross-repo law: the corpus is consumed at a PINNED ref; schema/corpus
   # changes always land in pubid (Ruby) PRs first, then this pin bumps.
-  TESTSUITE_REF: 79eb20940448d630512aa416efc1042f384c3846
+  TESTSUITE_REF: ""
   # Same law for the grammar runtime: the baked PARG artifacts are
   # consumed at a pinned pubid-grammar ref (grammar PRs land first, then
   # this pin bumps). PARG_ARTIFACT_DIR points src/parg/runtime.ts there.
-  PARG_GRAMMAR_REF: eef2795d64235957ed51744e383cb7e4312da905
+  PARG_GRAMMAR_REF: ""
 
 jobs:
   # The per-flavor corpus loops dominate wall time (ieee alone ~6.5 min
@@ -27,6 +27,10 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
+      - name: Resolve shared pins
+        run: |
+          echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
+          echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
@@ -51,6 +55,10 @@ jobs:
   conformance:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve shared pins
+        run: |
+          echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
+          echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
