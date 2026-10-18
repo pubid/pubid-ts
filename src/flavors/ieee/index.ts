@@ -373,6 +373,10 @@ class IeeeBuilder {
     }
     if (typeValue === undefined && this.originalInput !== "" && /ANSI\s+P/.test(this.originalInput)) {
       typeValue = "P";
+      // The P is identity on a non-IEEE-led publisher too (the C1
+      // ruling): record the marker so the render prepends it —
+      // "ANSI PN42.34/D9a, 2015" round-trips.
+      attributes["project_marker"] = true;
     }
 
     if (codeStr !== undefined && codeStr.startsWith("P") && this.originalInput.includes("/CSA")) {
@@ -891,6 +895,14 @@ class IeeeBuilder {
 
     const codeParts: string[] = [];
     if (parsed["part"] !== undefined) codeParts.push(extractValue(parsed["part"]) ?? "");
+    // The part/subpart captures carry their printed separator
+    // (separator-in-capture); the subpart rides after the part
+    // ("P65700.19.03", "60079-30-2" — the reference's joint code
+    // assembly).
+    if (parsed["subpart"] !== undefined) {
+      const subs = Array.isArray(parsed["subpart"]) ? (parsed["subpart"] as Tree[]) : [parsed["subpart"] as Tree];
+      for (const sp of subs) codeParts.push(extractValue(sp) ?? "");
+    }
     let codeStr = extractValue(parsed["number"]);
     if (codeStr !== undefined && codeParts.length > 0) {
       // The ISO/IEC label's part may be dash-joined ("8802-9") - keep the
