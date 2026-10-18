@@ -516,7 +516,10 @@ class IeeeBuilder {
         const dv = draftData["draft_version"];
         const version = Array.isArray(dv) ? dv.map((v) => extractValue(v) ?? "").join("") : extractValue(dv);
         if (version !== undefined) {
-          const draftAbbr = `D${version}`;
+          // relaton's hyphenated "/D-2" spelling captures the dash inside
+          // draft_version; the stage registry keys on "D2". A date-embedded
+          // version ("3-2017-07") keys on its leading ordinal.
+          const draftAbbr = `D${version.replace(/^-/, "").replace(/-\d{4}(-\d{2})?$/, "")}`;
           const stage = locateStage(draftAbbr);
           if (stage !== undefined && stage.abbr.includes(draftAbbr)) return draftAbbr;
         }

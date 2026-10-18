@@ -33,11 +33,13 @@ test("every ieee corpus case passes through the grammar", () => {
   assert.ok(report.cases > 8500);
   // The wave ledger: the reference residual plus the render surface
   // this port has not reproduced yet (the glued stage-month draft
-  // tails, the wasm-parity D= tail, the same-human dual-identity
-  // pair) - re-derived against tests/ieee/_status.yaml (known
-  // mismatches 33) at TESTSUITE_REF 79eb209. 128 wave-satisfied marks
-  // unmarked this round.
-  assert.equal(report.pending, 175);
+  // tails, the parenthetical-content narratives, the same-human
+  // dual-identity pair) - re-derived against tests/ieee/_status.yaml
+  // (known mismatches 33) at TESTSUITE_REF 79eb209. 128 wave-satisfied
+  // marks unmarked this round; the triage round unmarked 64 more (the
+  // draft-stage ordinal ladder strips the embedded date before the
+  // registry lookup, mirroring the reference's date-embedded rule).
+  assert.equal(report.pending, 111);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
