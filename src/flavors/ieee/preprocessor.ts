@@ -412,7 +412,9 @@ export function preprocessIeee(input: string): string {
   cleaned = cleaned.replaceAll("&amp;amp;", "&");
   cleaned = cleaned.replaceAll("&amp;", "&");
 
-  cleaned = cleaned.replace(/\s+(P&V)\s*$/, " ($1)");
+  // The "P&V" print tail is NOT parenthesized: the artifact captures it
+  // and the builder discards it (the reference renders "ANSI/IEEE
+  // 500-1984" bare) — the former wrap made the parenthetical print.
   cleaned = cleaned.replace(/(\d+\.\d+)\s+(\d+\.)/g, "$1$2");
   cleaned = cleaned.replace(/\b(1|2)\s+(\d{3})\b/g, "$1$2");
 
@@ -420,6 +422,11 @@ export function preprocessIeee(input: string): string {
   // reference's behavior — the reference keeps the glue (the FCD ruling:
   // "FCD-June2010" is the stage + the glued month-name date), and the
   // split cost the FCD rows their classification.
+
+  // The 8802-family IEEE-led joint prefix reorders to the ISO/IEC/IEEE
+  // label (the reference's Fix 2AA): "IEEE/ISO/IEC 8802-1Q-2020" parses
+  // under the ISO/IEC label and the amendment route renders ISO-first.
+  cleaned = cleaned.replace(/^IEEE\/ISO\/IEC\s+(8802[\w.-]+)/, "ISO/IEC/IEEE $1");
 
   cleaned = normalizeJointStageSpellings(cleaned);
 

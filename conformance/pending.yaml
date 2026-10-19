@@ -112,12 +112,6 @@ ieee.project_draft_identifier.3009:
   ref: conformance/pending.yaml (wave ledger)
 
 
-ieee.standard.0602:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
 ieee.standard.1119:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -153,77 +147,6 @@ ieee.standard.9177:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
-
-nist.circular.1271:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.crpl_report.1798:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.crpl_report.1799:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.crpl_report.1800:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.crpl_report.1801:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.nsrds.7853:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-itu.special_publication.2405:
-  reason: >-
-      a one-row canonical hash divergence (special_publication.2405)
-  ref: conformance/pending.yaml (wave ledger)
-
-# The word-stage joint tails (CD/DIS without the D= sign) render in the
-# ruby reference as the doubled-slash crawl face ("IEEE//ISO/IEC Draft
-# P15026-3/D=CD-202112" — the slash-prefixed copublisher joins and the
-# Draft word returns) and the dash-DIS/ED4 humans do not round-trip at
-# all; the ruby verify documents the divergence (tests/ieee/_status.yaml,
-# the bare ISO/IEC joint-rows family). The ts pends until the gem lands
-# the word-stage joint route (pubid#538 follow-up), then mirrors it.
-
-ieee.standard.9044:
-  reason: >-
-      reference render-lossiness: the spelling has no grammar route, the gem
-      rejects it (recorded roundtrip:false, _debt unclassified), and the
-      2026-10-18 re-export reproduced the row byte-identically — the corpus
-      is faithful; an earlier draft wrongly blamed a wasm/native parity gap
-  ref: tests/ieee/_debt.yaml ieee.debt.89a9246d85af (roundtrip:false)
-
-ieee.project_draft_identifier.9359:
-  reason: >-
-      the glued stage-month draft tail family (the 9354/9357 class)
-  ref: conformance/pending.yaml (lossless-face round ledger)
-
-ieee.standard.9180:
-  reason: >-
-      the route-level publisher-order normalization port: the reference's amendment route renders the ISO/IEC/IEEE face from the IEEE/ISO/IEC alias spelling (the 8802 family)
-  ref: conformance/pending.yaml (lossless-face round ledger)
-
-ieee.standard.9070:
-  reason: >-
-      reference render-lossiness (roundtrip:false): the recorded human re-parses in no runtime — the exporter's fallback source parse recorded it
-  ref: conformance/pending.yaml (lossless-face round ledger)
-
-ieee.standard.9165:
-  reason: >-
-      the glued (E) alias convergence on the joint-standard row: the reference folds "2018(E)" into the plain human
-  ref: conformance/pending.yaml (lossless-face round ledger)
 
 nist.special_publication.19804:
   reason: >-
@@ -301,7 +224,4 @@ ieee.standard.9071:
   ref: "testsuite a4e3eb7 corpus round 2026-10-19"
 ieee.standard.9166:
   reason: the "(E)" alias tail is the structural residual class (documented)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.standard.9181:
-  reason: the "/Amd" alias tail is the structural residual class (documented)
   ref: "testsuite a4e3eb7 corpus round 2026-10-19"

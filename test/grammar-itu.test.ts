@@ -23,7 +23,7 @@ test("every itu corpus case passes through the grammar", () => {
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
   assert.equal(report.outcome, "pass");
   assert.equal(report.cases, payloads.cases.length - report.pending);
-  assert.equal(report.pending, 1);
+  assert.equal(report.pending, 0);
   assert.ok(report.cases > 2700);
 });
 
