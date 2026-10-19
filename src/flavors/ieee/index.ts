@@ -320,6 +320,14 @@ class IeeeBuilder {
 
   determineIdentifierClass(attributes: Record<string, unknown>): (new (attrs?: Record<string, unknown>) => unknown) & { polymorphicName: string } {
     if (attributes["publisher"] === "AIEE") return AieeClass as never;
+    // A stage-bearing row is a joint development whatever its type
+    // code: the stage is the printed identity ("IEEE P15026.2/FDIS",
+    // pubid#203) and only the joint model carries iso_stage and the D=
+    // designator (the reference's chooser).
+    if (attributes["iso_stage"] !== undefined ||
+        (attributes["ieee_draft"] as string | undefined ?? "").startsWith("D=")) {
+      return JointDevelopmentClass as never;
+    }
     const typeCode = attributes["type"];
     if (typeCode === "P") return ProjectDraftIdentifierClass as never;
     if (typeCode === "SI" || typeCode === "PSI") return SiStandardClass as never;
@@ -472,6 +480,31 @@ class IeeeBuilder {
     if (day !== undefined) attributes["day"] = day;
 
     this.handleDraft(parsed, attributes);
+    this.foldDraftDateTail(attributes);
+    // The bare-IEEE fdraft clause (pubid#203): a slash-led stage word
+    // after the code ("IEEE P15026.2/FDIS, August 2010") rides the D=
+    // designator with the IEEE date convention ("D=FDIS-201008"); the
+    // ISO face is not elected (the reference's fdraft rule).
+    const fdraft = parsed["fdraft"];
+    if (fdraft !== undefined && typeof fdraft === "object" && !Array.isArray(fdraft)) {
+      const fdStage = extractValue((fdraft as TreeObject)["fdraft_stage"]);
+      if (fdStage !== undefined) {
+        const fdYear = extractValue((fdraft as TreeObject)["year"]);
+        const fdMonth = extractValue((fdraft as TreeObject)["month"]);
+        let date = "";
+        if (fdYear !== undefined) {
+          date = `-${fdYear}`;
+          const monthNum = fdMonth !== undefined
+            ? DRAFT_MONTH_NAMES[String(fdMonth).replace(/\.$/, "")]
+            : undefined;
+          if (monthNum !== undefined) date += monthNum.padStart(2, "0");
+        }
+        attributes["publishers"] ??= [attributes["publisher"] ?? "IEEE"];
+        attributes["ieee_draft"] = `D=${fdStage}${date}`;
+        const fdRecord = locateStage(fdStage);
+        if (fdRecord !== undefined) attributes["typed_stage"] = new IeeeTypedStage(fdRecord);
+      }
+    }
     this.applyDefaultDraftVersion(attributes, typeValue);
     this.handleKeyedHash(parsed, "corrigendum", attributes, "cor_number", "cor_year");
     this.handleKeyedHash(parsed, "amendment", attributes, "amd_number", "amd_year");
@@ -568,7 +601,12 @@ class IeeeBuilder {
       if (draftData["draft_version"] !== undefined) {
         const dv = draftData["draft_version"];
         version = Array.isArray(dv) ? dv.map((v) => extractValue(v) ?? "").join("") : extractValue(dv);
-        if (version !== undefined) version = version.replace(/^-/, "");
+        // The reference's designator normalization (gem#552): a leading
+        // hyphen drops, and a three-digit-plus zero-padded designator
+        // sheds its zero ("/013.0" -> "13.0" — the 2026-10-19 ruling;
+        // the strip is scoped to the dotted designator class — "D043"/
+        // "D09"/"D0.16" keep their conventional widths).
+        if (version !== undefined) version = version.replace(/^-/, "").replace(/^0(?=\d+\.\d)/, "");
       }
       revision = extractValue(draftData["revision"]);
       isoStage = extractValue(draftData["draft_iso_stage"]);
@@ -583,12 +621,14 @@ class IeeeBuilder {
       month = extractValue(draftData["month"]);
       year = extractValue(draftData["year"]);
       if (version !== undefined) {
-        const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(?:-([A-Za-z]+)(\d{4}))?$/.exec(version);
+        // The stage iteration rides glued onto the word ("DIS2" — the
+        // lossless face, pubid#477; the 2026-10-19 DIS2 ruling).
+        const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(\d+)?(?:-([A-Za-z]+)(\d{4}))?$/.exec(version);
         if (stageDate !== null) {
-          isoStage = stageDate[1];
-          if (stageDate[2] !== undefined) {
-            month = DRAFT_MONTH_NAMES[stageDate[2]] !== undefined ? stageDate[2] : month;
-            year = stageDate[3];
+          isoStage = stageDate[1] + (stageDate[2] ?? "");
+          if (stageDate[3] !== undefined) {
+            month = DRAFT_MONTH_NAMES[stageDate[3]] !== undefined ? stageDate[3] : month;
+            year = stageDate[4];
           }
           version = undefined;
         }
@@ -645,6 +685,40 @@ class IeeeBuilder {
       });
       attributes["draft"] = draftObj.render();
     }
+  }
+
+  // A draft-date that routed to the identity slots (the grammar's
+  // month/year captures beside a bare draft ordinal) folds onto the
+  // draft designator: a REV-carrier embeds it numerically
+  // ("P1310Rev3/D2, February 2011" renders "D2-2011-02" — the
+  // reference's builder), a plain draft keeps the printed face routed
+  // through the draft's own parse so the month canonicalizes to the
+  // crawl abbreviation ("D08, September 2018" renders "D08, Sept,
+  // 2018"; a space-faced input stays space-faced).
+  private foldDraftDateTail(attributes: Record<string, unknown>): void {
+    const month = attributes["month"];
+    const year = attributes["year"];
+    const draft = attributes["draft"];
+    if (typeof month !== "string" || typeof year !== "string" ||
+        typeof draft !== "string" || !/^\/D[^ =,]+$/.test(draft)) {
+      return;
+    }
+    const draftNum = draft.slice(2);
+    if (attributes["revision"] !== undefined || attributes["rev_bare"] === true) {
+      const monthNum = DRAFT_MONTH_NAMES[String(month).replace(/\.$/, "")];
+      if (monthNum === undefined) return;
+      attributes["draft"] =
+        new IeeeDraft({ version: `${draftNum}-${year}-${monthNum.padStart(2, "0")}` }).render();
+    } else {
+      const escaped = month.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const commaFace = this.originalInput !== "" &&
+        new RegExp(`,\\s+${escaped}`, "i").test(this.originalInput);
+      const reparsed = IeeeDraft.parse(`${draftNum}${commaFace ? ", " : " "}${month} ${year}`);
+      if (reparsed === undefined) return;
+      attributes["draft"] = reparsed.render();
+    }
+    delete attributes["month"];
+    delete attributes["year"];
   }
 
   applyDefaultDraftVersion(attributes: Record<string, unknown>, typeValue: string | undefined): void {
@@ -944,6 +1018,17 @@ class IeeeBuilder {
       if (attributes["year"] === undefined) attributes["year"] = extractValue(parsed["draft_year"]);
       if (attributes["month"] === undefined) attributes["month"] = extractValue(parsed["draft_month"]);
     }
+    // A status word ("Unapproved") marks the draft (pubid#318).
+    const jointDraftStatus = extractValue(parsed["draft_status"]);
+    if (jointDraftStatus !== undefined) attributes["draft_status"] = jointDraftStatus;
+
+    // A dash_year tail ("/D-3-2007") is the identity year when the
+    // slots are otherwise empty — the ISO face prints it colon-joined
+    // ("ISO/IEC/IEEE FDIS P15288:2007", the reference's 9258 flow).
+    if (attributes["year"] === undefined && parsed["dash_year"] !== undefined) {
+      const dashYear = (extractValue(parsed["dash_year"]) ?? "").replace(/^[-:]/, "");
+      if (/^\d{4}$/.test(dashYear)) attributes["year"] = dashYear;
+    }
 
     // The IEEE-led tail word-stage ("IEEE/ISO/IEC P15026-3/CD,
     // December 2021") composes the D= designator with the glued
@@ -989,13 +1074,14 @@ class IeeeBuilder {
       // FCD is an ISO stage (the 2026-10-19 ruling): a glued month-name
       // date rides the designator's date slot with the month numeric —
       // the D= designator face, never the "DFCD" glue.
-      const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(?:-([A-Za-z]+)(\d{4}))?$/.exec(draftVer);
+      const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(\d+)?(?:-([A-Za-z]+)(\d{4}))?$/.exec(draftVer);
       if (stageDate !== null) {
-        const monthNum = stageDate[2] !== undefined ? DRAFT_MONTH_NAMES[stageDate[2]] : undefined;
+        const monthNum = stageDate[3] !== undefined ? DRAFT_MONTH_NAMES[stageDate[3]] : undefined;
+        const stageWord = stageDate[1] + (stageDate[2] ?? "");
         attributes["ieee_draft"] =
-          stageDate[2] !== undefined && monthNum !== undefined
-            ? `D=${stageDate[1]}-${stageDate[3]}${monthNum.padStart(2, "0")}`
-            : `D=${stageDate[1]}`;
+          stageDate[3] !== undefined && monthNum !== undefined
+            ? `D=${stageWord}-${stageDate[4]}${monthNum.padStart(2, "0")}`
+            : `D=${stageWord}`;
         delete attributes["draft"];
         delete attributes["year"];
         delete attributes["month"];
@@ -1180,11 +1266,43 @@ class IeeeBuilder {
       return new StandardClass(printedAttrs as unknown as Record<string, unknown>) as unknown as Identifier;
     }
 
+    // A stage word with a glued year tail ("/D=CD2-201802") rides the
+    // D= designator with the IEEE lead (the reference's builder, the
+    // pubid#203 class) — the tail's capture carries its separator.
+    if (parsed["iso_stage"] !== undefined && parsed["draft_stage_year"] !== undefined) {
+      const stageWord = extractValue(parsed["iso_stage"]) ?? "";
+      const pubs = (attributes["publishers"] ?? []) as string[];
+      if (pubs.length === 0) {
+        attributes["publishers"] = ["IEEE"];
+        attributes["publisher"] = "IEEE";
+        attributes["copublisher"] = [];
+      }
+      attributes["ieee_draft"] = `D=${stageWord}${extractValue(parsed["draft_stage_year"]) ?? ""}`;
+      const stageRecord = locateStage(stageWord);
+      if (stageRecord !== undefined) {
+        attributes["typed_stage"] = new IeeeTypedStage(stageRecord);
+      }
+      attributes["lead_party"] = "IEEE";
+      delete attributes["year"];
+      delete attributes["month"];
+    }
     if (parsed["iso_stage"] !== undefined) {
-      attributes["lead_party"] = "ISO";
-      const stageAbbr = extractValue(parsed["iso_stage"]);
-      attributes["iso_stage"] = stageAbbr;
-      if (stageAbbr !== undefined) {
+      // A bare-IEEE project carrying a stage never elects the ISO lead
+      // (the reference's bare_ieee_project gate): the lead stays IEEE.
+      const bareIeeeProject = parsed["project_marker"] !== undefined &&
+        attributes["publisher"] === "IEEE" &&
+        ((attributes["copublisher"] as string[] | undefined) ?? []).length === 0;
+      if (!bareIeeeProject) attributes["lead_party"] = "ISO";
+      let stageAbbr = extractValue(parsed["iso_stage"]);
+      // The IEC "/V<version>" iteration rides glued onto the stage word
+      // ("_CDV/V3" -> "CDV3") — the family's lossless spelling (the
+      // reference's builder, pubid#477).
+      const stageIteration = extractValue(parsed["iso_stage_iteration"]);
+      if (stageAbbr !== undefined && stageIteration !== undefined) {
+        stageAbbr += stageIteration;
+      }
+      if (!bareIeeeProject) attributes["iso_stage"] = stageAbbr;
+      if (stageAbbr !== undefined && !bareIeeeProject) {
         const record = locateStage(stageAbbr);
         if (record !== undefined) attributes["typed_stage"] = new IeeeTypedStage(record);
       }

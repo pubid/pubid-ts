@@ -1304,6 +1304,7 @@ export const JointDevelopmentClass = ieeeClass(
       iso_stage: { type: "string" },
       ieee_draft: { type: "string" },
       parenthetical_content: { type: "string" },
+      draft_status: { type: "string" },
     },
     extraMappings: keyValue(
       { wire: "publishers", to: "publishers" },
@@ -1311,6 +1312,7 @@ export const JointDevelopmentClass = ieeeClass(
       { wire: "iso_stage", to: "iso_stage" },
       { wire: "ieee_draft", to: "ieee_draft" },
       { wire: "parenthetical_content", to: "parenthetical_content" },
+      { wire: "draft_status", to: "draft_status" },
     ),
     wireDelete: { keys: ["publisher", "copublisher"] },
     render: (id) => {
@@ -1382,6 +1384,10 @@ export const JointDevelopmentClass = ieeeClass(
       // IEEE format
       const parts: string[] = [];
       if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
+      // A status word ("Unapproved") marks the draft (pubid#318) — it
+      // prints after the publishers on the joint IEEE face.
+      const draftStatus = (id as unknown as Record<string, unknown>)["draft_status"] as string | undefined;
+      if (draftStatus !== undefined) parts.push(draftStatus);
       // The P-state prints as spelled (P = project draft; no P =
       // standard). Never added or stripped.
       let codeStr = codeObj?.render() ?? "";

@@ -256,14 +256,11 @@ function normalizeRelatonSuffixes(input: string): string {
     }
   }
 
-  // /D-N drafts with a trailing numeric date: reposition onto the number.
-  {
-    const re = /^(.*)\/D-([0-9A-Za-z][0-9A-Za-z.+]*?)-((?:19|20)\d\d)(?:-(0[1-9]|1[0-2]))?$/;
-    const m = re.exec(cleaned);
-    if (m !== null) {
-      cleaned = `${m[1]}-${m[3]}${m[4] !== undefined ? `-${m[4]}` : ""}/D${m[2]}`;
-    }
-  }
+  // The "/D-N-YYYY" draft-dash-date spelling is NOT repositioned: the
+  // artifact grammar reads it natively (draft + printed_dash_year) and
+  // the joint route renders the reference's dash-year face. The former
+  // reposition onto the number predated the artifact and broke the
+  // joint classification (the year left the designator's slot).
 
   // /E-N editions: "/E-2-2023-02" → "Edition 2.0 2023-02".
   {
@@ -290,10 +287,14 @@ function normalizeRelatonSuffixes(input: string): string {
 function normalizeRevisionNotation(input: string): string {
   let cleaned = input;
 
-  // Numbered revisions preserved, repositioned to "/R-<n>".
-  cleaned = cleaned.replace(/(\/D-?[0-9A-Za-z.]+)\s+[Rr][Ee][Vv]\s*(\d+)/, "$1/R-$2");
-  cleaned = cleaned.replace(/[-/_.]?\s?[Rr][Ee][Vv][-\s]?(\d+)(\/D-?[0-9A-Za-z.]+)/, "$2/R-$1");
-  cleaned = cleaned.replace(/(\d)[-._]?\s?[Rr][Ee][Vv]\s*(\d+)\s*$/, "$1/R-$2");
+  // The reference's two glue-normalizing gsubs (parser.rb): a "REV.x"/
+  // "REV-x" after-word separator and a digit-glued "2rev1" normalize to
+  // a spaced boundary; the render keeps the glued face. The former
+  // /R-<n> reposition rules predate the artifact grammar and diverged
+  // from the reference (they ate "-rev1" spellings the artifact
+  // captures natively, which cost the glued-date rows their parse).
+  cleaned = cleaned.replace(/(REV|Rev|rev)[.\-](?=[A-Za-z])/g, "$1");
+  cleaned = cleaned.replace(/(\d)(REV|Rev|rev)/g, "$1 $2");
 
   // The joint IEEE/CSA catalogue spells the type word before the
   // project number ("IEEE/CSA Draft P844.1/D2, Sept, 2016"): the P
@@ -371,6 +372,15 @@ function normalizeJointStageSpellings(input: string): string {
   // dash-date, and rewriting it onto the number breaks the parse.
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/ ?${stage}(-(?:19|20)\\d\\d(?:-\\d\\d)?)`), "$1$3 $2$4");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${stage} ${num}/? ?(D\\d+)\\b`), "$1$2 $3/$4");
+  // The dash-stage-with-part spelling ("ISO/IEC/IEEE P15288-DIS-1403",
+  // "… P12207-FDIS-1707, June 2017"): the stage glues between the number
+  // and the part. The reference renders the stage-first dot face
+  // ("DIS P15288.1403") — re-spell so the stage-first route parses it
+  // (a stage WITHOUT a trailing part, "P29119-2-DIS", routes elsewhere).
+  cleaned = cleaned.replace(
+    new RegExp(`^${pubs}P?(\\d+)-(FDIS|DIS|CDV|CD|WD)(\\d*)-(\\d+(?:\\.\\d+)*)((?:, [A-Za-z]+ \\d{4})?)$`),
+    "$1$3$4 P$2.$5$6",
+  );
   return cleaned;
 }
 
