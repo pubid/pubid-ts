@@ -406,14 +406,10 @@ export function preprocessIeee(input: string): string {
   cleaned = cleaned.replace(/(\d+\.\d+)\s+(\d+\.)/g, "$1$2");
   cleaned = cleaned.replace(/\b(1|2)\s+(\d{3})\b/g, "$1$2");
 
-  cleaned = cleaned.replace(
-    /\b(January|February|March|April|May|June|July|August|September|October|November|December)(\d{4})\b/g,
-    "$1 $2",
-  );
-  cleaned = cleaned.replace(
-    /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(\d{4})\b/g,
-    "$1 $2",
-  );
+  // The month-year glue split ("June2010" -> "June 2010") is NOT the
+  // reference's behavior — the reference keeps the glue (the FCD ruling:
+  // "FCD-June2010" is the stage + the glued month-name date), and the
+  // split cost the FCD rows their classification.
 
   cleaned = normalizeJointStageSpellings(cleaned);
 

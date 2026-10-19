@@ -227,12 +227,6 @@ ieee.project_draft_identifier.3009:
   ref: conformance/pending.yaml (wave ledger)
 
 
-ieee.project_draft_identifier.3297:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
 ieee.project_draft_identifier.3808:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
