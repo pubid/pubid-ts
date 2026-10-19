@@ -574,16 +574,25 @@ class IeeeBuilder {
       isoStage = extractValue(draftData["draft_iso_stage"]);
       isoIteration = extractValue(draftData["draft_iso_iteration"]);
       // FDIS/CDV/… are ISO/IEC stage tokens, not draft ordinals (C1
-      // ruling, testsuite#2). "/DDIS" and "/DFDIS" are hallucinated
+      // ruling, testsuite#2). "/DDIS" and "/DFCD" are hallucinated
       // concatenations — the designator D does not merge onto a stage
       // word. The draft of a stage rides the iso_stage slot, which
       // Draft#to_s renders as the D= designator face ("…/D=DIS-2020").
-      if (version !== undefined && /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)$/.test(version)) {
-        isoStage = version;
-        version = undefined;
-      }
+      // The glued month-name date ("-June2010", the 2026-10-19 FCD
+      // ruling) rides the designator's date slot with the month numeric.
       month = extractValue(draftData["month"]);
       year = extractValue(draftData["year"]);
+      if (version !== undefined) {
+        const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(?:-([A-Za-z]+)(\d{4}))?$/.exec(version);
+        if (stageDate !== null) {
+          isoStage = stageDate[1];
+          if (stageDate[2] !== undefined) {
+            month = DRAFT_MONTH_NAMES[stageDate[2]] !== undefined ? stageDate[2] : month;
+            year = stageDate[3];
+          }
+          version = undefined;
+        }
+      }
       // The apostrophe-year catalogue convention ("P1484.20.1/D7,
       // May 07"): the 2-digit year expands with the <30 pivot so the
       // hash carries an unambiguous year (the reference's builder).
@@ -977,7 +986,20 @@ class IeeeBuilder {
 
     if (parsed["draft_version"] !== undefined) {
       const draftVer = (extractValue(parsed["draft_version"]) ?? "").replace(/^D/, "");
-      if (draftVer !== "") {
+      // FCD is an ISO stage (the 2026-10-19 ruling): a glued month-name
+      // date rides the designator's date slot with the month numeric —
+      // the D= designator face, never the "DFCD" glue.
+      const stageDate = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(?:-([A-Za-z]+)(\d{4}))?$/.exec(draftVer);
+      if (stageDate !== null) {
+        const monthNum = stageDate[2] !== undefined ? DRAFT_MONTH_NAMES[stageDate[2]] : undefined;
+        attributes["ieee_draft"] =
+          stageDate[2] !== undefined && monthNum !== undefined
+            ? `D=${stageDate[1]}-${stageDate[3]}${monthNum.padStart(2, "0")}`
+            : `D=${stageDate[1]}`;
+        delete attributes["draft"];
+        delete attributes["year"];
+        delete attributes["month"];
+      } else if (draftVer !== "") {
         // A date trailing the draft (", June 2010") belongs to the draft
         // component (canonical month, comma form); the identity
         // year/month the promotion filled from the same captures are
