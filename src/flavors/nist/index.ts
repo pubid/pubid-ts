@@ -418,9 +418,10 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
       if (v === undefined) return undefined;
       const stripped = v.trim();
       const code = TRANSLATION_MAP[stripped.toLowerCase()] ?? stripped.toLowerCase();
-      // The gem's translation attr is the component; its to_s prefixes
-      // the space (" .uppl"), and the wire serializes that form.
-      return { translation_component: new NistTranslation({ code }), translation: ` ${code}` };
+      // The gem's Translation#to_s (short) renders the parenthesised
+      // suffix — the 1.x corpus shape ("(spa)", pubid#497); the wire
+      // serializes that form.
+      return { translation_component: new NistTranslation({ code }), translation: `(${code})` };
     }
 
     case "version": {

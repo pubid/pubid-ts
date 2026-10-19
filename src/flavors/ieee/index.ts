@@ -1225,6 +1225,19 @@ class IeeeBuilder {
       return new ProjectDraftIdentifierClass(projectAttrs as never) as unknown as Identifier;
     }
 
+    // The iso_published joint rows normalize the publisher order to
+    // ISO-first (the reference: "IEEE/ISO/IEC 8802-3:2021/Amd 4-2021"
+    // builds the base [ISO, IEC, IEEE], lead ISO); the CD-stage rows and
+    // the IEEE-led project rows preserve the printed order (P90003 stays
+    // IEEE/ISO/IEC).
+    if (parsed["iso_published"] !== undefined && parsed["iso_stage"] === undefined &&
+        Array.isArray(attributes["publishers"])) {
+      const pubs = attributes["publishers"] as string[];
+      attributes["publishers"] = [...pubs.filter((p) => p !== "IEEE"), ...pubs.filter((p) => p === "IEEE")];
+      attributes["publisher"] = (attributes["publishers"] as string[])[0];
+      attributes["copublisher"] = (attributes["publishers"] as string[]).slice(1);
+    }
+
     const joint = new JointDevelopmentClass(attributes) as unknown as Identifier;
     if (parsed["amd_number"] === undefined) return joint;
 
