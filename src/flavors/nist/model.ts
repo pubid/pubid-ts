@@ -548,7 +548,7 @@ export abstract class NistIdentifier extends BaseIdentifier {
     result += this.supplementShort();
 
     if (this.errata !== undefined) result += this.errata;
-    if (this.index !== undefined) result += "index";
+    if (this.index !== undefined) result += "indx";
     if (this.insert !== undefined) result += "insert";
     if (this.section !== undefined) result += `sec${this.section}`;
     if (this.appendix !== undefined) result += "app";

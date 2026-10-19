@@ -207,6 +207,7 @@ const yearMapping = (): FieldMapping => ({
       : new PubidDate({
           year: String(h["year"]),
           month: h["month"] === undefined || h["month"] === null ? undefined : String(h["month"]),
+          day: h["day"] === undefined || h["day"] === null ? undefined : String(h["day"]),
         }),
 });
 
@@ -214,6 +215,15 @@ const monthMapping = (): FieldMapping => ({
   wire: "month",
   to: "date",
   toWire: (m) => (m["date"] as PubidDate | undefined)?.month,
+  fromWire: () => undefined,
+});
+
+// An Operational Bulletin's printed day ("15.III.2016") serializes flat,
+// mirroring the reference's hash ("year"/"month"/"day" siblings).
+const dayMapping = (): FieldMapping => ({
+  wire: "day",
+  to: "date",
+  toWire: (m) => (m["date"] as PubidDate | undefined)?.day,
   fromWire: () => undefined,
 });
 
@@ -241,6 +251,7 @@ const STANDARD_MAPPINGS = keyValue(
   { wire: "version", to: "version" },
   yearMapping(),
   monthMapping(),
+  dayMapping(),
   { wire: "language", to: "language" },
   { wire: "common_text_twin", to: "common_text_twin" },
 );

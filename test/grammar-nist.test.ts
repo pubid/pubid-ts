@@ -28,7 +28,7 @@ test("every nist corpus case passes through the grammar", () => {
   // conformance runner gates on) until the nist mirror lands.
   assert.equal(report.cases, payloads.cases.length - report.errors - report.pending);
   assert.ok(report.cases > 19500);
-  assert.equal(report.pending, 7);
+  assert.equal(report.pending, 1);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });
