@@ -39,7 +39,7 @@ test("every ieee corpus case passes through the grammar", () => {
   // marks unmarked this round; the triage round unmarked 64 more (the
   // draft-stage ordinal ladder strips the embedded date before the
   // registry lookup, mirroring the reference's date-embedded rule).
-  assert.equal(report.pending, 72);
+  assert.equal(report.pending, 61);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,

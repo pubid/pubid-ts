@@ -70,18 +70,6 @@ ieee.joint_development.0893:
   ref: conformance/pending.yaml (wave ledger)
 
 
-ieee.joint_development.0897:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.0900:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
 ieee.joint_development.0921:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
@@ -172,11 +160,6 @@ ieee.joint_development.8519:
   ref: conformance/pending.yaml (wave ledger)
 
 
-ieee.joint_development.9061:
-  reason: >-
-      same word-stage family: the FDIS word-order face
-  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
-
 ieee.joint_development.9062:
   reason: >-
       the word-stage alias renders the doubled-slash crawl face in the
@@ -184,34 +167,7 @@ ieee.joint_development.9062:
       the word-stage route
   ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
 
-ieee.joint_development.9063:
-  reason: >-
-      dash-DIS alias: the ruby renders the doubled-slash crawl face
-  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
-
-ieee.joint_development.9064:
-  reason: >-
-      dash-DIS alias: the ruby renders the doubled-slash crawl face
-  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
-
-ieee.joint_development.9065:
-  reason: >-
-      dash-DIS alias: the ruby renders the doubled-slash crawl face
-  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
-
 ieee.joint_development.9066:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9067:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9068:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -223,61 +179,7 @@ ieee.joint_development.9074:
   ref: conformance/pending.yaml (wave ledger)
 
 
-ieee.joint_development.9075:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9076:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9077:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9078:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9079:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9080:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
 ieee.joint_development.9084:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9239:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9240:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9252:
   reason: >-
       the REV-lettered render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -488,12 +390,12 @@ nist.crpl_report.1801:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.identifier.12216:
+nist.identifier.12217:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.identifier.12218:
+nist.identifier.12222:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -513,7 +415,7 @@ nist.identifier.12221:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.identifier.12253:
+nist.identifier.12261:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -553,37 +455,12 @@ nist.identifier.12260:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.interagency_report.15103:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16231:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 nist.interagency_report.16232:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
 nist.interagency_report.16233:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16239:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16242:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16245:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -598,22 +475,7 @@ nist.interagency_report.16247:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.interagency_report.16311:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16375:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 nist.interagency_report.16376:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16406:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -623,17 +485,7 @@ nist.interagency_report.16407:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.interagency_report.16409:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 nist.interagency_report.16410:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.interagency_report.16558:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -643,32 +495,7 @@ nist.interagency_report.16559:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.letter_circular.6215:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.nsrds.7852:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.17238:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.17518:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.18305:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.18306:
+nist.nsrds.7853:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -683,22 +510,12 @@ nist.special_publication.18309:
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
-nist.special_publication.18310:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
 nist.special_publication.18311:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
 
 nist.special_publication.18312:
-  reason: >-
-      the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.19800:
   reason: >-
       the #498 section/indx/parenthesised-translation render surface is not yet reproduced by this port
   ref: conformance/pending.yaml (wave ledger)
@@ -716,11 +533,6 @@ itu.special_publication.2405:
 # the bare ISO/IEC joint-rows family). The ts pends until the gem lands
 # the word-stage joint route (pubid#538 follow-up), then mirrors it.
 
-ieee.project_draft_identifier.9354:
-  reason: >-
-      the glued stage-month draft tail ("FCD-June2010") renders the split comma face
-  ref: conformance/pending.yaml (tail-stage wave ledger)
-
 ieee.project_draft_identifier.9356:
   reason: >-
       the same-human dual-identity pair: parse(human) rebuilds the 9355 verbatim identity, this row pins the alias-derived split identity
@@ -733,4 +545,154 @@ ieee.standard.9044:
       2026-10-18 re-export reproduced the row byte-identically — the corpus
       is faithful; an earlier draft wrongly blamed a wasm/native parity gap
   ref: tests/ieee/_debt.yaml ieee.debt.89a9246d85af (roundtrip:false)
+
+ieee.joint_development.0898:
+  reason: >-
+      reference render-lossiness (roundtrip:false): the dotted ISO-face print of a dash-part row re-parses with a different separator; the recorded identity comes from the fallback source parse
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.joint_development.0901:
+  reason: >-
+      reference render-lossiness (roundtrip:false): the dotted ISO-face print of a dash-part row re-parses with a different separator; the recorded identity comes from the fallback source parse
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.joint_development.9242:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's joint DIS-designator route renders the ISO/IEC/IEEE face from the dash-designator alias spelling
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.joint_development.9243:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's joint DIS-designator route renders the ISO/IEC/IEEE face from the dash-designator alias spelling
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.joint_development.9255:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's joint FDIS-designator route renders the ISO/IEC/IEEE face from the dash-designator alias spelling
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.project_draft_identifier.9357:
+  reason: >-
+      the glued stage-month draft tail ("FCD-June2010") renders the split comma face — the 9354 family
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.project_draft_identifier.9359:
+  reason: >-
+      the glued stage-month draft tail family (the 9354/9357 class)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.amendment.9218:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's amendment base renders the ISO/IEC/IEEE face from the IEEE/ISO/IEC alias spelling (the 8802 family)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.amendment.9219:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's amendment base renders the ISO/IEC/IEEE face from the IEEE/ISO/IEC alias spelling (the 8802 family)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.amendment.9220:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's amendment base renders the ISO/IEC/IEEE face from the IEEE/ISO/IEC alias spelling (the 8802 family)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.standard.9180:
+  reason: >-
+      the route-level publisher-order normalization port: the reference's amendment route renders the ISO/IEC/IEEE face from the IEEE/ISO/IEC alias spelling (the 8802 family)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.standard.9070:
+  reason: >-
+      reference render-lossiness (roundtrip:false): the recorded human re-parses in no runtime — the exporter's fallback source parse recorded it
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+ieee.standard.9165:
+  reason: >-
+      the glued (E) alias convergence on the joint-standard row: the reference folds "2018(E)" into the plain human
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.15104:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16234:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16240:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16243:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16248:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16312:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16377:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16408:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16411:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.interagency_report.16560:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.letter_circular.6216:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.17239:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.17519:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.18308:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.18313:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.18314:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
+
+nist.special_publication.19804:
+  reason: >-
+      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
+  ref: conformance/pending.yaml (lossless-face round ledger)
 

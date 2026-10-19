@@ -535,12 +535,9 @@ export function preprocessIeee(input: string): string {
 
   cleaned = cleaned.replace(/^(IEC\/IEEE P[\w.-]+)_D/, "$1/D");
 
-  // Scoped: the D= stage-draft rows keep the IEEE-led list (the ruby
-  // ieee_format routes them with the input publisher order and lead
-  // IEEE - "IEEE/ISO/IEC P29119-2/D=DIS-201112"); the other IEEE/ISO/IEC
-  // spellings print the ISO-led face.
-  cleaned = cleaned.replace(/^IEEE\/ISO\/IEC\s+(?!P[\w.-]+\/D=)(P[\w.-]+)/, "ISO/IEC/IEEE $1");
-  cleaned = cleaned.replace(/^IEEE\/IEC\/ISO\s+(P[\w.-]+)/, "IEC/ISO/IEEE $1");
+  // The printed publisher order is identity (pubid#469, the
+  // dual-perspective ruling): no IEEE/ISO/IEC or IEEE/IEC/ISO rewrites —
+  // the reference parses as printed and renders the printed order back.
   cleaned = cleaned.replace(/^(IEEE\/IEC P[\w.-]+)\s+D(\d)/, "$1/D$2");
   cleaned = cleaned.replace(
     /^(IEEE\/IEC P[\w.-]+)\s+(CDV|FDIS|CD|DIS|ED\d)/,
@@ -590,7 +587,6 @@ export function preprocessIeee(input: string): string {
   cleaned = cleaned.replaceAll("Edn.", "Edition");
   cleaned = cleaned.replaceAll("ASHARE", "ASHRAE");
   cleaned = cleaned.replace(/^PC(\d)/, "P$1");
-  cleaned = cleaned.replace(/^IEEE\/ISO\/IEC\s+(8802[\w.-]+)/, "ISO/IEC/IEEE $1");
   cleaned = cleaned.replace(
     /^(IEEE\s+C?\d[\d.]*\/D\d+)([A-Z][a-z]+\s+\d{4})/,
     "$1, $2",

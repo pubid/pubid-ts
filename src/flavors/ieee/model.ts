@@ -1367,8 +1367,11 @@ export const JointDevelopmentClass = ieeeClass(
             result += `, ${id.month} ${dateYear}`;
           }
         }
+        // Lossless: parse(to_s) == self (gem c148d267, the 2026-10-19
+        // ruling) — the parenthetical rides unconditionally on both
+        // joint faces.
         const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
-        if (marker !== undefined && /^[A-Z](?:\s*[/&]\s*[A-Z])*$/.test(marker)) {
+        if (marker !== undefined) {
           result += ` (${marker})`;
         }
         // The joint ISO-print redline is a distinct document (pubid#215):
@@ -1408,6 +1411,8 @@ export const JointDevelopmentClass = ieeeClass(
           !(ieeeDraft ?? "").endsWith(`-${id.year}`)) {
         result += `-${id.year}`;
       }
+      const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
+      if (marker !== undefined) result += ` (${marker})`;
       if (id.redline === true) result += " - Redline";
       return result;
     },
