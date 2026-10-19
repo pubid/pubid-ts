@@ -159,8 +159,10 @@ export class NistTranslation {
   toWire(): Record<string, unknown> {
     return { code: this.code };
   }
+  // The 1.x corpus shape: the trailing parenthesised suffix "(spa)"
+  // (pubid#497); the mr face keeps the dotted form (".spa").
   render(format: "short" | "mr" = "short"): string {
-    return format === "mr" ? `.${this.code}` : ` ${this.code}`;
+    return format === "mr" ? `.${this.code}` : `(${this.code})`;
   }
 }
 
