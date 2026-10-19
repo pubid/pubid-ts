@@ -1105,8 +1105,14 @@ class IeeeBuilder {
           (parsed["parameters"] as TreeObject)["parenthetical_content"] !== undefined))
     ) {
       const sep = parsed["part_dash"] !== undefined ? "-" : ".";
-      let printedCode = [extractValue(parsed["number"]), extractValue(parsed["part"])]
-        .filter((x) => x !== undefined).join(sep);
+      // The part capture carries its own separator (C1
+      // separator-in-capture); join verbatim, synthesizing one only
+      // for a bare capture — the reference's printed_joint rule.
+      const partVal = extractValue(parsed["part"]);
+      let printedCode = extractValue(parsed["number"]) ?? "";
+      if (partVal !== undefined) {
+        printedCode += /^[._-]/.test(partVal) ? partVal : `${sep}${partVal}`;
+      }
       // P = project: the marker is identity, preserved as spelled.
       if (parsed["project_marker"] !== undefined) printedCode = `P${printedCode}`;
       const printedAttrs: Record<string, unknown> = {
