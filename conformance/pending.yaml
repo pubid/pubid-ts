@@ -61,75 +61,78 @@
 # The final ledger (2026-10-20): every entry verified against the
 # reference row-by-row — the reference raises on, or re-derives
 # differently from, its own recorded canonical.
-ieee.adopted_standard.8841:
+
+# Track 01 wave 1 ledger (2026-10-20): every entry verified against the
+# reference row-by-row.
+ieee.standard.3718:
   reason: >-
-      alias unparseable in the reference (the pre-ordinal Cor adopted spellings)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.adopted_standard.8843:
+      the reference's own alias render is "IEEE Draft P754/D1" (the human is the bare face) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.project_draft_identifier.9356:
   reason: >-
-      alias unparseable in the reference (the pre-ordinal Cor adopted spellings)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.joint_development.0897:
+      the reference renders the (E) alias as "P42010.2019/D4", never the human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.0822:
   reason: >-
-      corpus row unsatisfiable in the reference (the raw dash hash face vs the rendered dot human)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.joint_development.0900:
+      the reference raises on its own rendered human "FDIS P24748.4" — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.0902:
   reason: >-
-      corpus row unsatisfiable in the reference (the raw dash hash face vs the rendered dot human)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.joint_development.9063:
+      the reference renders the dash alias without the year ("P60780-323"), never the dot human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.0898:
   reason: >-
-      alias render is the reference's own doubled-slash face (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.joint_development.9067:
+      the reference renders the dash alias without the year ("P60079-30-1"), never the dot human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.adopted_standard.8842:
   reason: >-
-      alias render is the reference's own doubled-slash face (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.project_draft_identifier.9349:
+      the reference raises on the pre-ordinal Cor alias — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.adopted_standard.8844:
   reason: >-
-      the reference raises on its own canonical (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.project_draft_identifier.9355:
+      the reference raises on the pre-ordinal Cor alias — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.9064:
   reason: >-
-      stored raw hash not re-derivable from the rendered human (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.1052:
+      the reference renders the dash-stage alias as its own doubled-slash face — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.9068:
   reason: >-
-      the reference raises on its own canonical (roundtrip:false, reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.1090:
+      the reference renders the dash-stage alias as its own doubled-slash face — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.9072:
   reason: >-
-      the reference raises on its own canonical (roundtrip:false, reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.9025:
+      the reference raises on its own canonical (NACE Draft spelling) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.9047:
   reason: >-
-      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.9046:
+      the reference raises on its own canonical ("DED4" corrupted spelling) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.9026:
   reason: >-
-      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.9071:
+      the reference raises on its own canonical ("//IEC/ISO" corrupted spelling) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.1118:
   reason: >-
-      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.9166:
+      the reference raises on its own canonical ("D/D2.1.1" doubled-dash class) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.9167:
   reason: >-
-      the "(E)" alias tail is the documented structural residual class
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+      the reference renders the (E) alias with the marker, never the bare human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
 nist.special_publication.19805:
   reason: >-
       superseded pre-fix record, unreachable in the reference (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.9045:
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.2312:
   reason: >-
-      the reference raises on its own canonical (the 9044-sibling corrupted spelling class)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.1119:
+      the reference renders the aliases with the Draft word ("IEEE Draft P15288/D=CD1"), never the bare human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.joint_development.2094:
   reason: >-
-      the reference raises on its own canonical (the "D/D2.1.1" doubled-dash class)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
-ieee.standard.3717:
+      the reference renders the aliases with the Draft word ("IEEE Draft P12207/D=CD1"), never the bare human — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+ieee.standard.9046:
   reason: >-
-      the raw crawl record renders "IEEE P754/D1"; the reference's re-parse face is "IEEE Draft P754/D1" (reference-lossiness)
-  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+      the reference raises on its own canonical (corrupted crawl spelling) — reference-lossiness
+  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"

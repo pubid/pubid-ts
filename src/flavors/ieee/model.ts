@@ -214,13 +214,16 @@ export class IeeeDraft {
     // ordinal stays short (one or two digits): a glued D= date
     // ("-201908", the pubid#203 convention) must ride the version body
     // verbatim, not fold into the iteration slot.
-    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(?:[.-]?(\d{1,2}[a-z]?))?$/;
+    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(\d{1,2}[a-z]?)?(?:[.-](\d{1,2}[a-z]?))?$/;
     let isoStage: string | undefined;
     let isoIteration: string | undefined;
     const cm = compound.exec(body);
     if (cm !== null) {
-      isoStage = cm[1];
-      isoIteration = cm[2];
+      // The glued digits ride the STAGE ("D=CD1", matching the reference's
+      // "D=#{stage}" composition); only an explicit separator opens the
+      // ".iter" slot ("=DIS.3").
+      isoStage = cm[1] + (cm[2] ?? "");
+      isoIteration = cm[3];
       body = body.slice(0, cm.index);
     }
 
