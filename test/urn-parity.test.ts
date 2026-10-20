@@ -4,12 +4,9 @@ import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// URN-ingestion parity with the gem: test/fixtures/urn-parity.json pins,
-// for every flavor with a lib/pubid/<flavor>/urn_parser.rb, the reference
-// outcome of parse_urn over every corpus URN — the rebuilt human on
-// success, an error on the reference's own round-trip gaps. The ts
-// parser must match both. Flavors without a ts port yet are skipped
-// until implemented.
+// Every ported flavor matches the reference on both halves: the rebuilt
+// human on success, and the reference's own parse failures. Flavors without
+// a ts port yet (ccsds, easc, iso) are skipped until implemented.
 
 type Row = { urn: string; human?: string | undefined; error?: string | undefined };
 const fixture: Record<string, Row[]> = JSON.parse(
@@ -20,19 +17,6 @@ const IMPLEMENTED = new Set(Object.keys(fixture).filter((flavor) => {
   const impl = grammarImplementation(flavor);
   return impl !== undefined && typeof impl.parseUrn === "function";
 }));
-
-// One nist row where the REFERENCE's own render is broken: the dotted
-// revision spelling "8278.r1" leaks the raw parse subtree into the
-// number ("{revision_simple: ...}"), a nist builder defect — the ts
-// mirrors the parse, but the two engines' artifact strings cannot match
-// byte-for-byte. Counted, not asserted.
-//
-// ieee reached full parity: the ISO/IEC/IEEE adoption faces parse
-// through the dashed-part reconstruction ("IEEE Std 8802-1AB-2014"),
-// the draft.D= tails round-trip the reference's own render verbatim
-// ("IEEE P61850-9-3/Ddraft.D=FDIS"), and the glued "(E)" edition
-// marker is consumed silently by the year rule like the reference's.
-const KNOWN_DIVERGENT = new Set(["nist"]);
 
 for (const [flavor, rows] of Object.entries(fixture)) {
   if (!IMPLEMENTED.has(flavor)) continue;
@@ -51,17 +35,13 @@ for (const [flavor, rows] of Object.entries(fixture)) {
       if (error !== undefined) {
         ok += 1; // the reference errors here too
       } else {
-        misses.push(`${urn}: threw ${(e as Error).message.slice(0, 60)}, want ${JSON.stringify(human)}`);
+        // Parsanol can throw a bare string rather than an Error.
+        const message = e instanceof Error ? e.message : String(e);
+        misses.push(`${urn}: threw ${message.slice(0, 60)}, want ${JSON.stringify(human)}`);
       }
     }
   }
-  if (KNOWN_DIVERGENT.has(flavor)) {
-    test(`${flavor}: urn ingestion KNOWN-DIVERGENT from the reference (${ok}/${rows.length} clean, ${misses.length} reference-side artifacts)`, () => {
-      assert.ok(misses.length < rows.length, "no parity at all");
-    });
-  } else {
-    test(`${flavor}: urn ingestion parity (${ok}/${rows.length})`, () => {
-      assert.equal(misses.length, 0, misses.slice(0, 8).join("\n"));
-    });
-  }
+  test(`${flavor}: urn ingestion parity (${ok}/${rows.length})`, () => {
+    assert.equal(misses.length, 0, misses.slice(0, 8).join("\n"));
+  });
 }
