@@ -47,6 +47,23 @@ jobs:
           node-version: "24"
       - run: npm ci
       - run: npx tsc -p tsconfig.json && npx tsc -p tsconfig.test.json
+      # Track 04: the pinned grammar ref must be internally consistent —
+      # every artifact fresh against its .parg source and every F4 corpus
+      # case reproduced by the wasm engine — and the vendored artifacts
+      # must match that ref exactly (the package ships them, so a stale
+      # vendor/parg would ship an unverified engine payload).
+      - name: Cross-engine corpus gate (pinned grammar ref)
+        run: |
+          PARG_ARTIFACT_DIR="${{ github.workspace }}/pubid-grammar/artifacts" \
+          PARG_CORPORA_DIR="${{ github.workspace }}/pubid-grammar/corpora" \
+          PARG_GRAMMAR_DIR="${{ github.workspace }}/pubid-grammar/grammars" \
+            node scripts/corpus-parity.mjs
+      - name: Vendored artifacts match the pinned grammar ref
+        run: |
+          diff -r -x '*.parg' vendor/parg "${{ github.workspace }}/pubid-grammar/artifacts" || {
+            echo "::error::vendor/parg is stale against grammar_ref — run npm run artifact"
+            exit 1
+          }
       - run: node --test --test-shard=${{ matrix.shard }}/4 dist-test/test/*.test.js
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests

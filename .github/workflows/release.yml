@@ -50,6 +50,21 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build
+      # Track 04: never publish a package whose vendored artifacts are
+      # stale against the pinned grammar ref or whose wasm engine drifts
+      # from the native corpus expectations.
+      - name: Cross-engine corpus gate (pinned grammar ref)
+        run: |
+          PARG_ARTIFACT_DIR="${{ github.workspace }}/pubid-grammar/artifacts" \
+          PARG_CORPORA_DIR="${{ github.workspace }}/pubid-grammar/corpora" \
+          PARG_GRAMMAR_DIR="${{ github.workspace }}/pubid-grammar/grammars" \
+            node scripts/corpus-parity.mjs
+      - name: Vendored artifacts match the pinned grammar ref
+        run: |
+          diff -r -x '*.parg' vendor/parg "${{ github.workspace }}/pubid-grammar/artifacts" || {
+            echo "::error::vendor/parg is stale against grammar_ref — run npm run artifact"
+            exit 1
+          }
       - run: npm test
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
