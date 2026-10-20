@@ -227,7 +227,9 @@ function buildRules(): Record<string, P> {
               str("NCNR"),
               str("PERMIS"),
               str("BFRL"),
-              upperLetter.repeat(1, 3),
+              // A trailing lowercase means a capitalized word ("Suppl"),
+              // not a second number.
+              upperLetter.repeat(1, 3).then(lowerLetter.absent()),
               rules["digits_with_suffix"]!
                 .then(dash.then(monthAbbrev(), digits, slash).absent()),
               lowerLetter.then(digit.absent()),
@@ -516,10 +518,18 @@ function buildRules(): Record<string, P> {
       .as("addendum"),
   );
 
+  // The capitalized supplement words a letter slot must yield to.
+  rule("supplement_word", () => str("Suppl").or(str("Supp")).or(str("Sup")));
+
   rule("supplement", () =>
     space
       .maybe()
-      .then(str("supp").or(str("sup")))
+      .then(dot.maybe())
+      .then(
+        // The capitalized catalogue spellings ("NIST.SP.955.Suppl") ride
+        // the same slot; longest-first so "Suppl" is not "Sup"+"p".
+        str("Suppl").or(str("Supp")).or(str("Sup")).or(str("supp")).or(str("sup")),
+      )
       .then(
         str("rev")
           .as("supplement_with_rev")
@@ -614,10 +624,12 @@ function buildRules(): Record<string, P> {
         dot.maybe(),
         rules["report_number"]!.maybe(),
         str("_").then(digits.as("edition_year")).maybe(),
-        upperLetter.maybe(),
+        rules["supplement_word"]!.absent().then(upperLetter.maybe()),
         rules["edition"]!.maybe(),
         rules["update"]!.maybe(),
-        dot.then(digits.or(upperLetter)).repeat(0, 3),
+        dot
+          .then(digits.or(rules["supplement_word"]!.absent().then(upperLetter)))
+          .repeat(0, 3),
         rules["parts"]!.repeat(0, Infinity),
         rules["draft"]!.maybe(),
       ),

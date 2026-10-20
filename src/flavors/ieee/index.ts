@@ -608,7 +608,10 @@ class IeeeBuilder {
         // "D09"/"D0.16" keep their conventional widths).
         if (version !== undefined) version = version.replace(/^-/, "").replace(/^0(?=\d+\.\d)/, "");
       }
-      revision = extractValue(draftData["revision"]);
+      // The revision capture carries its own leading dot (".1" — the
+      // #471 separator-in-capture rule); Draft#to_s prints the dot
+      // itself, so keep only the tail or "D6..1" renders doubled.
+      revision = extractValue(draftData["revision"])?.replace(/^\./, "");
       isoStage = extractValue(draftData["draft_iso_stage"]);
       isoIteration = extractValue(draftData["draft_iso_iteration"]);
       // FDIS/CDV/… are ISO/IEC stage tokens, not draft ordinals (C1
