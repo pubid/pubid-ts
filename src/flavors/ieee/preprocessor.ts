@@ -352,8 +352,35 @@ function normalizeRevisionNotation(input: string): string {
   return cleaned;
 }
 
+const STAGE_MONTH_NUMBERS: Record<string, string> = {
+  January: "01", February: "02", March: "03", April: "04", May: "05",
+  June: "06", July: "07", August: "08", September: "09", Sept: "09",
+  October: "10", November: "11", December: "12", Jan: "01", Feb: "02",
+  Mar: "03", Apr: "04", Jun: "06", Jul: "07", Aug: "08", Sep: "09",
+  Oct: "10", Nov: "11", Dec: "12",
+};
+
 function normalizeJointStageSpellings(input: string): string {
   let cleaned = input;
+
+  // The IEEE-led joint list's dash/underscore stage tail carries a
+  // month-name date ("IEEE/ISO/IEC P29119-2-DIS, December 2011"): the
+  // generic route answers with a slashed copublisher, so re-spell the
+  // stage as the D= designator the joint route reads (Ruby:
+  // Parser.normalize_input). Scoped to the IEEE-led list - the
+  // ISO/IEC- and IEC/IEEE-led forms already render the face.
+  cleaned = cleaned.replace(
+    /^(IEEE(?:\/(?:IEEE|ISO|IEC)){2,})\s+(P[A-Z0-9][A-Z0-9.-]*?)[-_](FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)(\d*),\s+([A-Za-z]+)\s+(\d{4})$/,
+    (_m, pubs: string, num: string, stage: string, iter: string,
+      mon: string, year: string) => {
+      const month = STAGE_MONTH_NUMBERS[
+        mon.charAt(0).toUpperCase() + mon.slice(1).toLowerCase()
+      ];
+      return month === undefined
+        ? _m
+        : `${pubs} ${num}/D=${stage}${iter}-${year}${month}`;
+    },
+  );
 
   const pubs = "((?:ISO/IEC/IEEE|IEEE/ISO/IEC|IEEE/IEC/ISO|ISO/IEEE|IEC/IEEE|IEEE/IEC|ISO/IEC)(?:/ ?| ))";
   const stage = "(FDIS|FCD|CDV|DIS\\d?|CD\\d?|WD|PWI|NP)";

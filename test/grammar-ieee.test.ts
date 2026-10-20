@@ -39,7 +39,9 @@ test("every ieee corpus case passes through the grammar", () => {
   // marks unmarked this round; the triage round unmarked 64 more (the
   // draft-stage ordinal ladder strips the embedded date before the
   // registry lookup, mirroring the reference's date-embedded rule).
-  assert.equal(report.pending, 11);
+  // Track 01 wave 2b unmarked the two dash-stage alias rows (the
+  // reference now re-spells them as their D= face): 11 -> 9.
+  assert.equal(report.pending, 9);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -137,6 +139,17 @@ test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
   const led = impl.parse("ISO/IEC/IEEE P24774/DIS, July 2020");
   assert.equal(led.toHuman(), "ISO/IEC/IEEE P24774/D=DIS-202007");
   assert.equal(led.toHash().draft, "D=DIS-202007");
+  // The IEEE-led list's dash/underscore stage tail re-spells as the D=
+  // designator (the reference's normalize_input rule, track 01 wave 2b):
+  // the generic route would answer with a slashed copublisher.
+  assert.equal(
+    impl.parse("IEEE/ISO/IEC P29119-2-DIS, December 2011").toHuman(),
+    "IEEE/ISO/IEC P29119-2/D=DIS-201112",
+  );
+  assert.equal(
+    impl.parse("IEEE/ISO/IEC P29119-4_FDIS, December 2020").toHuman(),
+    "IEEE/ISO/IEC P29119-4/D=FDIS-202012",
+  );
 });
 
 test("ieee double-label and stage-draft rulings (gem #439/#440)", () => {
