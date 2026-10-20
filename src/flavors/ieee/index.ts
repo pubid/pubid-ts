@@ -535,11 +535,14 @@ class IeeeBuilder {
     // An explicit joint stage on the draft ("=DFDIS.3") IS the stage —
     // it outranks the ordinal ladder, which classifies IEEE-internal
     // drafts only (docs/IEEE-DRAFT-STAGES.md §1.3).
+    let draftVersionPresent = false;
     if (parsed["draft"] !== undefined) {
       let draftData = parsed["draft"] as Tree;
       if (Array.isArray(draftData)) {
         draftData = mergeParsedArray(draftData as TreeObject[]);
       }
+      // A verbatim draft designator string is a version in itself.
+      if (!isObj(draftData)) draftVersionPresent = true;
       if (isObj(draftData) && draftData["draft_iso_stage"] !== undefined) {
         const stage = extractValue(draftData["draft_iso_stage"]) ?? "";
         // The doubled-D alias ("DFDIS") carries its own draft marker;
@@ -550,9 +553,20 @@ class IeeeBuilder {
           : stage;
       }
       if (isObj(draftData) && draftData["draft_version"] !== undefined) {
+        draftVersionPresent = true;
         const dv = draftData["draft_version"];
         const version = Array.isArray(dv) ? dv.map((v) => extractValue(v) ?? "").join("") : extractValue(dv);
         if (version !== undefined) {
+          // A draft version that IS an ISO stage token ("/DCD1" and
+          // "/CD1" both capture "CD1") takes that stage on a plain IEEE
+          // document (docs/IEEE-DRAFT-STAGES.md §1.3, "DDIS" = DIS); a
+          // joint ISO-led stage-word draft keeps its generic project
+          // stage.
+          const pubs = parsed["publishers"];
+          const copubs = isObj(pubs) ? (pubs as TreeObject)["copublishers"] : undefined;
+          const joint = copubs !== undefined && (Array.isArray(copubs) ? copubs.length > 0 : true);
+          const stageMatch = /^(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)\d*$/.exec(version);
+          if (!joint && stageMatch !== null) return stageMatch[1];
           // relaton's hyphenated "/D-2" spelling captures the dash inside
           // draft_version; the stage registry keys on "D2". A date-embedded
           // version ("3-2017-07") keys on its leading ordinal.
@@ -566,7 +580,7 @@ class IeeeBuilder {
     if (typeValue !== undefined) {
       if (typeValue.startsWith("P")) return "P";
       if (typeValue === "Std") return "Std";
-      if (typeValue === "Draft Std" && parsed["draft"] === undefined && parsed["digit_draft"] === undefined) {
+      if (typeValue === "Draft Std" && !draftVersionPresent && parsed["digit_draft"] === undefined) {
         return "D1";
       }
       if (/^No\.?$/.test(typeValue)) return typeValue;

@@ -59,7 +59,13 @@ export function checkCase(
   for (const alias of testCase.nonNormalizedAliases ?? []) {
     try {
       const aliased = impl.parse(alias.spelling);
-      if (aliased.toHuman() !== testCase.representations.human) {
+      // A multi-round chain walks another render/parse round per
+      // recorded `rounds` until it reaches the canonical human.
+      let human = aliased.toHuman();
+      for (let round = 1; round < (alias.rounds ?? 1); round += 1) {
+        human = impl.parse(human).toHuman();
+      }
+      if (human !== testCase.representations.human) {
         mismatches.push(`${label} alias ${alias.spelling}`);
       }
     } catch {

@@ -304,8 +304,11 @@ export function preprocessNist(input: string): PreprocessorResult {
   // normalize_legacy_corpus_spellings: catalogue forms the grammar and
   // the renderers cannot round-trip on their own. Each rule mirrors an
   // already-parseable spelling of the same document.
-  // The mr renderer prints the translation code with its own leading
-  // dot ("955-S..uppl"); the grammar wants one dot.
+  // The reference's mr translation CODE keeps its own leading dot
+  // (".uppl") and its renderer adds the separator dot, so the canonical
+  // face is "955-S..uppl". The grammar reads the collapsed single-dot
+  // spelling and captures the dot with the code; collapse here so a
+  // double-dot input reads the same way.
   cleaned = cleaned.replace(/\.\./g, ".");
   // Trailing-dot addendum spelling; the canonical render comes from
   // the lowercase ".add" parse ("NBS.TN.467pt1.Add." -> ".add").
