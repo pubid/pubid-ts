@@ -2,5 +2,5 @@
 # bump here per wave, never per workflow (the 0.1.8/0.1.11 stale-pin
 # class: the two workflows drifted and the release ran a different case
 # set than CI).
-testsuite_ref: 9c56093c7d3815f7402045937d62e9da8473c133
+testsuite_ref: 370d22f3cad01334fdb4d7b2e0e6aa203e4ac0ae
 grammar_ref: b8418d982d292e6c6642a0db8196bfb3db33a659

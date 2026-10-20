@@ -1,13 +1,35 @@
 import type { Identifier } from "../conformance/implementation.js";
 import { splitParts, withYear, type UrnParserDef } from "./types.js";
-import type { BaseIdentifier } from "../model/identifier.js";
-import { grammarImplementation } from "../flavors/index.js";
-import { NationalAdoption } from "../flavors/evs/model.js";
 
 // Each parser mirrors lib/pubid/<flavor>/urn_parser.rb#parse_urn exactly —
 // including its lossiness (dropped segments stay dropped) and its error
 // cases. The parity fixture (test/fixtures/urn-parity.json) pins the
 // reference behavior for ~93k corpus URNs.
+
+// The adopted CEN spine consumes its own supplements; their urn segments
+// carry the consolidation marker ("plus" = "+A1", its absence = "/A1") —
+// cen_cenelec/urn_generator.rb's supplement_segments.
+function adoptedSupplement(parts: string[]): string {
+  let faces = "";
+  while (["plus", "slash", "amd", "cor", "frag"].includes(parts[0] ?? "")) {
+    let sep = "/";
+    let kind: string;
+    if (parts[0] === "plus" || parts[0] === "slash") {
+      sep = (parts.shift() as string) === "plus" ? "+" : "/";
+      kind = parts.shift() as string;
+    } else {
+      kind = parts.shift() as string;
+    }
+    const num = /^\d{1,3}$/.test(parts[0] ?? "") ? parts.shift() : undefined;
+    const yr = /^\d{4}$/.test(parts[0] ?? "") ? parts.shift() : undefined;
+    const iter = num ?? "";
+    const year = yr !== undefined ? `:${yr}` : "";
+    if (kind === "amd") faces += `${sep}A${iter}${year}`;
+    else if (kind === "cor") faces += `${sep}AC${iter}${year}`;
+    else faces += ` FRAG${iter}`;
+  }
+  return faces;
+}
 
 export const URN_PARSERS: Record<string, UrnParserDef> = {
   // lib/pubid/ansi/urn_parser.rb
@@ -457,61 +479,99 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/evs/urn_parser.rb — EN [org] number[:year] with an optional
-  // amd/cor iteration tail; the rebuilt text is parsed as a CEN adoption.
+  // lib/pubid/evs/urn_parser.rb — reassemble the identifier's human text
+  // (draft prefix, adopted org, national annex, language, supplements)
+  // and delegate to the EVS grammar, exactly like the reference.
   evs: {
     prefix: "urn:evs:",
     reconstruct(body, parse) {
       const parts = splitParts(body);
-      const type = parts.shift() ?? "";
-      if (type.toLowerCase() !== "en") {
-        throw new Error(`unsupported type in ${JSON.stringify(body)}`);
-      }
+      const draft = parts[0] === "pr";
+      if (draft) parts.shift();
       const orgs: Record<string, string> = {
         iso: "ISO",
         "iso-iec": "ISO/IEC",
         iec: "IEC",
         cispr: "CISPR",
       };
-      const orgParts: string[] = [];
-      while (parts[0] !== undefined && /^[a-z][a-z-]*$/.test(parts[0])) {
-        orgParts.push(parts.shift() as string);
+      const types: Record<string, string> = { ts: "TS", tr: "TR" };
+
+      // The trailing language and the EVS-level national annex peel
+      // before the body dispatch — both are EVS-level, never CEN
+      // segments.
+      let language: string | undefined;
+      const last = parts[parts.length - 1];
+      if (parts.length > 1 && last !== undefined && /^(et-en|et|en)$/.test(last)) {
+        language = parts.pop();
       }
-      let text = "EN";
-      if (orgParts.length) {
-        const org = orgs[orgParts.join("-")];
-        if (org === undefined) throw new Error(`unknown adopted org in ${JSON.stringify(body)}`);
-        text += ` ${org}`;
+      let naPresent = false;
+      let naYear: string | undefined;
+      const naIndex = parts.indexOf("na");
+      if (naIndex >= 0) {
+        parts.splice(naIndex, 1);
+        naPresent = true;
+        if (/^\d{4}$/.test(parts[naIndex] ?? "")) naYear = parts.splice(naIndex, 1)[0];
       }
-      const number = parts.shift();
-      if (number === undefined) throw new Error(`missing number in ${JSON.stringify(body)}`);
-      text += ` ${number}`;
-      const year = parts.shift();
-      if (year) text += `:${year}`;
-      if (parts.length) {
-        const yearTail = parts[parts.length - 1]?.match(/^\d{4}$/) ? (parts.pop() as string) : undefined;
-        const kind = parts.shift();
-        const iteration = parts.shift();
-        if (kind !== "amd" && kind !== "cor") {
-          throw new Error(`malformed supplement in ${JSON.stringify(body)}`);
+
+      const head = parts.shift() ?? "";
+      let text = draft ? "prEVS" : "EVS";
+      if (/^en$/i.test(head)) {
+        text += "-EN";
+        const orgParts: string[] = [];
+        while (parts[0] !== undefined && /^[a-z][a-z-]*$/.test(parts[0] as string)) {
+          orgParts.push(parts.shift() as string);
         }
-        if (iteration === undefined || parts.length) {
-          throw new Error(`malformed supplement in ${JSON.stringify(body)}`);
+        if (orgParts.length) {
+          const org = orgs[orgParts.join("-")];
+          if (org === undefined) throw new Error(`unknown adopted org in ${JSON.stringify(body)}`);
+          text += ` ${org}`;
         }
-        text += kind === "amd" ? `/A${iteration}` : `/AC${iteration}`;
-        if (yearTail) text += `:${yearTail}`;
+        const number = parts.shift();
+        if (number === undefined) throw new Error(`missing number in ${JSON.stringify(body)}`);
+        text += ` ${number}`;
+        const year = parts.shift();
+        if (year !== undefined) text += `:${year}`;
+        text += adoptedSupplement(parts);
+      } else if (head === "ts" || head === "tr") {
+        const number = parts.shift();
+        const year = parts.shift();
+        text += `-${types[head]} ${number}`;
+        if (year !== undefined) text += `:${year}`;
+      } else if (head === "iso" || head === "iec" || head === "cispr") {
+        const org = orgs[head];
+        const number = parts.shift();
+        let part: string | undefined;
+        if (/^\d+$/.test(parts[0] ?? "") && !/^\d{4}$/.test(parts[0] as string) && parts.length > 1) {
+          part = parts.shift();
+        }
+        const year = parts.shift();
+        text += `-${org} ${number}`;
+        if (part !== undefined) text += `-${part}`;
+        if (year !== undefined) text += `:${year}`;
+      } else if (/^\d/.test(head)) {
+        const number = head;
+        const year = parts.shift();
+        text += ` ${number}`;
+        if (year !== undefined) text += `:${year}`;
+      } else {
+        throw new Error(`unsupported shape in ${JSON.stringify(body)}`);
       }
-      // The reference constructs NationalAdoption around a parsed CEN
-      // base (lib/pubid/evs/urn_parser.rb) rather than re-parsing the
-      // rebuilt text as EVS.
-      const cen = grammarImplementation("cen_cenelec")!;
-      const base = cen.parse(text) as unknown as BaseIdentifier;
-      return new NationalAdoption({ base }) as unknown as Identifier;
+
+      if (parts.length) throw new Error(`trailing segments in ${JSON.stringify(body)}`);
+      if (naPresent) {
+        text += "+NA";
+        if (naYear !== undefined) text += `:${naYear}`;
+      }
+      if (language !== undefined) text += ` ${language}`;
+      return parse(text);
     },
   },
 
-  // lib/pubid/nist/urn_parser.rb — type token upcased via the reference
-  // map; ".supp" stripped; ".r<N>" revision suffix split off the payload.
+  // lib/pubid/nist/urn_parser.rb — the generator dot-joins the identity's
+  // fields after the number; reassemble the human spelling the flavor
+  // parser reads (edition/volume glue onto the number, a revision glues
+  // after them, ".supp" marks supplementability, ".supp-<v>" is "sup<v>",
+  // insert/errata glue).
   nist: {
     prefix: "urn:nist:",
     reconstruct(body, parse) {
@@ -525,16 +585,40 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       const typeToken = parts[0] ?? "";
       const payload = parts[1] ?? "";
       const label = typeUpcase[typeToken.toLowerCase()] ?? typeToken.toUpperCase();
-      const stripped = payload.replace(/\.supp$/, "");
-      const revMatch = stripped.match(/^(.*)\.(r\d+)$/i);
-      const code = revMatch ? revMatch[1] : stripped;
-      const revision = revMatch ? revMatch[2] : undefined;
+
+      const tokens = payload.split(".");
+      // Ruby's String#split drops trailing empty fields; JS keeps them, and a
+      // trailing "." would become a stray marker that the flavor rejects.
+      while (tokens.length > 0 && tokens[tokens.length - 1] === "") tokens.pop();
+      const code = tokens.shift() ?? "";
+      let marker = "";
+      let part: string | undefined;
+      let edition: string | undefined;
+      let volume: string | undefined;
+      let revision: string | undefined;
+      let supplement: string | undefined;
+      for (const token of tokens) {
+        const supp = /^supp-(.+)$/is.exec(token);
+        if (/^r\d+$/i.test(token)) revision = token;
+        else if (/^e\w+$/i.test(token)) edition = token;
+        else if (/^v\d+$/i.test(token)) volume = token;
+        else if (supp !== null) supplement = supp[1];
+        else if (token === "supp") continue; // supplementability marker
+        else if (token === "insert" || token === "errata") marker += token;
+        else if (/^[A-Z]$/.test(token)) part = token; // part letter, glued to the code
+        else if (/^[A-Z][a-z]+\d{4}$/.test(token)) {
+          // the edition's additional text ("13e2.June1908")
+          if (edition !== undefined) edition = `${edition}.${token}`;
+        } else marker += `.${token}`;
+      }
+
       // The NBS-era series carry the NBS imprint in their canonical form
       // ("NBS CSM 1") — the rebuild names the publisher the document
       // carries, or the flavor parse rejects its own URN's rebuild.
       const publisher = typeToken.toLowerCase() === "csm" ? "NBS" : "NIST";
-      let text = `${publisher} ${label} ${code}`;
-      if (revision) text += revision;
+      let text = `${publisher} ${label} ${code}${part ?? ""}${marker}`;
+      text += `${edition ?? ""}${volume ?? ""}${revision ?? ""}`;
+      if (supplement !== undefined) text += `sup${supplement}`;
       return parse(text);
     },
   },
