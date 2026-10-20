@@ -1271,9 +1271,16 @@ class IeeeBuilder {
 
     // A stage word with a glued year tail ("/D=CD2-201802") rides the
     // D= designator with the IEEE lead (the reference's builder, the
-    // pubid#203 class) — the tail's capture carries its separator.
-    if (parsed["iso_stage"] !== undefined && parsed["draft_stage_year"] !== undefined) {
-      const stageWord = extractValue(parsed["iso_stage"]) ?? "";
+    // pubid#203 class) — the tail's capture carries its separator. The
+    // date-less form ("/D=CD1") elects the same face only when the input
+    // spells the designator (the reference's original_input gate) — the
+    // stage-first rows keep their ISO rendering.
+    const dEqInput = this.originalInput.includes("/D=");
+    const stageWordForGate = extractValue(parsed["iso_stage"]) ?? "";
+    if (parsed["iso_stage"] !== undefined &&
+        (parsed["draft_stage_year"] !== undefined ||
+         (dEqInput && /\d$/.test(stageWordForGate)))) {
+      const stageWord = stageWordForGate;
       const pubs = (attributes["publishers"] ?? []) as string[];
       if (pubs.length === 0) {
         attributes["publishers"] = ["IEEE"];
