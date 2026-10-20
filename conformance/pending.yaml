@@ -88,14 +88,6 @@ ieee.adopted_standard.8844:
   reason: >-
       the reference raises on the pre-ordinal Cor alias — reference-lossiness
   ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.9064:
-  reason: >-
-      the reference renders the dash-stage alias as its own doubled-slash face — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.9068:
-  reason: >-
-      the reference renders the dash-stage alias as its own doubled-slash face — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
 ieee.standard.9167:
   reason: >-
       the reference renders the (E) alias with the marker, never the bare human — reference-lossiness
