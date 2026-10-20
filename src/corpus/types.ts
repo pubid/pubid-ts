@@ -39,6 +39,10 @@ export interface CorpusCase {
   nonNormalizedAliases?: Spelling[];
   /** Present only on exception (a documented round-trip failure). */
   roundtrip?: boolean;
+  /** The rendered human does not re-parse in the reference (canonical-nil):
+   * no implementation can satisfy parse(human) == identity — exempt like a
+   * quarantine (the corpus documents the raw-parse fact). */
+  render_unreparseable?: boolean;
   expect?: Expectation;
   /** Debt/negative rows carry the raw input instead of representations. */
   input?: string;

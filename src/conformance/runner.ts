@@ -149,7 +149,10 @@ export function runFlavor(
       }
       continue;
     }
-    if (isQuarantined(testCase)) {
+    if (isQuarantined(testCase) || testCase.render_unreparseable === true) {
+      // render_unreparseable: the rendered human does not re-parse in the
+      // reference itself (the exporter's canonical-nil class) — no
+      // implementation can satisfy it; the row documents the raw fact.
       report.quarantined += 1;
       continue;
     }
