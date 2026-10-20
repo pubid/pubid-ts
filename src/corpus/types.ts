@@ -15,6 +15,9 @@ export interface Representations {
 export interface Spelling {
   spelling: string;
   style?: string;
+  /** Render/parse rounds the spelling needs to reach the canonical human;
+   * present only above 1 (a documented multi-round normalization chain). */
+  rounds?: number;
 }
 
 export interface ErrorExpectation {

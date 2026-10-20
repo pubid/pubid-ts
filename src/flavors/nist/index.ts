@@ -1338,6 +1338,15 @@ export function nistGrammarImplementation(): FlavorImplementation {
       const { cleaned, format } = preprocessNist(input);
       const base = cleaned.replace(/\s*\(all parts\)\s*$/, "");
       const tree = toBuilderTree(cachedRuntime(base)) as TreeObject;
+      // The reference's language_code rule captures its separator with
+      // the code (".uppl"); the baked nist artifact labels the code
+      // alone. Restore the reference's slice for a trailing dot-prefixed
+      // code, so the renderer prints the canonical double-dot face
+      // ("NIST.SP.955-S..uppl").
+      const dotted = /\.([a-z]{2,4})$/.exec(base);
+      if (dotted && tree["translation"] === dotted[1]) {
+        tree["translation"] = `.${dotted[1]}`;
+      }
       const marked = base !== cleaned
         ? ({ ...tree, all_parts: true } as unknown as TreeObject)
         : tree;

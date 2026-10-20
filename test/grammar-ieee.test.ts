@@ -26,10 +26,10 @@ test("every ieee corpus case passes through the grammar", () => {
     report.cases + report.pending + report.review + report.quarantined,
     payloads.cases.length - report.errors,
   );
-  // The corpus@79eb209 tail-stage round: 9,392 cases — the word-stage
-  // D= convergence joins the corpus (testsuite#60) and the port
-  // composes the tail word-stage onto the D= designator (the
-  // grammar#39/#40 clone + the gem#543 builder mirror).
+  // The corpus tail-stage round: 9,389 cases after the wave-2c
+  // re-canonicalization (three same-human groups merge) — the word-stage
+  // D= convergence joins the corpus and the port composes the tail
+  // word-stage onto the D= designator.
   assert.ok(report.cases > 8500);
   // The wave ledger: the reference residual plus the render surface
   // this port has not reproduced yet (the glued stage-month draft
@@ -39,10 +39,10 @@ test("every ieee corpus case passes through the grammar", () => {
   // marks unmarked this round; the triage round unmarked 64 more (the
   // draft-stage ordinal ladder strips the embedded date before the
   // registry lookup, mirroring the reference's date-embedded rule).
-  // Track 01 wave 2c rebuilt the ledger from a fresh run against the
-  // re-canonicalized corpus: 5 multi-round reference-lossiness rows
-  // (three Draft-word aliases, two pre-ordinal Cor adoptions).
-  assert.equal(report.pending, 5);
+  // Track 01 wave 2e: the ledger is empty — the Draft-word rows take the
+  // stage-ladder rules and the Cor adoptions walk their recorded
+  // multi-round aliases. Six render-unreparseable rows are quarantined.
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,

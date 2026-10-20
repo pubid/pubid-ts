@@ -22,13 +22,11 @@ test("every nist corpus case passes through the grammar", () => {
   const report = runFlavor("nist", payloads, impl, pending);
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
   assert.equal(report.outcome, "pass");
-  // The corpus@5cce3b8 nist regen carries #498's section/indx/
-  // parenthesised-translation renders, which this port has not
-  // reproduced yet: those rows are pended (the same ledger the
-  // conformance runner gates on) until the nist mirror lands.
+  // Track 01 wave 2e: the last pend (the dot-prefixed translation code)
+  // now mirrors the reference's capture, so the ledger is empty.
   assert.equal(report.cases, payloads.cases.length - report.errors - report.pending);
   assert.ok(report.cases > 19500);
-  assert.equal(report.pending, 1);
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
 });

@@ -62,36 +62,15 @@
 # reference row-by-row — the reference raises on, or re-derives
 # differently from, its own recorded canonical.
 
-# Track 01 wave 2c ledger (2026-10-21): rebuilt from a fresh run against
-# the wave-2c corpus (testsuite PR 68). Every entry is a multi-round
-# reference-lossiness class with a named wave:
-#   - the Draft word on a project-draft alias (3716, 2310, 2092): the
-#     alias renders "IEEE Draft P…" and its own render re-parses to the
-#     bare recorded human one round later (wave 2d).
-#   - the pre-ordinal Cor adoption alias (8840/8842): the alias's parse
-#     attaches the corrigendum, whose render re-parses to the adopted
-#     standard; the alias is two rounds from the recorded human (wave 2e).
-ieee.standard.3716:
-  reason: >-
-      the alias renders "IEEE Draft P754/D1"; its own render re-parses one round later to the bare recorded human — reference-lossiness (multi-round)
-  ref: "track 01 wave 2c corpus (testsuite PR 68)"
-ieee.joint_development.2310:
-  reason: >-
-      the aliases render the Draft word ("IEEE Draft P15288/D=CD1"); the bare human is one re-parse later — reference-lossiness (multi-round)
-  ref: "track 01 wave 2c corpus (testsuite PR 68)"
-ieee.joint_development.2092:
-  reason: >-
-      the aliases render the Draft word ("IEEE Draft P12207/D=CD1"); the bare human is one re-parse later — reference-lossiness (multi-round)
-  ref: "track 01 wave 2c corpus (testsuite PR 68)"
-ieee.adopted_standard.8840:
-  reason: >-
-      the pre-ordinal Cor alias attaches the corrigendum; its render re-parses to the adopted standard — reference-lossiness (multi-round)
-  ref: "track 01 wave 2c corpus (testsuite PR 68)"
-ieee.adopted_standard.8842:
-  reason: >-
-      the pre-ordinal Cor alias attaches the corrigendum; its render re-parses to the adopted standard — reference-lossiness (multi-round)
-  ref: "track 01 wave 2c corpus (testsuite PR 68)"
-nist.special_publication.19805:
-  reason: >-
-      superseded pre-fix record, unreachable in the reference (reference-lossiness)
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+# Track 01 wave 2e (2026-10-21): the ledger is EMPTY.
+# Every former entry is satisfied:
+#   - the Draft-word project-draft aliases (formerly 3716/2310/2092)
+#     parse to the bare project faces after the stage-ladder rules
+#     (wave 2d);
+#   - the pre-ordinal Cor adoption aliases (formerly 8840/8842) carry
+#     `rounds: 2` in the corpus (the reference reaches the human in two
+#     render/parse rounds); the runner walks the recorded rounds;
+#   - the nist dot-prefixed translation code (formerly 19805) mirrors
+#     the reference's capture (".uppl" -> the canonical "..uppl" face).
+# The remaining six ieee rows are `render_unreparseable` quarantines (the
+# reference's own canonical does not re-parse); they are not pends.
