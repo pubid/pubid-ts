@@ -360,7 +360,10 @@ function normalizeJointStageSpellings(input: string): string {
   const num = "(P?\\d+(?:[.-]\\d+)?)";
   const tail = "(,? (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]* \\d{4}|$|-\\d{4}(?:-\\d\\d)?)";
 
-  cleaned = cleaned.replace(/(\d)_D(\d)/g, "$1/D$2");
+  // The "(\d)_D(\d)" underscore rewrite is NOT here: the reference's
+  // Fix 2G/2S are ANCHORED to their publisher shapes and cannot span a
+  // slash ("PC37.60/DP62271-111_D6.1" keeps its underscore) — the
+  // unscoped rule rewrote rows the reference leaves verbatim.
 
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/(D[\\d.]+)/ ?${stage}\\b`), "$1$4 $2/$3");
   cleaned = cleaned.replace(new RegExp(`^${pubs}${num}/ ${stage}${tail}`), "$1$3 $2$4");

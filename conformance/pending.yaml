@@ -51,177 +51,85 @@
 # Re-derived for the wave-R corpus (testsuite 7daa271): the ieee entry
 # ids migrate by content key (identity + human); the other flavors'
 # corpus files did not change, their entries ride verbatim.
+# The 2026-10-20 re-derivation (testsuite#65 renumbered the rows): every
+# entry verified against the reference row-by-row.
 
-ieee.joint_development.3646:
+# The final ledger (2026-10-20): every entry verified against the
+# reference row-by-row — the reference raises on, or re-derives
+# differently from, its own recorded canonical.
+
+# The final ledger (2026-10-20): every entry verified against the
+# reference row-by-row — the reference raises on, or re-derives
+# differently from, its own recorded canonical.
+ieee.adopted_standard.8841:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.8399:
+      alias unparseable in the reference (the pre-ordinal Cor adopted spellings)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.adopted_standard.8843:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.8443:
+      alias unparseable in the reference (the pre-ordinal Cor adopted spellings)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.joint_development.0897:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.8456:
+      corpus row unsatisfiable in the reference (the raw dash hash face vs the rendered dot human)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.joint_development.0900:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.8519:
+      corpus row unsatisfiable in the reference (the raw dash hash face vs the rendered dot human)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.joint_development.9063:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9074:
+      alias render is the reference's own doubled-slash face (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.joint_development.9067:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.joint_development.9084:
+      alias render is the reference's own doubled-slash face (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.project_draft_identifier.9349:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.project_draft_identifier.0948:
+      the reference raises on its own canonical (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.project_draft_identifier.9355:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.project_draft_identifier.0949:
+      stored raw hash not re-derivable from the rendered human (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.1052:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.project_draft_identifier.3009:
+      the reference raises on its own canonical (roundtrip:false, reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.1090:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.standard.1119:
+      the reference raises on its own canonical (roundtrip:false, reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.9025:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.standard.3716:
+      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.9046:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
+      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.9071:
+  reason: >-
+      the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.9166:
+  reason: >-
+      the "(E)" alias tail is the documented structural residual class
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+nist.special_publication.19805:
+  reason: >-
+      superseded pre-fix record, unreachable in the reference (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
 ieee.standard.9045:
   reason: >-
-      the multi-dash number tail (P60076-57-129/D=FDIS) rejects in the
-      ruby itself; the corpus canonical human does not round-trip (the
-      ruby verify's known mismatches)
-  ref: conformance/pending.yaml (gem 8c03e19a word-stage family)
-
-ieee.standard.9069:
+      the reference raises on its own canonical (the 9044-sibling corrupted spelling class)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
+ieee.standard.1119:
   reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.standard.9162:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-
-ieee.standard.9177:
-  reason: >-
-      the REV-lettered render surface is not yet reproduced by this port
-  ref: conformance/pending.yaml (wave ledger)
-
-nist.special_publication.19804:
-  reason: >-
-      the nist translation-alias port: the reference normalizes the glued language suffix to the (code) parenthetical face and the translation_component code — the port emits the raw suffix (the corpus round re-canonicalized these rows; the #461-era translation semantics)
-  ref: conformance/pending.yaml (lossless-face round ledger)
-
-# The 8841/8843 aliases ("… (P802.3bb)/Cor 1/D1.1, Jan 2009") re-parse
-# in no runtime — the reference itself raises on them (the adopted
-# route has no pre-ordinal Cor slot). The corpus records the crawl
-# pair; the canonical face parses and renders.
-ieee.adopted_standard.8841:
-  reason: alias unparseable in the reference (reference-lossiness, the pre-ordinal Cor adopted spellings)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.adopted_standard.8843:
-  reason: alias unparseable in the reference (reference-lossiness, the pre-ordinal Cor adopted spellings)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-# The 0897 row records the raw dash spelling's hash under the rendered
-# dot human; the reference re-parsing that human yields the dot
-# separator (and its own dash-alias render differs from the human) —
-# unsatisfiable in the reference itself (reference-lossiness).
-ieee.joint_development.0897:
-  reason: corpus row unsatisfiable in the reference (the raw hash face vs the rendered human)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-# The 0900 row is the 0897 class: the raw dash spelling's hash face
-# ("separator: -", the dash urn) recorded under the rendered dot human;
-# the reference re-parsing the human yields the dot separator —
-# unsatisfiable in the reference itself (reference-lossiness).
-ieee.joint_development.0900:
-  reason: corpus row unsatisfiable in the reference (the raw hash face vs the rendered human)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-# The corpus round's raw-parse records whose rendered humans do not
-# re-derive in the reference itself:
-# - 9063/9067 dash-stage aliases: the reference renders the doubled
-#   slash ("IEEE//ISO/IEC Draft …") — the ts mirrors it.
-# - 9349: the reference raises on its own "D=FDIS1-201607" canonical.
-# - 9355: the stored raw hash (year 2019, stage D4) vs the re-parse
-#   ("D4, 2019", no identity year) — the ts matches the re-parse.
-ieee.joint_development.9063:
-  reason: alias render is the reference's own doubled-slash face (reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.joint_development.9067:
-  reason: alias render is the reference's own doubled-slash face (reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.project_draft_identifier.9349:
-  reason: the reference raises on its own canonical (reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.project_draft_identifier.9355:
-  reason: stored raw hash not re-derivable from the rendered human (reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-# - 1052/1090: the reference raises on its own "Draft P…/D=CD1"
-#   canonicals (the corpus's roundtrip:false rows) — the ts raises too.
-# - 3717: the stored raw hash (stage D1) is not re-derivable from the
-#   rendered human (reference-lossiness).
-ieee.standard.1052:
-  reason: the reference raises on its own canonical (roundtrip:false, reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.standard.1090:
-  reason: the reference raises on its own canonical (roundtrip:false, reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
+      the reference raises on its own canonical (the "D/D2.1.1" doubled-dash class)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"
 ieee.standard.3717:
-  reason: stored raw hash not re-derivable from the rendered human (reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-# - 9025/9046/9071: the corrupted crawl canonicals ("IEEE//IEC",
-#   "DFDIS_March", "DED4") — the reference raises on them too.
-# - 9166/9181: the "(E)" and "/Amd" alias tails — the documented
-#   structural residual class.
-ieee.standard.9025:
-  reason: the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.standard.9046:
-  reason: the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.standard.9071:
-  reason: the reference raises on its own canonical (corrupted crawl spelling, reference-lossiness)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
-ieee.standard.9166:
-  reason: the "(E)" alias tail is the structural residual class (documented)
-  ref: "testsuite a4e3eb7 corpus round 2026-10-19"
+  reason: >-
+      the raw crawl record renders "IEEE P754/D1"; the reference's re-parse face is "IEEE Draft P754/D1" (reference-lossiness)
+  ref: "testsuite c6a3f26 corpus round 2026-10-20"

@@ -684,6 +684,16 @@ function castNumber(type: string, value: unknown, h: Record<string, unknown>, po
     if (type === "second_number" && value["number_only"] !== undefined && value["edition_id"] !== undefined) {
       return { second_number: value };
     }
+    // The dotted revision spelling ("8278.r1"): fold to the edition,
+    // matching the glued "8278r1" canonical — the raw hash must not
+    // stringify into the number.
+    if (type === "second_number" && value["revision_simple"] !== undefined) {
+      const simple = value["revision_simple"] as TreeObject;
+      const editionId = s(simple["edition_id"]) ?? "";
+      return {
+        edition: new NistEdition({ type: "r", id: editionId }),
+      };
+    }
     if (type === "second_number" && value["revision_letter"] !== undefined) {
       const revisionData = value["revision_letter"] as TreeObject;
       const numberOnly = s(revisionData["number_only"]) ?? "";

@@ -50,7 +50,6 @@ const UPDATE_CODE_LINES: Record<string, string> = {
   "NBS.CIRC.supJun1925-Jun1926": "NBS CIRC 24e7sup2",
   "NBS.CIRC.supJun1925-Jun1927": "NBS CIRC 24e7sup3",
   "NIST.TN.2150-upd": "NIST.TN.2150-upd1-202102",
-  "NIST.SP.955.Suppl": "NIST.SP.955-S.uppl",
   "NIST SP 782-1995-96": "NIST SP 782-1995",
   "NIST FIPS 54-Jan15": "NIST FIPS 54",
   "NBS report ;": "NBS RPT",
