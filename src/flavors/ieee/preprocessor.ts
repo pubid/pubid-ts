@@ -363,6 +363,27 @@ const STAGE_MONTH_NUMBERS: Record<string, string> = {
 function normalizeJointStageSpellings(input: string): string {
   let cleaned = input;
 
+  // The three-way ISO-led list glues the language marker to the year
+  // ("ISO/IEC/IEEE 8802-1AC-2018(E)"): the spaced spelling is the
+  // language marker and drops, the glued one prints as parenthetical
+  // content. Re-spell the boundary (Ruby: Parser.normalize_input).
+  // Scoped to the three-way lists - the two-way IEC/IEEE copublished
+  // form keeps its glued (E) as identity ("…:2012(E)").
+  cleaned = cleaned.replace(
+    /^((?:ISO\/IEC\/IEEE|IEEE\/ISO\/IEC|IEEE\/IEC\/ISO)\s+[^()]+?[^()\s])\(E\)$/,
+    "$1 (E)",
+  );
+
+  // The stage-first joint draft's dash part carries a bare comma year
+  // ("IEC/IEEE FDIS P60780-323, 2015"): the joint route takes no bare
+  // year there and the copublished route claims the string, so drop
+  // the non-identity year and let the stage-first route read the dash
+  // part (the rendered face is the dot human).
+  cleaned = cleaned.replace(
+    /^((?:IEC\/IEEE|IEEE\/IEC)\s+(?:FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)\s+P\d+(?:-\d+)+),\s+\d{4}$/,
+    "$1",
+  );
+
   // The IEEE-led joint list's dash/underscore stage tail carries a
   // month-name date ("IEEE/ISO/IEC P29119-2-DIS, December 2011"): the
   // generic route answers with a slashed copublisher, so re-spell the

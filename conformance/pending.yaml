@@ -62,45 +62,36 @@
 # reference row-by-row — the reference raises on, or re-derives
 # differently from, its own recorded canonical.
 
-# Track 01 wave 1 ledger (2026-10-20): every entry verified against the
-# reference row-by-row.
-ieee.standard.3718:
+# Track 01 wave 2c ledger (2026-10-21): rebuilt from a fresh run against
+# the wave-2c corpus (testsuite PR 68). Every entry is a multi-round
+# reference-lossiness class with a named wave:
+#   - the Draft word on a project-draft alias (3716, 2310, 2092): the
+#     alias renders "IEEE Draft P…" and its own render re-parses to the
+#     bare recorded human one round later (wave 2d).
+#   - the pre-ordinal Cor adoption alias (8840/8842): the alias's parse
+#     attaches the corrigendum, whose render re-parses to the adopted
+#     standard; the alias is two rounds from the recorded human (wave 2e).
+ieee.standard.3716:
   reason: >-
-      the reference's own alias render is "IEEE Draft P754/D1" (the human is the bare face) — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.project_draft_identifier.9356:
+      the alias renders "IEEE Draft P754/D1"; its own render re-parses one round later to the bare recorded human — reference-lossiness (multi-round)
+  ref: "track 01 wave 2c corpus (testsuite PR 68)"
+ieee.joint_development.2310:
   reason: >-
-      the reference renders the (E) alias as "P42010.2019/D4", never the human — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.0902:
+      the aliases render the Draft word ("IEEE Draft P15288/D=CD1"); the bare human is one re-parse later — reference-lossiness (multi-round)
+  ref: "track 01 wave 2c corpus (testsuite PR 68)"
+ieee.joint_development.2092:
   reason: >-
-      the reference renders the dash alias without the year ("P60780-323"), never the dot human — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.0898:
+      the aliases render the Draft word ("IEEE Draft P12207/D=CD1"); the bare human is one re-parse later — reference-lossiness (multi-round)
+  ref: "track 01 wave 2c corpus (testsuite PR 68)"
+ieee.adopted_standard.8840:
   reason: >-
-      the reference renders the dash alias without the year ("P60079-30-1"), never the dot human — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+      the pre-ordinal Cor alias attaches the corrigendum; its render re-parses to the adopted standard — reference-lossiness (multi-round)
+  ref: "track 01 wave 2c corpus (testsuite PR 68)"
 ieee.adopted_standard.8842:
   reason: >-
-      the reference raises on the pre-ordinal Cor alias — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.adopted_standard.8844:
-  reason: >-
-      the reference raises on the pre-ordinal Cor alias — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.standard.9167:
-  reason: >-
-      the reference renders the (E) alias with the marker, never the bare human — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
+      the pre-ordinal Cor alias attaches the corrigendum; its render re-parses to the adopted standard — reference-lossiness (multi-round)
+  ref: "track 01 wave 2c corpus (testsuite PR 68)"
 nist.special_publication.19805:
   reason: >-
       superseded pre-fix record, unreachable in the reference (reference-lossiness)
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.2312:
-  reason: >-
-      the reference renders the aliases with the Draft word ("IEEE Draft P15288/D=CD1"), never the bare human — reference-lossiness
-  ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"
-ieee.joint_development.2094:
-  reason: >-
-      the reference renders the aliases with the Draft word ("IEEE Draft P12207/D=CD1"), never the bare human — reference-lossiness
   ref: "track 01 wave 1 corpus (testsuite a4c9c3d)"

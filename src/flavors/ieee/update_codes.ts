@@ -112,7 +112,7 @@ export const UPDATE_CODES: UpdateCode[] = [
   { plain: "ISO/IEC/IEEE DIS P16326/201x, December 2018", replacement: "ISO/IEC/IEEE DIS P16326-2018-12" },
   { plain: "ISO/IEC/IEEE/P21839, 2019(E)", replacement: "ISO/IEC/IEEE P21839-2019" },
   { plain: "ISO/IEC/IEEE CD2 P12207-2: 201x(E), February 2019", replacement: "ISO/IEC/IEEE CD2 P12207.2-2019-02" },
-  { plain: "ISO/IEC/IEEE P42010.WD4:2019(E)", replacement: "ISO/IEC/IEEE P42010/D-4-2019" },
+  { plain: "ISO/IEC/IEEE P42010.WD4:2019(E)", replacement: "ISO/IEC/IEEE P42010.2019/D4" },
   { plain: "ISO/IEC/IEEE/P16085_DIS, March 2020", replacement: "ISO/IEC/IEEE DIS P16085-2020-03" },
   { plain: "ANSI/IEEE Std: Outdoor Apparatus Bushings", replacement: "ANSI/IEEE Std 21-1976-11" },
   { plain: "Draft National Electrical Safety Code, January 2016", replacement: "IEEE PC2-2016-01" },

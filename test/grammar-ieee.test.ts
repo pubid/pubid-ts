@@ -39,9 +39,10 @@ test("every ieee corpus case passes through the grammar", () => {
   // marks unmarked this round; the triage round unmarked 64 more (the
   // draft-stage ordinal ladder strips the embedded date before the
   // registry lookup, mirroring the reference's date-embedded rule).
-  // Track 01 wave 2b unmarked the two dash-stage alias rows (the
-  // reference now re-spells them as their D= face): 11 -> 9.
-  assert.equal(report.pending, 9);
+  // Track 01 wave 2c rebuilt the ledger from a fresh run against the
+  // re-canonicalized corpus: 5 multi-round reference-lossiness rows
+  // (three Draft-word aliases, two pre-ordinal Cor adoptions).
+  assert.equal(report.pending, 5);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,
@@ -149,6 +150,21 @@ test("ieee joint stage-draft notation (docs/IEEE-DRAFT-STAGES.md)", () => {
   assert.equal(
     impl.parse("IEEE/ISO/IEC P29119-4_FDIS, December 2020").toHuman(),
     "IEEE/ISO/IEC P29119-4/D=FDIS-202012",
+  );
+  // Track 01 wave 2c: the stage-first dash part with a bare comma year
+  // converges on the dot human, and the glued language marker on the
+  // three-way list re-spells to the spaced (dropped) face.
+  assert.equal(
+    impl.parse("IEC/IEEE FDIS P60780-323, 2015").toHuman(),
+    "IEC/IEEE FDIS P60780.323",
+  );
+  assert.equal(
+    impl.parse("ISO/IEC/IEEE 8802-1AC-2018(E)").toHuman(),
+    "ISO/IEC/IEEE 8802-1AC-2018",
+  );
+  assert.equal(
+    impl.parse("ISO/IEC/IEEE P42010.WD4:2019(E)").toHuman(),
+    "ISO/IEC/IEEE P42010/D4, 2019",
   );
 });
 
