@@ -21,6 +21,8 @@ test("oiml URN ingestion mirrors the reference: type token + locator", () => {
 });
 
 test("flavors without a URN parser reject URN input through their grammar", () => {
-  const impl = grammarImplementation("iso")!;
-  assert.throws(() => impl.parse("urn:iso:std:iso:8601:2004"));
+  // iso grew a parseUrn port (track 03); gb has no reference UrnParser to
+  // mirror and its grammar rejects the urn: spelling.
+  const impl = grammarImplementation("gb")!;
+  assert.throws(() => impl.parse("urn:gb:12345-2020"));
 });

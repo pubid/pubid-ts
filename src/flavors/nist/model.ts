@@ -764,7 +764,10 @@ function nistClass(spec: TypeSpec): IdentifierStatic {
 
     renderMr(): string {
       if (spec.style === "fips") {
-        let result = this.seriesCode() ?? "";
+        // The MR form keeps a parsed publisher ("NIST.FIPS.197-upd1" is the
+        // DOI suffix NIST publishes); a bare FIPS invents none.
+        const series = this.seriesCode() ?? "";
+        let result = this.publisher !== undefined ? `${this.publisher}.${series}` : series;
         if (this.number !== undefined) result += `.${this.number}`;
         if (this.part instanceof NistPart) result += `-${this.part.value}`;
         if (this.parts !== undefined && this.parts.length > 0) {
