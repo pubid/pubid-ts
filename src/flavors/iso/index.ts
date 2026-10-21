@@ -385,7 +385,10 @@ const URN_SUPP_TYPES = new Set(["amd", "cor", "sup", "add"]);
 const URN_TYPE_KEYS: Record<string, string> = { r: "rec" };
 
 function urnStageByHarmonized(code: string): IsoTypedStage | undefined {
-  return ISO_TYPED_STAGES.find((s) => s.harmonized?.includes(code));
+  const candidates = ISO_TYPED_STAGES.filter((s) => s.harmonized?.includes(code));
+  // The gem prefers the IS family when a code is shared across families
+  // (pubid#570 — the registry order is load-order dependent there).
+  return candidates.find((s) => s.typeCode === "is") ?? candidates[0];
 }
 
 // When the URN gives a harmonized code and no type token, the document is
