@@ -151,7 +151,7 @@ export abstract class IsoIdentifier extends BaseIdentifier {
 
   /** Render with an EXPLICIT long-format flag (the supplement
    * renderer propagates its own context to the base). */
-  renderWithFormat(formatLong: boolean): string {
+  renderWithFormat(formatLong: boolean, withLanguages = true): string {
     let result = "";
     if (this.typeKey() === "iwa") {
       const stage = this.typedStageState === undefined ? "" : stageAbbr(this.typedStageState.entry, formatLong);
@@ -170,7 +170,7 @@ export abstract class IsoIdentifier extends BaseIdentifier {
     }
     const num = this.numberPortion(true);
     if (num !== "") result += result === "" ? num : ` ${num}`;
-    result += this.languagePortion(this.languageSingle());
+    if (withLanguages) result += this.languagePortion(this.languageSingle());
     if (this.all_parts === true) result += " (all parts)";
     return result;
   }
@@ -181,7 +181,11 @@ export abstract class IsoIdentifier extends BaseIdentifier {
    * amendment renders "AMD" under a "CD Cor" top but "Amd" under a
    * "Cor." top). */
   renderAsSupplementBase(long: boolean): string {
-    return this.renderWithFormat(long);
+    // The reference re-renders a nested base from the four propagated
+    // options alone, and that rebuilt context defaults to
+    // with_language_code :none — only the outermost identifier renders
+    // its own language portion.
+    return this.renderWithFormat(long, false);
   }
 
   private stageStringFor(formatLong: boolean): string {
@@ -644,14 +648,17 @@ export abstract class IsoSupplementIdentifier extends IsoSingleIdentifier {
   declare readonly base: IsoIdentifier | undefined;
 
   render(): string {
-    return this.renderSupplement(this.stageFormatLong());
+    return this.renderSupplement(this.stageFormatLong(), false);
   }
 
   renderAsSupplementBase(long: boolean): string {
-    return this.renderSupplement(long);
+    return this.renderSupplement(long, true);
   }
 
-  private renderSupplement(long: boolean): string {
+  // The reference renders a nested base from a rebuilt context whose
+  // with_language_code defaults to :none, so only the outermost
+  // identifier of a chain renders its language portion.
+  private renderSupplement(long: boolean, asBase: boolean): string {
     const base = this.base;
     const baseStr = base === undefined ? "" : base.renderAsSupplementBase(long);
     const ts = this.typedStageState;
@@ -662,7 +669,7 @@ export abstract class IsoSupplementIdentifier extends IsoSingleIdentifier {
       if (!num.startsWith(":") && !stage.endsWith(".")) result += " ";
       result += num;
     }
-    result += this.languagePortion(this.languageSingle());
+    if (!asBase) result += this.languagePortion(this.languageSingle());
     return result;
   }
 }
