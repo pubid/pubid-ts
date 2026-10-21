@@ -64,19 +64,24 @@ function buildRules(): Record<string, P> {
     rules["base"]!
       .as("base")
       .then(str("/"), str("Cor").as("type_with_stage"))
-      .then(space, digits.as("number"))
+      .then(supplementSeparator(), digits.as("number"))
       .then(datePortion.maybe()),
   );
   rule("amendment_identifier", () =>
     rules["base"]!
       .as("base")
       .then(str("/"), str("Amd").as("type_with_stage"))
-      .then(space, digits.as("number"))
+      .then(supplementSeparator(), digits.as("number"))
       .then(datePortion.maybe()),
   );
   rule("named_number", () =>
     (str("GUM").or(str("VIM").then(str("-").then(digits).maybe()))).as("number"),
   );
+  // "Amd 1" and the dotted "Amd.1:2026" BIPM prints are both accepted on
+  // input; rendering stays "Amd 1" (the gem's jcgm parser, pubid#574).
+  function supplementSeparator(): P {
+    return space.or(str(".").then(space.maybe()));
+  }
   rule("named_guide_identifier", () =>
     rules["publisher"]!.then(space, rules["named_number"]!),
   );
