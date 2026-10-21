@@ -623,6 +623,31 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
+  // lib/pubid/easc/urn_parser.rb — "urn:easc:<series>[:v]:<number>[:<year>]";
+  // the human face renders the Cyrillic series label
+  // ("ПМГ 02-2008", "ПМГ В 31-2001", "РМГ 151-2025").
+  easc: {
+    prefix: "urn:easc:",
+    reconstruct(body, parse) {
+      const parts = body.split(":");
+      const series = parts.shift() ?? "";
+      if (series === "") {
+        throw new Error(`EASC URN missing series: ${JSON.stringify(body)}`);
+      }
+      const label = series.toUpperCase() === "PMG" ? "ПМГ" : "РМГ";
+      let rest = parts;
+      let separator = " ";
+      if (/^v$/i.test(rest[0] ?? "")) {
+        separator = " В ";
+        rest = rest.slice(1);
+      }
+      const number = rest[0] ?? "";
+      let text = `${label}${separator}${number}`;
+      if (rest[1] !== undefined) text += `-${rest[1]}`;
+      return parse(text);
+    },
+  },
+
   // lib/pubid/ieee/urn_parser.rb — "IEEE Std <code>[-<year>]". The fixture
   // pins the reference's own parse failures for narrative/artifact rows.
   ieee: {

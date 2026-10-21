@@ -19,6 +19,7 @@ import {
   publishedStage,
   type TypedStageState,
 } from "./model.js";
+import { ISO_TYPED_STAGES, type IsoTypedStage } from "./stages.generated.js";
 
 /**
  * Port of lib/pubid/iso/{builder,normalizer}.rb. Class dispatch follows
@@ -269,7 +270,14 @@ class IsoBuilder {
     }
 
     const state = typeStateFromToken(s(tree["type_with_stage"]), "is");
-    const typeKey = state?.entry.typeCode ?? "is";
+    // The explicit URN type token pins the class: a stage's abbreviation
+    // can overwrite type_with_stage with an IS-only stage ("WDA" for
+    // 90.93), and the document must stay a TR/TS (the Ruby builder reads
+    // the same document_type hint).
+    const documentType = s(tree["document_type"]);
+    const typeKey = documentType !== undefined
+      ? documentType.toLowerCase()
+      : state?.entry.typeCode ?? "is";
 
     if (typeKey === "dir-sup") return this.buildDirectivesSupplement(tree, state!);
     if (typeKey === "dir") return this.buildDirectives(tree, state ?? { entry: locateStage("DIR")!, originalAbbr: "DIR" });
@@ -358,8 +366,277 @@ function parseHuman(input: string): BaseIdentifier {
   return new IsoBuilder().build(tree);
 }
 
+// --- URN ingestion (lib/pubid/iso/urn_parser.rb) ----------------------------
+
+// RFC 5141-bis typed-stage abbreviations → stage codes. "DIS"/"ADIS" are
+// ISO ladder stages the reference maps; everything else mirrors the gem's
+// TYPED_STAGE_REVERSE_MAP verbatim.
+const URN_STAGE_ABBRS: Record<string, string> = {
+  WD: "wd", WDS: "wds", CD: "cd", CDV: "cdv", DIS: "dis", FDIS: "fdis",
+  PDAM: "pdam", DAM: "dam", FDAM: "fdamd", DCOR: "dcor", FDCOR: "fdcor",
+  CDTS: "cdts", DTS: "dts", FDTS: "fdts",
+};
+const URN_TYPE_TOKENS = new Set([
+  "tr", "ts", "pas", "guide", "dir", "dir-sup", "iwa-sup", "isp", "iwa", "r", "data",
+]);
+const URN_SUPP_TYPES = new Set(["amd", "cor", "sup", "add"]);
+// The URN type tokens are the gem's type keys; the ts leaf for ISO/R is
+// keyed "rec".
+const URN_TYPE_KEYS: Record<string, string> = { r: "rec" };
+
+function urnStageByHarmonized(code: string): IsoTypedStage | undefined {
+  return ISO_TYPED_STAGES.find((s) => s.harmonized?.includes(code));
+}
+
+// When the URN gives a harmonized code and no type token, the document is
+// an IS: prefer the non-published IS stages (PRF over the published IS for
+// 60.00), then the stage covering the most codes (WD over WDS).
+function urnIsStageByHarmonized(code: string): IsoTypedStage | undefined {
+  const candidates = ISO_TYPED_STAGES.filter(
+    (s) => s.typeCode === "is" && s.harmonized?.includes(code),
+  );
+  if (candidates.length === 0) return undefined;
+  const nonPublished = candidates.filter((s) => s.stageCode !== "published");
+  const pool = nonPublished.length > 0 ? nonPublished : candidates;
+  let best = pool[0]!;
+  for (const candidate of pool) {
+    if ((candidate.harmonized?.length ?? 0) > (best.harmonized?.length ?? 0)) best = candidate;
+  }
+  return best;
+}
+
+// The URN carries parts as "10164:-5-1-1" or "9001-1"; split into
+// number / part / subpart (a subpart keeps its dashes).
+function parseUrnNumberPart(
+  raw: string | undefined,
+): [string | undefined, string | undefined, string | undefined] {
+  if (raw === undefined) return [undefined, undefined, undefined];
+  if (/^\w+:-/.test(raw)) {
+    const segments = raw.split(":-");
+    const tail = segments.slice(1).join("-").split("-");
+    return [
+      segments[0],
+      tail[0],
+      tail.length > 1 ? tail.slice(1).join("-") : undefined,
+    ];
+  }
+  if (raw.includes("-")) {
+    const segments = raw.split("-");
+    return [
+      segments[0],
+      segments[1],
+      segments.length > 2 ? segments.slice(2).join("-") : undefined,
+    ];
+  }
+  return [raw, undefined, undefined];
+}
+
+interface UrnSupplement {
+  stage?: string | undefined;
+  type?: string | undefined;
+  number?: string | undefined;
+  year?: string | undefined;
+  languages?: string | undefined;
+}
+
+function parseIsoUrn(urn: string): BaseIdentifier {
+  if (!urn.startsWith("urn:iso:std:")) throw new Error(`Invalid ISO URN: ${urn}`);
+  let parts = urn.slice("urn:iso:std:".length).split(":");
+
+  // A trailing "ser" marks an all-parts identifier.
+  let allParts = false;
+  if (parts[parts.length - 1] === "ser") {
+    parts = parts.slice(0, -1);
+    allParts = true;
+  }
+
+  const publishers = (parts.shift() ?? "").split("-").map((p) => p.toUpperCase());
+
+  let typeCode: string | undefined;
+  if (parts[0] !== undefined && URN_TYPE_TOKENS.has(parts[0].toLowerCase())) {
+    typeCode = parts.shift()!.toLowerCase();
+  }
+
+  let [number, part, subpart] = parseUrnNumberPart(parts.shift());
+
+  let year: string | undefined;
+  if (/^\d{4}$/.test(parts[0] ?? "")) year = parts.shift();
+
+  // URN-style part notation can trail the year (":10164:2019:-22").
+  if ((parts[0] ?? "").startsWith("-")) {
+    const partStr = parts.shift()!;
+    [number, part, subpart] = parseUrnNumberPart(`${number}${partStr}`);
+  }
+  if (year === undefined && /^\d{4}$/.test(parts[0] ?? "")) year = parts.shift();
+
+  let edition: string | undefined;
+  if ((parts[0] ?? "").startsWith("ed-")) edition = parts.shift()!.slice(3);
+
+  let languages: string | undefined;
+  if (
+    parts[0] !== undefined && !/^\d+$/.test(parts[0]) &&
+    !/^(amd|cor|sup|add|v\d+|stage-|ed-)/i.test(parts[0]) &&
+    !(parts[0].toUpperCase() in URN_STAGE_ABBRS) &&
+    !/^[A-Za-z]+\.\d+$/.test(parts[0])
+  ) {
+    languages = parts.shift()!.split(",").map((l) => l.toUpperCase()).join("/");
+  }
+
+  // Stage: either "stage-XX.XX[.vN]" (harmonized) or a typed abbreviation
+  // ("WD", "CD.2").
+  let stageCode: string | undefined;
+  let stageFromAbbr: string | undefined;
+  let stageIteration: string | undefined;
+  if ((parts[0] ?? "").startsWith("stage-")) {
+    const stageStr = parts.shift()!;
+    stageCode = stageStr.slice(6).replace(/\.v\d+$/i, "");
+    const iteration = /\.v(\d+)$/i.exec(stageStr);
+    if (iteration !== null) stageIteration = iteration[1];
+  } else if (
+    (parts[0] !== undefined && parts[0].toUpperCase() in URN_STAGE_ABBRS) ||
+    (parts[0] !== undefined && /^[A-Za-z]+\.\d+$/.test(parts[0]) &&
+      (parts[0].toUpperCase().split(".")[0] ?? "") in URN_STAGE_ABBRS)
+  ) {
+    const stageAbbr = parts[0]!.toUpperCase();
+    // A supplement-family stage directly before its own supplement type
+    // token ("...:FDAM:amd:1:v1") names the SUPPLEMENT's stage: consuming
+    // it as the base's stage builds the base as a base-less supplement,
+    // which cannot render (the gem guards the same way).
+    const family = locateStage(stageAbbr.split(".")[0] ?? "")?.typeCode;
+    const supplementFollows = (family !== undefined &&
+      ["amd", "cor", "suppl", "add"].includes(family)) &&
+      parts.slice(1).some((token) => URN_SUPP_TYPES.has(token.toLowerCase()) &&
+        (URN_TYPE_KEYS[token.toLowerCase()] ?? token.toLowerCase()) === family);
+    if (!supplementFollows) {
+      parts.shift();
+      if (stageAbbr.includes(".")) {
+        const abbrPart = stageAbbr.split(".")[0]!;
+        const iterationPart = stageAbbr.split(".")[1]!;
+        stageCode = URN_STAGE_ABBRS[abbrPart]!;
+        stageFromAbbr = abbrPart;
+        stageIteration = iterationPart;
+      } else {
+        stageCode = URN_STAGE_ABBRS[stageAbbr]!;
+        stageFromAbbr = stageAbbr;
+      }
+    }
+  }
+
+  // Supplements (amd, cor, sup, add), left-to-right: each wraps the previous.
+  const supplements: UrnSupplement[] = [];
+  while (parts.length > 0) {
+    const supp: UrnSupplement = {};
+    if ((parts[0] ?? "").startsWith("stage-")) {
+      supp.stage = parts.shift()!.slice(6).replace(/\.v\d+$/i, "");
+    } else if (parts[0] !== undefined && parts[0].toUpperCase() in URN_STAGE_ABBRS) {
+      supp.stage = URN_STAGE_ABBRS[parts.shift()!.toUpperCase()]!;
+    }
+    if (parts[0] !== undefined && URN_SUPP_TYPES.has(parts[0].toLowerCase())) {
+      supp.type = parts.shift()!.toLowerCase();
+    }
+    if (/^\d+$/.test(parts[0] ?? "")) {
+      if (/^\d{4}$/.test(parts[0]!)) supp.year = parts.shift();
+      else supp.number = parts.shift();
+    }
+    if ((parts[0] ?? "").startsWith("v")) {
+      const version = parts.shift()!.slice(1);
+      supp.number = version.split(".")[0];
+    }
+    if (supp.year === undefined && /^\d{4}$/.test(parts[0] ?? "")) supp.year = parts.shift();
+    if (
+      parts[0] !== undefined && !/^\d+$/.test(parts[0]) &&
+      !/^(amd|cor|sup|add|v\d+|stage-)/i.test(parts[0])
+    ) {
+      supp.languages = parts.shift()!.split(",").map((l) => l.toUpperCase()).join("/");
+    }
+    supplements.push(supp);
+  }
+
+  // Builder tree, mirroring the gem's build_identifier.
+  const base: TreeObject = {};
+  if (publishers[0] !== undefined && publishers[0] !== "") {
+    base["publisher"] = publishers[0];
+    if (publishers.length > 1) {
+      base["copublishers"] = publishers.slice(1).map((c) => ({ copublisher: c }));
+    }
+  }
+  if (part !== undefined || subpart !== undefined) {
+    base["number_with_part"] = [number, part, subpart].filter((p) => p !== undefined).join("-");
+  } else if (number !== undefined) {
+    base["number"] = number;
+  }
+  if (year !== undefined) base["date"] = year;
+  if (edition !== undefined) base["edition"] = edition;
+  if (typeCode !== undefined && typeCode !== "is") {
+    base["type_with_stage"] = typeCode.toUpperCase();
+    // Pin the document class against the stage block below overwriting
+    // type_with_stage (the Ruby builder reads the same hint).
+    base["document_type"] = (URN_TYPE_KEYS[typeCode] ?? typeCode).toUpperCase();
+  }
+
+  if (stageCode !== undefined) {
+    let stage: IsoTypedStage | undefined;
+    if (stageFromAbbr !== undefined) {
+      stage = locateStage(stageFromAbbr) ??
+        ISO_TYPED_STAGES.find((s) => s.stageCode === stageCode);
+    } else if (typeCode === undefined || typeCode === "is") {
+      stage = urnIsStageByHarmonized(stageCode);
+      // FCD is a legacy spelling of the DIS stage in URN form.
+      if (stageCode === "40.00" && stage?.stageCode === "fcd") {
+        stage = ISO_TYPED_STAGES.find(
+          (s) => s.stageCode === "dis" && s.harmonized?.includes("40.00"),
+        ) ?? stage;
+      }
+    }
+    stage ??= urnStageByHarmonized(stageCode);
+    if (stage !== undefined) base["type_with_stage"] = stage.abbr[0] ?? "";
+    else base["stage"] = stageCode;
+    if (stageIteration !== undefined) base["stage_iteration"] = stageIteration;
+  }
+
+  if (languages !== undefined) base["languages"] = languages;
+
+  let tree: TreeObject = base;
+  for (const supp of supplements) {
+    // A bare language token with no supplement identity names the BASE
+    // document (the gem merges it the same way — a wrapper would drop it).
+    if (supp.type === undefined && supp.stage === undefined &&
+        supp.number === undefined && supp.year === undefined &&
+        supp.languages !== undefined) {
+      base["languages"] = supp.languages;
+      continue;
+    }
+    const suppTree: TreeObject = {};
+    if (supp.stage !== undefined) {
+      const stage = ISO_TYPED_STAGES.find((s) => s.stageCode === supp.stage);
+      suppTree["type_with_stage"] = stage !== undefined
+        ? stage.abbr[0] ?? ""
+        : supp.stage.toUpperCase();
+    }
+    if (supp.type !== undefined && suppTree["type_with_stage"] === undefined) {
+      suppTree["type_with_stage"] = supp.type.toUpperCase();
+    }
+    if (supp.number !== undefined) suppTree["number"] = supp.number;
+    if (supp.year !== undefined) suppTree["date"] = supp.year;
+    if (supp.languages !== undefined) suppTree["languages"] = supp.languages;
+    tree = { base: tree, ...suppTree };
+  }
+  const identifier = new IsoBuilder().build(tree);
+  if (allParts) {
+    (identifier as unknown as { all_parts: boolean }).all_parts = true;
+  }
+  return identifier;
+}
+
 export function isoGrammarImplementation(): FlavorImplementation {
   return {
+    // Inverse of the ISO UrnGenerator (lib/pubid/iso/urn_parser.rb): the
+    // reference rebuilds a builder hash straight from the positional URN
+    // fields, so the port does the same against the shared IsoBuilder.
+    parseUrn(urn: string): Identifier {
+      return parseIsoUrn(urn) as unknown as Identifier;
+    },
+
     parse(input: string): Identifier {
       return parseHuman(input) as unknown as Identifier;
     },
