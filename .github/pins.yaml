@@ -3,4 +3,4 @@
 # class: the two workflows drifted and the release ran a different case
 # set than CI).
 testsuite_ref: 524a12134b3e2a9408727f6a48f7876c6f618378
-grammar_ref: f63d097fc1a30432300a4e90e6a669bae626b803
+grammar_ref: 65926d6619354359efe19c9e6b7928e19c0bfee1
