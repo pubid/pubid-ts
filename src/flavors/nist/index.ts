@@ -340,14 +340,6 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
       const v = s(value);
       return v === undefined ? undefined : { volume: new NistVolume({ value: v }) };
     }
-    case "n_letter_part": {
-      // Part type "n" with a letter value — "NCSTAR 1nA" (pubid#555).
-      const v = s(value);
-      return v === undefined
-        ? undefined
-        : { part: new NistPart({ type: "n", value: v.slice(1).toUpperCase() }) };
-    }
-
     case "issue_number": {
       const v = s(value);
       return v === undefined ? undefined : { part: new NistPart({ type: "n", value: v }) };
@@ -357,9 +349,15 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
 
     case "letter_number": {
       if (!isObj(value)) return undefined;
+      // The n+UPPER annex suffix (pubid#585) consumes the n uncaptured:
+      // the aligned tree carries letter_suffix_extra as the bare letter,
+      // which the caster unwraps into the n-notation Part (renders "nA").
+      const nExtra = s(value["letter_suffix_extra"]);
+      if (nExtra !== undefined) {
+        return { part: new NistPart({ type: "n", value: nExtra.toUpperCase() }) };
+      }
       const suffix = s(value["letter_suffix"]) ?? "";
-      const extra = s(value["letter_suffix_extra"]) ?? "";
-      const full = extra === "" ? suffix : `${suffix}${extra}`;
+      const full = suffix;
       if (full === "") return undefined;
       // IR keeps R/Ur for the compound handler; NCSTAR/MONO keep any
       // letter in the number (Ruby Series class dispatch).
@@ -469,6 +467,10 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
     case "appendix":
     case "errata":
     case "index":
+      // The component's value is the long form either way (pubid#584):
+      // both spellings parse, the render prints the abbreviated indx.
+      if (s(value) === "indx") return "index";
+      return s(value);
     case "insert":
       return s(value);
 
