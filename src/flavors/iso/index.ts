@@ -179,6 +179,13 @@ class IsoBuilder {
       throw new ParseFailed("ISO: joint IDF identifiers are not ported", 0);
     }
     if (tree["supplements"] !== undefined) return this.buildBundled(tree);
+    // Bare TC reference (pubid-iso#285): tc_type is absent by
+    // construction; sc_type is the route's required segment and cannot
+    // appear on a standard identifier. Canonicalizes the publisher to ISO.
+    if (tree["tc_type"] === undefined && tree["sc_type"] !== undefined && tree["tc_number"] !== undefined) {
+      tree["tc_type"] = "TC";
+      return this.buildTc(tree);
+    }
     if (tree["tc_type"] !== undefined) return this.buildTc(tree);
     return this.buildStandard(tree);
   }
