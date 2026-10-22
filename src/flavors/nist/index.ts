@@ -340,6 +340,14 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
       const v = s(value);
       return v === undefined ? undefined : { volume: new NistVolume({ value: v }) };
     }
+    case "n_letter_part": {
+      // Part type "n" with a letter value — "NCSTAR 1nA" (pubid#555).
+      const v = s(value);
+      return v === undefined
+        ? undefined
+        : { part: new NistPart({ type: "n", value: v.slice(1).toUpperCase() }) };
+    }
+
     case "issue_number": {
       const v = s(value);
       return v === undefined ? undefined : { part: new NistPart({ type: "n", value: v }) };

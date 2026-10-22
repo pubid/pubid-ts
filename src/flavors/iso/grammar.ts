@@ -224,6 +224,21 @@ function buildRules(): Record<string, P> {
   rule("tc_type", () => literalAlternation(TC_TYPES).as("tc_type"));
   rule("sc_type", () => str("SC/QC").or(str("SC")).as("sc_type"));
   rule("wg_type", () => literalAlternation(WG_TYPES).as("wg_type"));
+  // Bare TC reference (pubid-iso#285): "184/SC 4/WG 12 N10291" — the
+  // ISO/TC route without the ORIGINATOR prefix; the SC segment is
+  // required so bare numbers cannot leak into the route.
+  rule("bare_tc_document", () =>
+    digits.as("tc_number")
+      .then(str("/"), rules["sc_type"]!, space, digits.as("sc_number"))
+      .then(
+        str("/"),
+        rules["wg_type"]!,
+        space,
+        digits.as("wg_number"),
+      ).maybe()
+      .then(space, str("N"), space.maybe(), digits.as("number"))
+      .then(str(":"), yearDigits.as("year")).maybe(),
+  );
   rule("tc_subcommittee_part", () =>
     str("/")
       .then(
@@ -434,7 +449,8 @@ function buildRules(): Record<string, P> {
   );
 
   rule("identifier", () =>
-    rules["nsb_iso_identifier"]!.or(
+    rules["bare_tc_document"]!.or(
+      rules["nsb_iso_identifier"]!,
       rules["tc_document"]!,
       rules["directives_identifiers"]!,
       rules["jcgm_identifier"]!,

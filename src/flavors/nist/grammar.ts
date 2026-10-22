@@ -106,6 +106,10 @@ function buildRules(): Record<string, P> {
           .absent()
           .then(
             letter,
+            // An uppercase letter following the suffix letter is the part
+            // type "n" + letter form ("1nA", pubid#555) — the suffix must
+            // stop so the parts rule can take the whole token.
+            upperLetter.absent(),
             literalAlternation([
               "ec", "ndex", "ndx", "nsert", "rrata", "raft", "pp", "s", "t",
               "hi", "iet", "ort", "r", "p",
@@ -592,6 +596,8 @@ function buildRules(): Record<string, P> {
 
   rule("parts", () =>
     rules["new_stage"]!.or(
+      // Part type "n" with a letter value — "NCSTAR 1nA" (pubid#555).
+      str("n").then(upperLetter).as("n_letter_part"),
       rules["section"]!,
       rules["index"]!,
       rules["insert"]!,
