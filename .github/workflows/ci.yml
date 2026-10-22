@@ -64,6 +64,15 @@ jobs:
             echo "::error::vendor/parg is stale against grammar_ref — run npm run artifact"
             exit 1
           }
+      # pubid#577: the committed API reference is generated — a hand edit
+      # or a docstring change without a regen fails here.
+      - name: API reference drift gate
+        run: |
+          node scripts/api-reference.mjs
+          git diff --exit-code docs/api-reference.md || {
+            echo "::error::docs/api-reference.md is stale — run npm run doc:api"
+            exit 1
+          }
       - run: node --test --test-shard=${{ matrix.shard }}/4 dist-test/test/*.test.js
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
