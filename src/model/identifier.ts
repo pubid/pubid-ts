@@ -139,6 +139,11 @@ export abstract class BaseIdentifier {
     return this.constructor.fromHash(hash);
   }
 
+  /** SubsetMatch: an all-parts reference skips the part attributes. */
+  subsetAllPartsWildcard(): boolean {
+    return Boolean((this as unknown as Record<string, unknown>)["all_parts"]);
+  }
+
   protected classAttributes(): AttributeTable {
     return this.constructor.attributes;
   }
