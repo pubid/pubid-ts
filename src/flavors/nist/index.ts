@@ -347,17 +347,18 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
     case "part_number":
       return s(value);
 
+    case "n_letter_part": {
+      // Part type "n" with a letter value (pubid#555): the "1nA" /
+      // "1-1nA" annex tokens capture whole, the caster strips the n.
+      const v = s(value);
+      if (v === undefined) return undefined;
+      return { part: new NistPart({ type: "n", value: v.replace(/^n/, "").toUpperCase() }) };
+    }
     case "letter_number": {
       if (!isObj(value)) return undefined;
-      // The n+UPPER annex suffix (pubid#585) consumes the n uncaptured:
-      // the aligned tree carries letter_suffix_extra as the bare letter,
-      // which the caster unwraps into the n-notation Part (renders "nA").
-      const nExtra = s(value["letter_suffix_extra"]);
-      if (nExtra !== undefined) {
-        return { part: new NistPart({ type: "n", value: nExtra.toUpperCase() }) };
-      }
       const suffix = s(value["letter_suffix"]) ?? "";
-      const full = suffix;
+      const extra = s(value["letter_suffix_extra"]) ?? "";
+      const full = extra === "" ? suffix : `${suffix}${extra}`;
       if (full === "") return undefined;
       // IR keeps R/Ur for the compound handler; NCSTAR/MONO keep any
       // letter in the number (Ruby Series class dispatch).

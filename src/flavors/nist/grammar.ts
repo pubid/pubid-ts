@@ -99,10 +99,6 @@ function buildRules(): Record<string, P> {
     str("U")
       .then(lowerLetter)
       .or(
-        // The n+UPPERCASE annex suffix (e.g., 1nA, 85nB — pubid#585):
-        // consumed as a plain suffix before the general letter branch,
-        // which would strand the capital letter.
-        str("n").then(upperLetter),
         // An "r" directly followed by a digit is the revision marker
         // (pubid#170), not a suffix — leave it for the edition rules.
         str("r")
@@ -110,10 +106,6 @@ function buildRules(): Record<string, P> {
           .absent()
           .then(
             letter,
-            // An uppercase letter following the suffix letter is the part
-            // type "n" + letter form ("1nA", pubid#555) — the suffix must
-            // stop so the parts rule can take the whole token.
-            upperLetter.absent(),
             literalAlternation([
               "ec", "ndex", "ndx", "nsert", "rrata", "raft", "pp", "s", "t",
               "hi", "iet", "ort", "r", "p",
@@ -371,10 +363,7 @@ function buildRules(): Record<string, P> {
           dash
             .then(
               digits.as("letter_base"),
-              (str("U").then(lowerLetter.as("letter_suffix_extra")))
-                .or(str("n").then(upperLetter.as("letter_suffix_extra")))
-                .or(upperLetter)
-                .as("letter_suffix"),
+              (str("U").then(lowerLetter.as("letter_suffix_extra"))).or(upperLetter).as("letter_suffix"),
             )
             .as("letter_number"),
           // Dash-separated letter: -4-B
