@@ -39,6 +39,32 @@ if (existsSync(path.join(FIXTURE_DIR, "index-v2.yaml"))) {
     }
   ).cases;
 
+  // Ruby family(): rows whose identifier's ROOT matches the reference's —
+  // walk the wrapper (base) chain to the base document, then compare the
+  // root's type and number.
+  function rootKey(id: BaseIdentifier): string {
+    const attrs = (x: BaseIdentifier) => x as unknown as Record<string, unknown>;
+    let cur = attrs(id);
+    while (cur["base"] instanceof BaseIdentifier) {
+      cur = attrs(cur["base"] as BaseIdentifier);
+    }
+    const ctor = cur["constructor"] as unknown as { polymorphicName: string };
+    return `${ctor.polymorphicName}:${String(cur["number"])}`;
+  }
+
+  for (const c of cases.filter((x) => x.family)) {
+    test(`retrieval fixture (family): ${c.name}`, () => {
+      const impl = c.query.startsWith("IEC") ? iec : iso;
+      const ref = BaseIdentifier.fromHash(impl.parse(c.query).toHash());
+      const key = rootKey(ref);
+      const matched = rows
+        .filter((r) => rootKey(r.obj) === key)
+        .map((r) => r.file)
+        .sort();
+      assert.deepEqual(matched, [...c.expect].sort());
+    });
+  }
+
   for (const c of cases.filter((x) => !x.family)) {
     test(`retrieval fixture: ${c.name}`, () => {
       const impl = c.query.startsWith("IEC") ? iec : iso;
