@@ -495,13 +495,9 @@ class IsoUrnGenerator extends BaseUrnGenerator<IsoIdentifier> {
     if (ts === undefined) return undefined;
     const stageCode = ts.entry.stageCode;
     if (stageCode === "published") return undefined;
-    const typeKey = id.typeKey();
-    const combinedKey = typeKey !== "is" ? `${stageCode}${typeKey}` : stageCode;
-    const stageAbbrUrn = TYPED_STAGE_MAP[combinedKey] ?? TYPED_STAGE_MAP[stageCode];
-    if (stageAbbrUrn !== undefined) {
-      if (id.stage_iteration !== undefined) return `${stageAbbrUrn}.${id.stage_iteration.render() ?? ""}`;
-      return stageAbbrUrn;
-    }
+    // RFC 5141 carries the stage as the harmonized code only; the typed
+    // abbreviations live in the human face. Legacy abbreviation URNs are
+    // accepted on ingestion and re-canonicalized here.
     const harmonized = ts.entry.harmonized;
     if (harmonized === undefined || harmonized.length === 0) return undefined;
     const first = harmonized[0]!;
@@ -573,14 +569,13 @@ class IsoUrnGenerator extends BaseUrnGenerator<IsoIdentifier> {
       if (stageComp !== undefined) parts.push(stageComp);
       parts.push(supp.typeKey() === "suppl" || supp.typeKey() === "add" ? "sup" : supp.typeKey());
       const iter = supp.typeKey() === "suppl" || supp.stage_iteration === undefined ? undefined : supp.stage_iteration.render();
+      // RFC 5141 supplement slots in order: number, year (the bis
+      // additive extension), then the published version.
+      if (supp.number !== undefined) parts.push(supp.number);
       const d = urnDate(supp);
-      if (d !== undefined) {
-        parts.push(d);
-        if (supp.number !== undefined) parts.push(iter !== undefined ? `v${supp.number}.${iter}` : `v${supp.number}`);
-      } else {
-        if (supp.number !== undefined) parts.push(supp.number);
-        parts.push(iter !== undefined ? `v1.${iter}` : "v1");
-      }
+      if (d !== undefined) parts.push(d);
+      const version = (supp as unknown as { supplement_version?: unknown }).supplement_version ?? 1;
+      parts.push(iter !== undefined ? `v${version}.${iter}` : `v${version}`);
       if (supp.languages !== undefined && supp.languages.length > 0) {
         parts.push(supp.languages.map((l) => l.code).join(","));
       }
@@ -637,11 +632,15 @@ const SUPPLEMENT_MAPPINGS = keyValue(
   ...supplementPublisherMappings(),
   stageMapping(),
   { wire: "base", to: "base" },
+  // omitted when unset, so parsed human faces keep their hashes
+  { wire: "supplement_version", to: "supplement_version" },
 );
 
 export abstract class IsoSupplementIdentifier extends IsoSingleIdentifier {
   static attributes = extendAttributes(IsoSingleIdentifier, {
     base: { type: IsoIdentifier as unknown as IdentifierStatic },
+    // The RFC 5141 <supplversion> (corrected version of the supplement).
+    supplement_version: { type: "string" },
   });
   static mappings = SUPPLEMENT_MAPPINGS;
 
