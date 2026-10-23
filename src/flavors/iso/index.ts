@@ -445,6 +445,7 @@ interface UrnSupplement {
   stage?: string | undefined;
   type?: string | undefined;
   number?: string | undefined;
+  version?: string | undefined;
   year?: string | undefined;
   languages?: string | undefined;
 }
@@ -548,11 +549,22 @@ function parseIsoUrn(urn: string): BaseIdentifier {
       if (/^\d{4}$/.test(parts[0]!)) supp.year = parts.shift();
       else supp.number = parts.shift();
     }
-    if ((parts[0] ?? "").startsWith("v")) {
-      const version = parts.shift()!.slice(1);
-      supp.number = version.split(".")[0];
-    }
+    // The legacy year-overloaded wire ("amd:2007:v2" -- the number rode
+    // the version slot): a v-token with no preceding number carries the
+    // NUMBER. The RFC 5141-bis order ("amd:1:2007:v2") keeps the number
+    // in its own slot, so a v-token after a number is the true
+    // <supplversion>.
+    const consumeV = () => {
+      if ((parts[0] ?? "").startsWith("v")) {
+        const value = parts.shift()!.slice(1).split(".")[0]!;
+        if (supp.number === undefined) supp.number = value;
+        else supp.version = value;
+      }
+    };
+    consumeV();
     if (supp.year === undefined && /^\d{4}$/.test(parts[0] ?? "")) supp.year = parts.shift();
+    // a v-token after the year would otherwise start a type-less wrap
+    consumeV();
     if (
       parts[0] !== undefined && !/^\d+$/.test(parts[0]) &&
       !/^(amd|cor|sup|add|v\d+|stage-)/i.test(parts[0])
@@ -618,16 +630,23 @@ function parseIsoUrn(urn: string): BaseIdentifier {
     }
     const suppTree: TreeObject = {};
     if (supp.stage !== undefined) {
-      const stage = ISO_TYPED_STAGES.find((s) => s.stageCode === supp.stage);
+      // A harmonized code resolves within the supplement's own type
+      // family -- the IS-family default would turn a staged Corrigendum
+      // into a plain IS (mirrors the gem's build_identifier).
+      const stage = /^\d\d\.\d\d$/.test(supp.stage)
+        ? ISO_TYPED_STAGES.find((st) => st.harmonized?.includes(supp.stage!) && st.typeKey === supp.type) ??
+          ISO_TYPED_STAGES.find((st) => st.harmonized?.includes(supp.stage!) && st.typeKey === "is")
+        : ISO_TYPED_STAGES.find((st) => st.stageCode === supp.stage);
       suppTree["type_with_stage"] = stage !== undefined
         ? stage.abbr[0] ?? ""
-        : supp.stage.toUpperCase();
+        : supp.type?.toUpperCase() ?? supp.stage.toUpperCase();
     }
     if (supp.type !== undefined && suppTree["type_with_stage"] === undefined) {
       suppTree["type_with_stage"] = supp.type.toUpperCase();
     }
     if (supp.number !== undefined) suppTree["number"] = supp.number;
     if (supp.year !== undefined) suppTree["date"] = supp.year;
+    if (supp.version !== undefined) suppTree["supplement_version"] = supp.version;
     if (supp.languages !== undefined) suppTree["languages"] = supp.languages;
     tree = { base: tree, ...suppTree };
   }
