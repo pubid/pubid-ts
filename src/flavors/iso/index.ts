@@ -468,6 +468,11 @@ function parseIsoUrn(urn: string): BaseIdentifier {
     typeCode = parts.shift()!.toLowerCase();
   }
 
+  // RFC 5141 requires docnumber -- "urn:iso:std:iso" is not a valid
+  // NSS, and building it silently produced the identity-free "ISO "
+  // (mirrors lib/pubid/iso/urn_parser.rb)
+  if (parts.length === 0) throw new Error(`missing docnumber: ${urn}`);
+
   let [number, part, subpart] = parseUrnNumberPart(parts.shift());
 
   let year: string | undefined;
@@ -642,7 +647,11 @@ function parseIsoUrn(urn: string): BaseIdentifier {
         : supp.type?.toUpperCase() ?? supp.stage.toUpperCase();
     }
     if (supp.type !== undefined && suppTree["type_with_stage"] === undefined) {
-      suppTree["type_with_stage"] = supp.type.toUpperCase();
+      // "sup" is the generic Supplement (type key "suppl") -- the raw
+      // "SUP" resolves the Directives Supplement row, whose render needs
+      // the supplement_publisher a guide chain never has
+      const typeToken = supp.type === "sup" ? "SUPPL" : supp.type.toUpperCase();
+      suppTree["type_with_stage"] = typeToken;
     }
     if (supp.number !== undefined) suppTree["number"] = supp.number;
     if (supp.year !== undefined) suppTree["date"] = supp.year;
