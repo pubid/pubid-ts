@@ -1,6 +1,2 @@
-# The shared cross-repo pins. ONE source for ci.yml and release.yml —
-# bump here per wave, never per workflow (the 0.1.8/0.1.11 stale-pin
-# class: the two workflows drifted and the release ran a different case
-# set than CI).
 testsuite_ref: 524a12134b3e2a9408727f6a48f7876c6f618378
-grammar_ref: 65926d6619354359efe19c9e6b7928e19c0bfee1
+grammar_ref: 49c440b7d7151508680bf12bef35f6ee88a1b518
