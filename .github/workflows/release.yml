@@ -65,7 +65,14 @@ jobs:
             echo "::error::vendor/parg is stale against grammar_ref — run npm run artifact"
             exit 1
           }
-      - run: npm test
+      # The full suite unsharded hung the release runner twice
+      # (>50 min in npm test with no output; the same commit passes
+      # sharded in ci.yml in ~4 min per shard) - run the four proven
+      # shards sequentially in this job instead.
+      - run: |
+          for s in 1 2 3 4; do
+            node --test --test-shard=$s/4 dist-test/test/*.test.js
+          done
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
           PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
