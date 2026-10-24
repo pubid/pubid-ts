@@ -7,6 +7,7 @@ import { BaseIdentifier } from "../src/model/identifier.js";
 import { subsetMatch } from "../src/model/subset-match.js";
 import { isoGrammarImplementation } from "../src/flavors/iso/index.js";
 import { iecGrammarImplementation } from "../src/flavors/iec/index.js";
+import { ecmaGrammarImplementation } from "../src/flavors/ecma/index.js";
 
 // The TS executor for relaton's shared retrieval conformance pack
 // (relaton/conformance/retrieval/): the same index rows and expectations the
@@ -20,6 +21,14 @@ const FIXTURE_DIR =
 
 const iso = isoGrammarImplementation();
 const iec = iecGrammarImplementation();
+const ecma = ecmaGrammarImplementation();
+
+// Cases beyond the ISO/IEC heuristic name their flavor in the pack
+// (the fixture's "flavor:" key); untagged cases keep the prefix default.
+function implFor(c: { query: string; flavor?: string }) {
+  const named = c.flavor === "ecma" ? ecma : c.flavor === "iec" ? iec : c.flavor === "iso" ? iso : undefined;
+  return named ?? (c.query.startsWith("IEC") ? iec : iso);
+}
 
 if (existsSync(path.join(FIXTURE_DIR, "index-v2.yaml"))) {
   // The published fixture uses Psych symbol keys (":id"/":file").
@@ -54,7 +63,7 @@ if (existsSync(path.join(FIXTURE_DIR, "index-v2.yaml"))) {
 
   for (const c of cases.filter((x) => x.family)) {
     test(`retrieval fixture (family): ${c.name}`, () => {
-      const impl = c.query.startsWith("IEC") ? iec : iso;
+      const impl = implFor(c);
       const ref = BaseIdentifier.fromHash(impl.parse(c.query).toHash());
       const key = rootKey(ref);
       const matched = rows
@@ -67,7 +76,7 @@ if (existsSync(path.join(FIXTURE_DIR, "index-v2.yaml"))) {
 
   for (const c of cases.filter((x) => !x.family)) {
     test(`retrieval fixture: ${c.name}`, () => {
-      const impl = c.query.startsWith("IEC") ? iec : iso;
+      const impl = implFor(c);
       // Canonicalize the query into the model layer through its own hash.
       const ref = BaseIdentifier.fromHash(impl.parse(c.query).toHash());
       const matched = rows

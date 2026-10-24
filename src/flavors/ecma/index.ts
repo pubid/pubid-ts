@@ -67,6 +67,9 @@ function ecmaClass(kind: EcmaKind): IdentifierStatic {
   const prefix = KIND_PREFIXES[kind];
   class EcmaKindIdentifier extends BaseIdentifier {
     static polymorphicName = `pubid:ecma:${kind}`;
+    // Ruby Pubid::Ecma declares subset_strict :part: a part-less ECMA
+    // reference means "this document has none", not "any part".
+    static subsetStrict = ["part"];
     static attributes = extendAttributes(BaseIdentifier, {
       number: { type: "string" },
       part: { type: "string" },
