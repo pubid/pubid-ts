@@ -71,6 +71,9 @@ let corpusOk = 0;
 let corpusDiff = 0;
 let corpusThrew = 0;
 let corpusBadReject = 0;
+let boundOk = 0;
+let boundDiff = 0;
+let boundThrew = 0;
 
 if (existsSync(corporaDir)) {
   for (const flavor of readdirSync(corporaDir).sort()) {
@@ -125,6 +128,35 @@ if (existsSync(corporaDir)) {
             `    got  ${brief(got)}`,
         );
       }
+
+      // ruby#308 B2 parity clause: the BOUND tree too. The corpus
+      // records what Ruby's binding application produced (casts
+      // included); the wasm engine must produce the same attribute
+      // hash or the five-runtime bound-tree agreement is prose.
+      const expectedBound = testCase.bound;
+      if (expectedBound && Object.keys(expectedBound).length > 0) {
+        let bound;
+        try {
+          bound = runtime.parseAndBind(input);
+        } catch (error) {
+          boundThrew += 1;
+          rows.push(
+            `${flavor}#${index}: wasm parseAndBind THREW on ${JSON.stringify(input)}: ` +
+              `${(error instanceof Error ? error.message : String(error)).slice(0, 120)}`,
+          );
+          continue;
+        }
+        if (same(bound, expectedBound)) {
+          boundOk += 1;
+        } else {
+          boundDiff += 1;
+          rows.push(
+            `${flavor}#${index}: wasm bound tree DIFFERS on ${JSON.stringify(input)}\n` +
+              `    want ${brief(expectedBound)}\n` +
+              `    got  ${brief(bound)}`,
+          );
+        }
+      }
     }
   }
 }
@@ -136,7 +168,8 @@ if (rows.length > 0) {
 console.log(
   `freshness: ${fresh} fresh, ${stale} stale, ${unverifiable} unverifiable; ` +
     `corpus: ${corpusOk} agree, ${corpusDiff} differ, ${corpusThrew} threw, ` +
-    `${corpusBadReject} reject-accepted`,
+    `${corpusBadReject} reject-accepted; ` +
+    `bound: ${boundOk} agree, ${boundDiff} differ, ${boundThrew} threw`,
 );
 if (rows.length > 0) {
   console.error("cross-engine parity: RED");
