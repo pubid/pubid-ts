@@ -1221,8 +1221,15 @@ class IeeeBuilder {
     // the P and keep the joint spelling.
     const numericDraft = parsed["draft_version"] !== undefined &&
       /^\d/.test(extractValue(parsed["draft_version"]) ?? "");
+    // P + a /D designator (any draft capture) is a DRAFT, never a
+    // printed Std (the owner's 2026-10-24 ruling) -- the joint/
+    // project-draft family owns the row; the non-P rows keep the
+    // printed-strip doctrine (the normalization ledger).
+    const pWithDraft = parsed["project_marker"] !== undefined &&
+      (parsed["draft_version"] !== undefined || parsed["draft_iso_stage"] !== undefined ||
+       parsed["draft_month"] !== undefined || parsed["draft_year"] !== undefined);
     if (
-      parsed["iso_published"] !== undefined &&
+      parsed["iso_published"] !== undefined && !pWithDraft &&
       (parsed["printed_dash_year"] !== undefined || parsed["printed_month_year"] !== undefined ||
         (numericDraft && parsed["draft_month"] !== undefined) ||
         (parsed["year"] === undefined && parsed["parameters"] !== undefined &&
@@ -1238,6 +1245,10 @@ class IeeeBuilder {
       if (partVal !== undefined) {
         printedCode += /^[._-]/.test(partVal) ? partVal : `${sep}${partVal}`;
       }
+      // the subpart carries its separator too (C1 separator-in-capture);
+      // the two-party rows split "-57-1202"-class parts into both
+      const subVal = parsed["subpart"] !== undefined ? extractValue(parsed["subpart"]) : undefined;
+      if (subVal !== undefined && subVal !== "") printedCode += subVal;
       // P = project: the marker is identity, preserved as spelled.
       if (parsed["project_marker"] !== undefined) printedCode = `P${printedCode}`;
       const printedAttrs: Record<string, unknown> = {
@@ -1258,9 +1269,11 @@ class IeeeBuilder {
         printedAttrs["year"] = attributes["year"];
         printedAttrs["month"] = attributes["month"];
       } else if (parsed["draft_month"] !== undefined) {
-        // The date trails the draft itself; keep it inside the draft so
-        // the code stays date-less.
-        printedDraft = `${printedDraft}, ${extractValue(parsed["draft_month"])} ${extractValue(parsed["draft_year"])}`;
+        // The date trails the draft itself ("D31, Aug 2010"): the
+        // normalization ledger strips the ordinal draft on the printed
+        // joint face and surfaces the date as the printed date.
+        printedAttrs["year"] = extractValue(parsed["draft_year"]);
+        printedAttrs["month"] = extractValue(parsed["draft_month"]);
       }
       const codeObj = IeeeCode.parse(finalCode);
       if (codeObj !== undefined) {
