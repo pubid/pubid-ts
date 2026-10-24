@@ -250,7 +250,12 @@ export class IeeeDraft {
   }
 
   render(): string {
-    let result = `/D${this.version ?? ""}`;
+    // A version that already opens with a designator word ("ED4", the
+    // IEC edition-draft ordinal; an ISO/IEC stage token such as
+    // "FDIS_March") renders verbatim — prepending D concatenates a
+    // hallucinated token ("DED4", "DFDIS") that no face spells.
+    const designatorVerbatim = /^(ED\d|(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP))/.test(this.version);
+    let result = designatorVerbatim ? `/${this.version}` : `/D${this.version}`;
     if (this.isoStage !== undefined) result += `=${this.isoStage}`;
     if (this.isoStage !== undefined && this.isoIteration !== undefined) {
       result += `.${this.isoIteration}`;
