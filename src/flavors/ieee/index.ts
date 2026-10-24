@@ -353,9 +353,14 @@ class IeeeBuilder {
         const copubs = Array.isArray(pubData["copublishers"])
           ? (pubData["copublishers"] as Tree[])
           : [pubData["copublishers"] as Tree];
+        // A capture may carry its own separators ("/IEC/ISO" — a joint
+        // token glued to the leading slash); the collection renders
+        // join("/"), so entries hold bare orgs.
         attributes["copublisher"] = copubs
           .map((cp) => extractValue(asHash(cp as Tree)["copublisher"]))
-          .filter((cp): cp is string => cp !== undefined);
+          .filter((cp): cp is string => cp !== undefined)
+          .flatMap((c) => c.replace(/^\//, "").split("/"))
+          .filter((c) => c !== "");
       }
     } else if (parsed["publisher"] !== undefined) {
       attributes["publisher"] = extractValue(parsed["publisher"]);
@@ -668,7 +673,15 @@ class IeeeBuilder {
         attributes["space_before_draft"] = true;
       }
     } else {
-      version = extractValue(draftData);
+      // A degraded wire leaf carries the whole draft clause verbatim
+      // ("/D2.1.1" — the three-segment designator the engine cannot
+      // structure): IeeeDraft.parse is the inverse of render, so it
+      // strips the prefix instead of double-appending it.
+      const reparsed = IeeeDraft.parse(extractValue(draftData) ?? "");
+      if (reparsed !== undefined) {
+        attributes["draft"] = reparsed.render();
+        return;
+      }
     }
 
     // A REV-carrying draft embeds its print date into the designator
@@ -1140,7 +1153,10 @@ class IeeeBuilder {
           // strip it (the #471 separator-in-capture rule). The stored
           // form keeps the comma so it re-parses through the same tail.
           const draftYear = (extractValue(parsed["draft_year"]) ?? "").replace(/^[, ]+/, "");
-          attributes["draft"] = `/D${draftVer}, ${draftYear}`;
+          // Compose through the render so a designator-word version
+          // ("ED1") keeps its word instead of concatenating D ("DED1").
+          attributes["draft"] =
+            new IeeeDraft({ version: draftVer, year: draftYear }).render();
           if (parsed["year"] === undefined) delete attributes["year"];
         } else if (
           JSON.stringify(attributes["publishers"]) === JSON.stringify(["IEEE", "CSA"]) &&
@@ -1302,6 +1318,18 @@ class IeeeBuilder {
     // date-less form ("/D=CD1") elects the same face only when the input
     // spells the designator (the reference's original_input gate) — the
     // stage-first rows keep their ISO rendering.
+    // The designation route ("IEEE P24748-4/D=FDIS") has no
+    // publishers group; IEEE is the sole publisher of the D=
+    // designator face, and the elections below read the builder-local
+    // slots.
+    if (attributes["publisher"] === undefined) attributes["publisher"] = "IEEE";
+    if (attributes["copublisher"] === undefined) attributes["copublisher"] = [];
+    // The model rebuilds publishers from publisher+copublisher when
+    // the publishers group is absent (the reference initialize).
+    if (attributes["publishers"] === undefined) {
+      attributes["publishers"] = [attributes["publisher"] as string,
+        ...((attributes["copublisher"] ?? []) as string[])];
+    }
     const dEqInput = this.originalInput.includes("/D=");
     const stageWordForGate = extractValue(parsed["iso_stage"]) ?? "";
     if (parsed["iso_stage"] !== undefined &&
@@ -1331,6 +1359,27 @@ class IeeeBuilder {
         ((attributes["copublisher"] as string[] | undefined) ?? []).length === 0;
       if (!bareIeeeProject) attributes["lead_party"] = "ISO";
       let stageAbbr = extractValue(parsed["iso_stage"]);
+      // The bare-IEEE project row carries the stage on the D=
+      // designator with the IEEE date convention ("D=FDIS-201008",
+      // pubid#203); the ISO stage-word face is not elected.
+      if (bareIeeeProject && parsed["draft_stage_year"] === undefined) {
+        let date = "";
+        const y = attributes["year"] as string | undefined;
+        const m = String(attributes["month"] ?? "");
+        if (y !== undefined) {
+          date = `-${y}`;
+          if (m !== "") {
+            const monthNum = /^\d+$/.test(m) ? Number(m) : DRAFT_MONTH_NAMES[String(m).replace(/\.$/, "")];
+            if (monthNum !== undefined) date += String(monthNum).padStart(2, "0");
+          }
+        }
+        attributes["ieee_draft"] = `D=${stageAbbr}${date}`;
+        const record = stageAbbr !== undefined ? locateStage(stageAbbr) : undefined;
+        if (record !== undefined) attributes["typed_stage"] = new IeeeTypedStage(record);
+        attributes["lead_party"] = "IEEE";
+        delete attributes["year"];
+        delete attributes["month"];
+      }
       // The IEC "/V<version>" iteration rides glued onto the stage word
       // ("_CDV/V3" -> "CDV3") — the family's lossless spelling (the
       // reference's builder, pubid#477).
@@ -1407,8 +1456,17 @@ class IeeeBuilder {
     // builds the base [ISO, IEC, IEEE], lead ISO); the CD-stage rows and
     // the IEEE-led project rows preserve the printed order (P90003 stays
     // IEEE/ISO/IEC).
+    // The reorder is the PUBLISHED stage-less doctrine (pubid#317)
+    // only: the project rows (the P marker) and every draft-bearing
+    // row keep the printed publisher order (the 2026-10-24 corpus
+    // faces, pubid#595).
+    const draftBearing = parsed["project_marker"] !== undefined ||
+      parsed["draft_version"] !== undefined ||
+      parsed["draft"] !== undefined ||
+      parsed["draft_iso_stage"] !== undefined ||
+      parsed["draft_stage_year"] !== undefined;
     if (parsed["iso_published"] !== undefined && parsed["iso_stage"] === undefined &&
-        Array.isArray(attributes["publishers"])) {
+        !draftBearing && Array.isArray(attributes["publishers"])) {
       const pubs = attributes["publishers"] as string[];
       attributes["publishers"] = [...pubs.filter((p) => p !== "IEEE"), ...pubs.filter((p) => p === "IEEE")];
       attributes["publisher"] = (attributes["publishers"] as string[])[0];
