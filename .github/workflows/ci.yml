@@ -42,6 +42,13 @@ jobs:
           repository: pubid/pubid-grammar
           ref: ${{ env.PARG_GRAMMAR_REF }}
           path: pubid-grammar
+      # The retrieval conformance pack's sibling-checkout default: the
+      # executor runs relaton's shared fixture on every CI run.
+      - uses: actions/checkout@v7
+        with:
+          repository: relaton/relaton
+          ref: main
+          path: relaton/relaton
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
