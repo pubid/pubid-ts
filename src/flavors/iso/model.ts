@@ -82,6 +82,10 @@ export class IsoEdition extends Component {
 }
 
 export abstract class IsoIdentifier extends BaseIdentifier {
+  /** The typed-stage state joins the match (the published default is
+   * stated: ISO 9004 does not match ISO/DIS 9004) but never the wire
+   * hash — the attribute table drives toHash, so it is named here. */
+  static subsetAttributes = ["typedStageState"];
   static attributes = extendAttributes(BaseIdentifier, {
     number: { type: "string" },
     part: { type: "string" },
@@ -309,11 +313,17 @@ const stageMapping = (): FieldMapping => ({
 
 
 /** The ISO Publisher component: "ISO/IEC/IEEE". */
-export class IsoPublisher {
+export class IsoPublisher extends Component {
+  static attributes = {
+    publisher: { type: "string" },
+    copublisher: { type: "string", collection: true },
+  };
+
   readonly publisher: string;
   readonly copublisher: string[] | undefined;
 
   constructor(attrs: { publisher?: unknown; copublisher?: unknown }) {
+    super();
     this.publisher = attrs.publisher === undefined || attrs.publisher === null ? "ISO" : String(attrs.publisher);
     this.copublisher = Array.isArray(attrs.copublisher) ? attrs.copublisher.map(String) : [];
   }
@@ -321,6 +331,13 @@ export class IsoPublisher {
   render(): string {
     if (this.copublisher === undefined || this.copublisher.length === 0) return this.publisher;
     return this.publisher + this.copublisher.map((cp) => `/${cp}`).join("");
+  }
+
+  toWire(): Record<string, unknown> {
+    return {
+      publisher: this.publisher,
+      ...(this.copublisher && this.copublisher.length > 0 ? { copublisher: this.copublisher } : {}),
+    };
   }
 }
 

@@ -114,6 +114,9 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
     attributes: Record<string, unknown>;
     subsetStrict?: readonly string[];
     subsetIgnoredAttributes?: readonly string[];
+    /** Names compared by the match but kept out of the attribute table
+     * (state that toHash must not emit — the typed-stage default). */
+    subsetAttributes?: readonly string[];
   };
   // Components (and any class without a declared attribute table) match
   // conservatively: equal serialized forms. A component that wants the
@@ -131,7 +134,8 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
       : []),
   ]);
 
-  return Object.keys(ctor.attributes).every((name) => {
+  const names = [...Object.keys(ctor.attributes), ...(ctor.subsetAttributes ?? [])];
+  return names.every((name) => {
     if (ignored.has(name)) return true;
     const mine = (reference as unknown as Record<string, unknown>)[name];
     const theirs = (candidate as unknown as Record<string, unknown>)[name];

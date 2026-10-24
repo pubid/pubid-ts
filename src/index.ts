@@ -13,3 +13,4 @@ export { corpusModeImplementation, CorpusBackedIdentifier } from "./implementati
 // Root re-export so consumers needn't deep-import flavor modules
 // (pubid/pubid-ts#63 - the estate serving codec).
 export { grammarImplementation } from "./flavors/index.js";
+export { subsetMatch, valueMatch, exactMatch } from "./model/subset-match.js";
