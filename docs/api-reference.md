@@ -68,6 +68,9 @@ Present only on exception (a documented round-trip failure).
 Neutral rejection code - never an implementation class.
 
 
+## `exactMatch`
+
+
 ## `Expectation`
 
 ### `error`
@@ -173,5 +176,11 @@ Render/parse rounds the spelling needs to reach the canonical human;
 ### `spelling`
 
 ### `style`
+
+
+## `subsetMatch`
+
+
+## `valueMatch`
 
 
