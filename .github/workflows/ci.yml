@@ -27,11 +27,11 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
+      - uses: actions/checkout@v7
       - name: Resolve shared pins
         run: |
           echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
           echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
           repository: pubid/pubid-testsuite
@@ -88,11 +88,11 @@ jobs:
   conformance:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
       - name: Resolve shared pins
         run: |
           echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
           echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
           repository: pubid/pubid-testsuite
