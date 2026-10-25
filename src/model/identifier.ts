@@ -101,6 +101,7 @@ function resolveDefault(spec: AttributeSpec): unknown {
   return typeof spec.default === "function" ? (spec.default as () => unknown)() : spec.default;
 }
 
+import { canonicalKey } from "../internal/compare.js";
 export abstract class BaseIdentifier {
   declare static polymorphicName: string;
   /** The human renderer body — the one method every flavor writes. */
@@ -296,4 +297,56 @@ export abstract class BaseIdentifier {
 
 function deepEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+// --- the wrapped-edition relationship (pubid#580, gem#606) -------------------
+//
+// The document a wrapper stands in front of: a declared `base` slot, or
+// the leading member of a consolidated collection. Undefined for a plain
+// identifier.
+
+export function wrappedDocument(id: BaseIdentifier): BaseIdentifier | undefined {
+  const attrs = id as unknown as Record<string, unknown>;
+  if (attrs["base"] instanceof BaseIdentifier) return attrs["base"] as BaseIdentifier;
+  const ids = attrs["identifiers"];
+  if (Array.isArray(ids) && ids[0] instanceof BaseIdentifier) {
+    return ids[0] as BaseIdentifier;
+  }
+  return undefined;
+}
+
+// The classes whose Ruby counterparts override base_document — the
+// records that are VIEWS of the document they wrap (the IEC VAP/CSV
+// record, the consolidated bundles). A supplement (an ISO/IEC amendment,
+// a corrigendum) is a separate document, not a view, so the peel stops
+// at it; the cen/csa view wrappers join when the algebra ports them.
+const BASE_DOCUMENT_VIEW_CLASSES = new Set([
+  "pubid:iec:vap-identifier",
+  "pubid:iec:consolidated-identifier",
+]);
+
+/** The underlying standard, peeled recursively through the view layers. */
+export function baseDocument(id: BaseIdentifier): BaseIdentifier {
+  const attrs = id as unknown as Record<string, unknown>;
+  const ids = attrs["identifiers"];
+  if (Array.isArray(ids) && ids[0] instanceof BaseIdentifier) {
+    return baseDocument(ids[0] as BaseIdentifier);
+  }
+  const ctor = (id.constructor as { polymorphicName?: string }).polymorphicName;
+  if (ctor !== undefined && BASE_DOCUMENT_VIEW_CLASSES.has(ctor) &&
+      attrs["base"] instanceof BaseIdentifier) {
+    return baseDocument(attrs["base"] as BaseIdentifier);
+  }
+  return id;
+}
+
+/**
+ * Self is a wrapped record of exactly the edition `edition` names: the
+ * wrapped document resolves to that edition. Only wrappers answer true —
+ * a bare record is its own edition and is matched by the subset match.
+ */
+export function wrappedEditionOf(candidate: BaseIdentifier, edition: BaseIdentifier): boolean {
+  if (wrappedDocument(candidate) === undefined) return false;
+  return canonicalKey(baseDocument(candidate).toHash()) ===
+    canonicalKey(edition.toHash());
 }
