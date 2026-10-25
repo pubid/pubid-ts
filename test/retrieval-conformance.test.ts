@@ -5,6 +5,7 @@ import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import { BaseIdentifier } from "../src/model/identifier.js";
 import { subsetMatch } from "../src/model/subset-match.js";
+import { wrappedEditionOf } from "../src/model/identifier.js";
 import { isoGrammarImplementation } from "../src/flavors/iso/index.js";
 import { iecGrammarImplementation } from "../src/flavors/iec/index.js";
 import { ecmaGrammarImplementation } from "../src/flavors/ecma/index.js";
@@ -79,8 +80,11 @@ if (existsSync(path.join(FIXTURE_DIR, "index-v2.yaml"))) {
       const impl = implFor(c);
       // Canonicalize the query into the model layer through its own hash.
       const ref = BaseIdentifier.fromHash(impl.parse(c.query).toHash());
+      // A dated base query also resolves the wrapped record of exactly
+      // that edition (pubid#580's ruling; the Ruby executor's match_item
+      // falls back to wrapped_edition_of? identically).
       const matched = rows
-        .filter((r) => subsetMatch(ref, r.obj))
+        .filter((r) => subsetMatch(ref, r.obj) || wrappedEditionOf(r.obj, ref))
         .map((r) => r.file)
         .sort();
       assert.deepEqual(matched, [...c.expect].sort());
