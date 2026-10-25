@@ -403,6 +403,25 @@ function normalizeJointStageSpellings(input: string): string {
     },
   );
 
+  // The crawl glues the month onto the stage after the code's slash
+  // ("IEEE/IEC/ISO P80005-1/FDIS_March 2012", and its canonical comma
+  // form "... Draft P80005-1/FDIS_March, 2012"): the stage is the
+  // ISO/IEC token and the month belongs to the date (pubid#600, the
+  // 2026-10-25 ruling) - decode onto the D= designator face. Scoped to
+  // a real month name glued to a stage token; the stage-iteration
+  // routes are untouched.
+  cleaned = cleaned.replace(
+    /^((?:IEEE|ISO|IEC)(?:\/(?:IEEE|ISO|IEC))*\s+(?:Draft\s+)?P?[A-Z0-9][A-Z0-9.-]*\/)(FDIS|FCD|CDV|DIS|CD|WD|PWI|NP)_([A-Za-z]+),?\s+(\d{4})$/,
+    (_m, head: string, stage: string, mon: string, year: string) => {
+      const month = STAGE_MONTH_NUMBERS[
+        mon.charAt(0).toUpperCase() + mon.slice(1).toLowerCase()
+      ];
+      return month === undefined
+        ? _m
+        : `${head}D=${stage}-${year}${month}`;
+    },
+  );
+
   const pubs = "((?:ISO/IEC/IEEE|IEEE/ISO/IEC|IEEE/IEC/ISO|ISO/IEEE|IEC/IEEE|IEEE/IEC|ISO/IEC)(?:/ ?| ))";
   const stage = "(FDIS|FCD|CDV|DIS\\d?|CD\\d?|WD|PWI|NP)";
   const num = "(P?\\d+(?:[.-]\\d+)?)";
