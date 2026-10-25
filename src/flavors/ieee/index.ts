@@ -1239,11 +1239,18 @@ class IeeeBuilder {
       /^\d/.test(extractValue(parsed["draft_version"]) ?? "");
     // P + a /D designator (any draft capture) is a DRAFT, never a
     // printed Std (the owner's 2026-10-24 ruling) -- the joint/
-    // project-draft family owns the row; the non-P rows keep the
-    // printed-strip doctrine (the normalization ledger).
-    const pWithDraft = parsed["project_marker"] !== undefined &&
+    // project-draft family owns the row whatever date trails the
+    // designator. The ruling extends to the P-less joint rows
+    // (pubid#597): a numeric /D designator alone is project status
+    // too -- the row is a draft AND takes the P, so the marker is set
+    // below when the source spelling lacked it.
+    const pWithDraft = (parsed["project_marker"] !== undefined || numericDraft) &&
       (parsed["draft_version"] !== undefined || parsed["draft_iso_stage"] !== undefined ||
        parsed["draft_month"] !== undefined || parsed["draft_year"] !== undefined);
+    if (pWithDraft && parsed["project_marker"] === undefined) {
+      attributes["project_marker"] = true;
+      parsed["project_marker"] = "P";
+    }
     if (
       parsed["iso_published"] !== undefined && !pWithDraft &&
       (parsed["printed_dash_year"] !== undefined || parsed["printed_month_year"] !== undefined ||
@@ -1440,7 +1447,11 @@ class IeeeBuilder {
           projectAttrs[k] = attributes[k];
         }
       }
-      if (parsed["project_marker"] !== undefined) projectAttrs["project_marker"] = true;
+      // The ruling (pubid#597): a joint row with a numeric /D designator
+      // is a draft AND takes the P project marker, whatever the source
+      // spelling printed -- the marker rides the identifier even when
+      // the row reached it without one.
+      projectAttrs["project_marker"] = true;
       if (pubs.length > 0) {
         projectAttrs["publisher"] = pubs[0];
         if (pubs.length > 1) projectAttrs["copublisher"] = pubs.slice(1);

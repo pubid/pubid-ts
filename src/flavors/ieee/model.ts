@@ -592,14 +592,20 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
 
   if (id.draft_status !== undefined) parts.push(id.draft_status);
 
-  const shouldRenderType = /^(IEEE|AIEE)/.test(id.publisher ?? "");
+  const isProjectDraft =
+    (id.constructor as { polymorphicName: string }).polymorphicName ===
+    "pubid:ieee:project-draft-identifier";
+  // A project draft carries the word Draft whatever the lead
+  // publisher -- the ISO-led joint drafts (pubid#597) print it too.
+  const shouldRenderType = /^(IEEE|AIEE)/.test(id.publisher ?? "") || isProjectDraft;
   const stageObj = id.typed_stage;
   if (
     shouldRenderType && !(stageObj?.projectStatus === true) &&
-    id.type !== undefined && id.type.trim() !== "" && id.type !== "P" &&
+    ((id.type !== undefined && id.type.trim() !== "" && id.type !== "P") ||
+      isProjectDraft) &&
     !/unapproved/i.test(id.draft_status ?? "")
   ) {
-    let typeStr = id.type;
+    let typeStr = id.type ?? "Draft";
     if (typeStr.startsWith("P")) typeStr = typeStr.slice(1);
     // A draft carries the word Draft alone in every face (the C2
     // ruling): Std/Standard never renders on a draft - a status-less
