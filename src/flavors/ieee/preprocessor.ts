@@ -670,6 +670,12 @@ export function preprocessIeee(input: string): string {
   cleaned = cleaned.replaceAll("Edn.", "Edition");
   cleaned = cleaned.replaceAll("ASHARE", "ASHRAE");
   cleaned = cleaned.replace(/^PC(\d)/, "P$1");
+  // A two-digit draft designator spelled without its D ("IEEE P1052/08,
+  // September 2018"): the corpus face is the D ordinal ("…/D08").
+  cleaned = cleaned.replace(
+    /^IEEE\s+(P[\d.-]+)\/(\d{2}),\s+([A-Za-z]+)\s+(\d{4})$/,
+    "IEEE $1/D$2, $3 $4",
+  );
   cleaned = cleaned.replace(
     /^(IEEE\s+C?\d[\d.]*\/D\d+)([A-Z][a-z]+\s+\d{4})/,
     "$1, $2",
