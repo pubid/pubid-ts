@@ -1,4 +1,4 @@
-testsuite_ref: 5eac6abf1475b8cd5f307ad15ada6120c5d6aaa8
+testsuite_ref: 508b7425
 # pubid-grammar main: the mode-pinned flavors, the char-column corpora
 # freeze and the emission-stamped artifacts (pubid-grammar#62's train).
 grammar_ref: main
