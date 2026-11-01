@@ -56,6 +56,26 @@ function buildRules(): Record<string, P> {
   rule("annex", () => space.then(str("Annex")).then(space, match("[A-Z]").as("annex")));
   rule("supplement", () => space.then(str("Suppl")).then(space, digits.as("supplement")));
   rule("version", () => space.then(digits.then(dot, digits, dot, digits).as("version")));
+  // The tail discriminators (pubid#635 + grammar#90): a dotted version,
+  // a 4-digit year ("P-5 2024" — the identity form for the
+  // year-identified series), or a volume with an optional issue
+  // ("P-1 Vol. 30 (2)"; "Issue N" is an input alias only). A
+  // two-segment version is deliberately unsupported — neither rule
+  // swallows it.
+  rule("year", () => space.then(str("19").or(str("20")).then(match("[0-9]").repeat(2)).as("year")));
+  rule(
+    "volume_tail",
+    () =>
+      space
+        .then(str("Vol.").then(space, digits.as("volume")))
+        .then(
+          space
+            .then(str("Issue"), space, digits.as("issue"))
+            .or(space.then(str("("), digits.as("issue"), str(")")))
+            .maybe(),
+        ),
+  );
+  rule("tail", () => space.then(digits.then(dot, digits, dot, digits).as("version")).or(rules["year"]!, rules["volume_tail"]!));
   rule("identifier", () =>
     str("IHO")
       .then(space)
@@ -65,7 +85,7 @@ function buildRules(): Record<string, P> {
       .then(rules["part"]!.maybe())
       .then(rules["annex"]!.maybe())
       .then(rules["supplement"]!.maybe())
-      .then(rules["version"]!.maybe()),
+      .then(rules["tail"]!.maybe()),
   );
   rule("root", () => rules["identifier"]!);
   return rules;
@@ -84,6 +104,9 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       annex: { type: "string" },
       supplement: { type: "string" },
       version: { type: "string" },
+      year: { type: "string" },
+      volume: { type: "string" },
+      issue: { type: "string" },
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
@@ -92,6 +115,9 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       { wire: "annex", to: "annex" },
       { wire: "supplement", to: "supplement" },
       { wire: "version", to: "version" },
+      { wire: "year", to: "year" },
+      { wire: "volume", to: "volume" },
+      { wire: "issue", to: "issue" },
     );
 
     declare readonly number: string;
@@ -100,6 +126,9 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     declare readonly annex: string | undefined;
     declare readonly supplement: string | undefined;
     declare readonly version: string | undefined;
+    declare readonly year: string | undefined;
+    declare readonly volume: string | undefined;
+    declare readonly issue: string | undefined;
 
     render(): string {
       let result = `IHO ${letter}-${this.number}`;
@@ -107,7 +136,13 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       if (this.part !== undefined) result += ` Part ${this.part}`;
       if (this.annex !== undefined) result += ` Annex ${this.annex}`;
       if (this.supplement !== undefined) result += ` Suppl ${this.supplement}`;
+      // The tail picks exactly one discriminator: a dotted version, a
+      // year, or a volume (with an optional issue). The issue prints
+      // parenthesized; "Issue N" is an input alias only.
       if (this.version !== undefined) result += ` ${this.version}`;
+      if (this.year !== undefined) result += ` ${this.year}`;
+      if (this.volume !== undefined) result += ` Vol. ${this.volume}`;
+      if (this.issue !== undefined) result += ` (${this.issue})`;
       return result;
     }
   }
@@ -119,7 +154,12 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       if (id.part !== undefined) parts.push(`part.${id.part}`);
       if (id.annex !== undefined) parts.push(`annex.${id.annex}`);
       if (id.supplement !== undefined) parts.push(`suppl.${id.supplement}`);
+      // A volume carries an optional issue beside it; a version or a
+      // year is a bare segment.
+      if (id.volume !== undefined) parts.push(`vol.${id.volume}`);
+      if (id.issue !== undefined) parts.push(`issue.${id.issue}`);
       if (id.version !== undefined) parts.push(id.version);
+      if (id.year !== undefined) parts.push(id.year);
       return parts.join(":");
     }
   }
