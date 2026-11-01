@@ -91,12 +91,21 @@ export class IeeeCode {
   readonly number: string;
   readonly parts: string[];
   readonly originalSeparator: string | undefined;
+  /** The separator BEFORE each part, when the source mixed them
+   * ("7.4-3-2" — dot after the number, dashes before the subparts).
+   * Runtime-only: the serialized columns keep the single
+   * original_separator, and only a fresh parse knows the per-part
+   * spelling (the reference's Components::Code#original_separators). */
+  readonly originalSeparators: string[] | undefined;
 
   constructor(attrs: Record<string, unknown>) {
     this.prefix = attrs["prefix"] as string | undefined;
     this.number = String(attrs["number"] ?? "");
     this.parts = Array.isArray(attrs["parts"]) ? (attrs["parts"] as string[]) : [];
     this.originalSeparator = attrs["original_separator"] as string | undefined;
+    this.originalSeparators = Array.isArray(attrs["original_separators"])
+      ? (attrs["original_separators"] as string[])
+      : undefined;
   }
 
   static parse(codeStr: string): IeeeCode | undefined {
@@ -109,15 +118,37 @@ export class IeeeCode {
     else if (remainder.includes("-")) separator = "-";
     const components = remainder.split(/[.-]/);
     const number = components.shift() ?? "";
+    // The separators AS PRINTED, one per part boundary — a code may mix
+    // them ("7.4-3-2": dot after the number, dashes before the
+    // subparts), and to_s re-joins with these instead of the uniform
+    // original_separator when they were captured.
+    const separators = remainder.match(/[.-]/g) ?? [];
+    const perPart = separators.length === components.length ? separators : undefined;
     return new IeeeCode({
       prefix,
       number,
       parts: components,
       original_separator: separator,
+      original_separators: perPart,
     });
   }
 
+  /** The printed face: keeps the separator each part was printed with
+   * ("7.4-3-2"), per Pubid::SubsetMatch. */
   render(): string {
+    return this.renderCode(true);
+  }
+
+  /** The canonical face: one uniform separator across every part
+   * boundary (the first distinct one the source printed) — the face the
+   * URN segment, the joint IEEE/ISO faces and the reassembled PSI code
+   * render, so spellings that differ only in part separators share one
+   * identity. */
+  canonicalRender(): string {
+    return this.renderCode(false);
+  }
+
+  private renderCode(perPart: boolean): string {
     let result = "";
     if (this.prefix !== undefined) result += this.prefix;
     result += this.number;
@@ -134,7 +165,14 @@ export class IeeeCode {
           separator = ".";
         }
       }
-      for (const part of this.parts) result += separator + part;
+      for (const [idx, part] of this.parts.entries()) {
+        // A fresh parse of mixed-separator codes ("7.4-3-2") carries the
+        // separator each part was printed with; the canonical face (and
+        // an unknown per-part spelling — the serialized column shape)
+        // falls back to the uniform original separator.
+        const sep = (perPart && this.originalSeparators?.[idx]) || separator;
+        result += sep + part;
+      }
     }
     return result;
   }
@@ -863,7 +901,10 @@ class IeeeUrnGenerator extends BaseUrnGenerator<IeeeIdentifier> {
       ? ["ieee_identifier", "primary_identifier", "first_identifier", "base"]
       : ["ieee_identifier", "primary_identifier", "first_identifier"];
     const wrapped = fallbacks.map((k) => self[k]).find((v): v is IeeeIdentifier => v instanceof IeeeIdentifier);
-    return (wrapped ?? this.identifier).codeObj?.render();
+    // The URN is spelling-stable: codes printed with mixed part
+    // separators ("7.4-3-2") share one identity with their uniform
+    // spelling, so the segment renders canonically, not as printed.
+    return (wrapped ?? this.identifier).codeObj?.canonicalRender();
   }
 
   protected yearComponent(): string | undefined {
@@ -1003,11 +1044,17 @@ function ieeeClass(
     }
 
     get codeObj(): IeeeCode | undefined {
+      // The parse path carries the freshly parsed Code (with its per-part
+      // separator spelling — the reference's `code:` string →
+      // Components::Code.parse in base #initialize); only the from_hash
+      // rebuild falls back to the split columns (uniform separator).
+      const self = this as unknown as Record<string, unknown>;
+      const runtime = self["__code_obj"];
+      if (runtime instanceof IeeeCode) return runtime;
       // Only CodeNumber leaves carry code columns; on a supplement the
       // `number` attribute is the ORDINAL (Ruby SupplementIdentifier#code
       // delegates to base, code_obj stays nil).
       if (opts.codeColumns !== true) return undefined;
-      const self = this as unknown as Record<string, unknown>;
       const number = self["number"];
       if (typeof number !== "string" || number === "") return undefined;
       return new IeeeCode({
@@ -1092,7 +1139,9 @@ export const SiStandardClass = ieeeClass(
       const isPsi = (id.typed_stage?.abbr ?? []).includes("PSI");
       parts.push(isPsi ? "PSI" : "SI");
       const codeObj = id.codeObj;
-      let codePart = codeObj?.render() ?? "";
+      // Canonical code: the PSI code is reassembled from parse-tree
+      // captures (synthetic separators), so the face spells uniformly.
+      let codePart = codeObj?.canonicalRender() ?? "";
       const draftObj = id.draftObject();
       if (draftObj !== undefined) codePart += `/D${draftObj.version}`;
       if (codeObj !== undefined) parts.push(codePart);
@@ -1362,7 +1411,10 @@ export const JointDevelopmentClass = ieeeClass(
         const parts: string[] = [];
         if (publishers !== undefined && publishers.length > 0) parts.push(publishers.join("/"));
         if (stageWord !== "") parts.push(stageWord);
-        let codeStr = codeObj?.render() ?? "";
+        // Canonical (uniform-separator) code: a joint document parses
+        // from both the dotted IEEE face and the dashed IEC face, and
+        // both spellings must render — and URN — identically.
+        let codeStr = codeObj?.canonicalRender() ?? "";
         // A P-prefixed joint project prints its parts dot-joined on the
         // ISO face ("ISO/IEEE DIS P15500.1"), whatever separator the
         // parse captured ("IEC/IEEE FDIS P60214-2-2018(E)" aliases in).
@@ -1403,8 +1455,9 @@ export const JointDevelopmentClass = ieeeClass(
       const draftStatus = (id as unknown as Record<string, unknown>)["draft_status"] as string | undefined;
       if (draftStatus !== undefined) parts.push(draftStatus);
       // The P-state prints as spelled (P = project draft; no P =
-      // standard). Never added or stripped.
-      let codeStr = codeObj?.render() ?? "";
+      // standard). Never added or stripped. Canonical code for the same
+      // both-faces reason as the ISO face above.
+      let codeStr = codeObj?.canonicalRender() ?? "";
       let designatorCarriesYear = false;
       if (ieeeDraft !== undefined && ieeeDraft.startsWith("D=") && id.year !== undefined) {
         // The ordinal-less stage draft's canonical face (the
