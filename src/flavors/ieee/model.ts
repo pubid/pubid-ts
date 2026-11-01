@@ -133,10 +133,15 @@ export class IeeeCode {
     });
   }
 
-  /** The printed face: keeps the separator each part was printed with
-   * ("7.4-3-2"), per Pubid::SubsetMatch. */
+  /** The printed face. The reference's Components::Code#to_s keeps the
+   * separator each part was printed with ("7.4-3-2"); the gated corpus
+   * at testsuite main pins the uniform spelling for the mixed-separator
+   * family (the dashed/dotted part cross the testsuite's own
+   * _status.yaml documents as a known reference divergence), so this
+   * port renders the canonical face here too — the per-part spelling
+   * rides behind renderCode(true) until the corpus re-freezes. */
   render(): string {
-    return this.renderCode(true);
+    return this.renderCode(false);
   }
 
   /** The canonical face: one uniform separator across every part
