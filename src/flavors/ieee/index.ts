@@ -77,7 +77,6 @@ class IeeeBuilder {
 
   build(parsed: Tree): Identifier {
     const d = Array.isArray(parsed) ? mergeParsedArray(parsed) : (parsed as TreeObject);
-    this.normalizeDraftDashYear(d);
 
     if (d["ieee_portion"] !== undefined && d["csa_portion"] !== undefined) {
       return this.buildCsaDualPublished(d);
@@ -97,110 +96,213 @@ class IeeeBuilder {
 
   // --- single identifier -----------------------------------------------------
 
-  // The artifact binds a dash-year draft tail as a second draft element
-  // ({draft_version: {dash_year: ...}}); the reference's builder hoists
-  // the dash fields and rejoins the version ("D9-2006", "/DPub2-2012").
-  normalizeDraftDashYear(d: TreeObject): void {
-    const raw = d["draft"];
-    if (raw === undefined) return;
-    const drafts = Array.isArray(raw) ? raw : [raw];
-    // The compound-stage captures nest inside the draft elements (the
-    // artifact's binding); the hand mirror bound them top-level, so the
-    // joint-designator block reads them from `parsed` directly.
-    for (const key of ["draft_iso_stage", "draft_iso_iteration", "draft_stage_d", "draft_stage_year"] as const) {
-      if (d[key] === undefined) {
-        for (const e of drafts) {
-          if (isObj(e) && e[key] !== undefined) {
-            d[key] = e[key];
-            break;
-          }
+  // Deep-first collection of every :subpart node under a raw
+  // part_subpart_year wrapper (hash or array, any nesting).
+  collectSubparts(node: unknown, out: Tree[] = []): Tree[] {
+    if (isObj(node)) {
+      for (const [key, value] of Object.entries(node)) {
+        if (key === "subpart") out.push(value as Tree);
+        else this.collectSubparts(value, out);
+      }
+    } else if (Array.isArray(node)) {
+      for (const item of node) this.collectSubparts(item, out);
+    }
+    return out;
+  }
+
+  // The part/subpart/year captures ride the raw part_subpart_year wrapper
+  // (parsanol-ruby#399: the repeated-subpart flat spread clobbers to the
+  // last value, so the run does not bind top-level). Hoist the wrapper's
+  // part/year and deep-collect its interior subparts, so every consumer —
+  // and every raw subtree built through here (the CSA dual's
+  // ieee_portion, the multi-numbered primary, the supplement bases) —
+  // sees the flat keys it has always read (the reference's
+  // unwrap_part_subpart_year).
+  unwrapPartSubpartYear(node: TreeObject): void {
+    const run = node["part_subpart_year"];
+    if (run === undefined) return;
+    const nodes = Array.isArray(run) ? run : [run];
+    const flat: TreeObject = {};
+    for (const item of nodes) {
+      if (isObj(item)) Object.assign(flat, item);
+    }
+    if (flat["part"] !== undefined) node["part"] = flat["part"];
+    if (flat["year"] !== undefined) node["year"] = flat["year"];
+    if (node["subpart"] === undefined) {
+      const collected = this.collectSubparts(run);
+      if (collected.length > 0) node["subpart"] = collected;
+    }
+  }
+
+  // The edition-2 wasm tree → the native engine's flat shape — the
+  // normalization prelude the reference's build_single_identifier runs
+  // before every dispatch (builder.rb: the scalar surfacing, the
+  // composite rename, the wrapper unwrap, the draft-array repairs and
+  // the dash-date hoist).
+  normalizeParsedHash(parsedHash: TreeObject): void {
+    // The grammar binds the bare top-level draft clause as
+    // draft_version_scalar (string) — surface it under the key the rest
+    // of the builder has always read.
+    if (parsedHash["draft_version"] === undefined && parsedHash["draft_version_scalar"] !== undefined) {
+      parsedHash["draft_version"] = parsedHash["draft_version_scalar"];
+      delete parsedHash["draft_version_scalar"];
+    }
+    // The composite draft rule binds draft_version_composite (raw)
+    // inside the draft elements; rename it under the interior key the
+    // draft-element walks read.
+    const draftElems0 = Array.isArray(parsedHash["draft"])
+      ? (parsedHash["draft"] as unknown[])
+      : [parsedHash["draft"]];
+    for (const e of draftElems0) {
+      if (isObj(e) && e["draft_version"] === undefined && e["draft_version_composite"] !== undefined) {
+        e["draft_version"] = e["draft_version_composite"];
+        delete e["draft_version_composite"];
+      }
+    }
+    this.unwrapPartSubpartYear(parsedHash);
+
+    // A revision element INSIDE the draft array is the draft rule's own
+    // split artifact (the version's trailing ".1" segment) — the spine
+    // captured the same value; drop it.
+    if (Array.isArray(parsedHash["draft"]) && parsedHash["revision"] !== undefined) {
+      const artifact = (parsedHash["draft"] as unknown[]).some(
+        (e) => isObj(e) && e["revision"] !== undefined &&
+          String(extractValue(e["revision"] as Tree) ?? "") === String(extractValue(parsedHash["revision"] as Tree) ?? ""),
+      );
+      if (artifact) delete parsedHash["revision"];
+    }
+    // The edition-2 tree materializes a multi-segment draft version
+    // ("D2.1.1") as per-token nodes carrying no draft_version key (the
+    // v1 tree degraded such a clause to a whole-clause LEAF string when
+    // no draft date follows, and to a date-only hash when it does).
+    // Normalize to the v1 shape before the stage derivation and draft
+    // handling read it.
+    if (Array.isArray(parsedHash["draft"])) {
+      const elems = (parsedHash["draft"] as unknown[]).filter(isObj);
+      if (elems.length > 0 && elems.every((e) => e["draft_version"] === undefined)) {
+        const hasDate = elems.some((e) => e["draft_date_month"] !== undefined || e["draft_date_year"] !== undefined);
+        if (hasDate) {
+          const dateElems = elems.filter(
+            (e) => e["draft_date_month"] !== undefined || e["draft_date_year"] !== undefined || e["draft_date_day"] !== undefined,
+          );
+          parsedHash["draft"] = Object.assign({}, ...dateElems) as TreeObject;
+        } else {
+          parsedHash["draft"] = elems
+            .flatMap((e) => Object.values(e))
+            .map((v) => String(extractValue(v as Tree) ?? ""))
+            .join("");
         }
       }
     }
-    for (const e of drafts) {
-      if (!isObj(e)) continue;
-      const dv = e["draft_version"];
-      if (!isObj(dv)) continue;
-      if (dv["dash_year"] !== undefined) e["dash_year"] = dv["dash_year"];
-      if (dv["dash_month"] !== undefined) e["dash_month"] = dv["dash_month"];
-      delete e["draft_version"];
+    const drafts = Array.isArray(parsedHash["draft"])
+      ? (parsedHash["draft"] as unknown[])
+      : [parsedHash["draft"]].filter((v) => v !== undefined);
+    // The edition-2 grammar renames the nested draft-version dash
+    // captures (draft_version_dash_year/month); hoist them to the
+    // element level the dash walk reads, and drop the wrapper key.
+    for (const d of drafts) {
+      if (!isObj(d) || !isObj(d["draft_version"])) continue;
+      const dv = d["draft_version"] as TreeObject;
+      if (dv["draft_version_dash_year"] !== undefined || dv["dash_year"] !== undefined) {
+        d["dash_year"] = dv["draft_version_dash_year"] ?? dv["dash_year"];
+      }
+      if (dv["draft_version_dash_month"] !== undefined || dv["dash_month"] !== undefined) {
+        d["dash_month"] = dv["draft_version_dash_month"] ?? dv["dash_month"];
+      }
+      delete d["draft_version"];
     }
-    // A numeric month trailing a draft is the draft's own date: it embeds
-    // in the designator ("D09, 04 2011" -> "D09-2011-04") rather than
-    // printing the long-format comma face (a month name keeps the comma,
-    // "D7.2, Nov 2006") - pubid ruling 2026-10-13.
-    if (d["dash_year"] === undefined && d["draft"] !== undefined) {
-      const m = d["month"] ?? d["trailing_month"];
-      const y = d["year"] ?? d["trailing_year"];
-      const mVal = extractValue(m as Tree);
-      const yVal = extractValue(y as Tree);
-      if (mVal !== undefined && /^\d{1,2}$/.test(String(mVal)) && yVal !== undefined) {
-        const host = drafts.find((e) => isObj(e) && e["draft_version"] !== undefined);
+    // The dash host: the top-level spine, else a draft element carrying
+    // its own dash date (draft_date_dash_year/month on the edition-2
+    // grammar, dash_year/month on v1 — read both spellings).
+    let dash: TreeObject | undefined =
+      parsedHash["dash_year"] !== undefined ? parsedHash : undefined;
+    if (dash === undefined) {
+      for (const d of drafts) {
+        if (isObj(d) && (d["draft_date_dash_year"] !== undefined || d["dash_year"] !== undefined)) {
+          dash = d;
+          break;
+        }
+      }
+    }
+    // A numeric month trailing a draft is the draft's own date: it
+    // embeds in the designator ("D09, 04 2011" -> "D09-2011-04") rather
+    // than printing the long-format comma face — pubid ruling
+    // 2026-10-13.
+    if (dash === undefined && parsedHash["draft"] !== undefined) {
+      const mVal = extractValue((parsedHash["month"] ?? parsedHash["trailing_month"]) as Tree);
+      const yVal = extractValue((parsedHash["year"] ?? parsedHash["trailing_year"]) as Tree);
+      if (mVal !== undefined && /^\d{1,2}$/.test(mVal) && yVal !== undefined) {
+        const host = drafts.find((d) => isObj(d) && d["draft_version"] !== undefined);
         if (host !== undefined && isObj(host)) {
           const hv = host["draft_version"];
           const joined = Array.isArray(hv)
-            ? hv.map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v))).join("")
+            ? hv.map((v) => extractValue(v as Tree) ?? "").join("")
             : String(extractValue(hv as Tree) ?? "");
-          host["draft_version"] = [joined, String(yVal), String(mVal)]
-            .filter((s) => s !== "")
-            .join("-");
-          delete d["month"];
-          delete d["year"];
-          delete d["trailing_month"];
-          delete d["trailing_year"];
+          host["draft_version"] = [joined, yVal, mVal].filter((s) => s !== "").join("-");
+          delete parsedHash["month"];
+          delete parsedHash["year"];
+          delete parsedHash["trailing_month"];
+          delete parsedHash["trailing_year"];
         }
       }
     }
-    const dash = drafts.find((e) => isObj(e) && e["dash_year"] !== undefined) ??
-      (d["dash_year"] !== undefined ? d : undefined);
     if (dash === undefined) return;
+    // The draft's own dash date embeds onto the draft even when a base
+    // identity year is present ("…-2011/D4-2015-07"); only the root-year
+    // assignment waits for an unoccupied year slot.
     const objs = drafts.filter(isObj);
     const joined = objs
       .map((e) => e["draft_version"])
       .filter((v) => v !== undefined)
-      .map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v)))
+      .map((v) => (Array.isArray(v) ? v.map((x) => extractValue(x as Tree) ?? "").join("") : String(extractValue(v as Tree) ?? "")))
       .join("");
-    const bareJointDraft = d["joint_publishers"] !== undefined &&
-      d["part"] === undefined && d["iso_stage"] === undefined &&
+    const dashY = extractValue((dash["dash_year"] ?? dash["draft_date_dash_year"]) as Tree);
+    const dashM = extractValue((dash["dash_month"] ?? dash["draft_date_dash_month"]) as Tree);
+    const clearDash = () => {
+      delete dash!["dash_year"];
+      delete dash!["dash_month"];
+      delete dash!["draft_date_dash_year"];
+      delete dash!["draft_date_dash_month"];
+    };
+    const embed = (): TreeObject | undefined => {
+      const host = drafts.find((d) => isObj(d) && d["draft_version"] !== undefined);
+      if (host === undefined || !isObj(host)) return undefined;
+      const hv = host["draft_version"];
+      const vJoined = Array.isArray(hv)
+        ? hv.map((v) => extractValue(v as Tree) ?? "").join("")
+        : String(extractValue(hv as Tree) ?? "");
+      host["draft_version"] = [vJoined, dashY, dashM]
+        .filter((s) => s !== undefined)
+        .join("-");
+      return host;
+    };
+    const bareJointDraft = parsedHash["joint_publishers"] !== undefined &&
+      parsedHash["part"] === undefined && parsedHash["iso_stage"] === undefined &&
       objs.some((e) => e["draft_version"] !== undefined);
     const dashLed = joined.startsWith("-");
-    const dashYear = extractValue((dash as TreeObject)["dash_year"] as Tree);
-    const dashMonth = (dash as TreeObject)["dash_month"];
     if (bareJointDraft && dashLed) {
-      d["part"] = dashYear;
-    } else if (dashMonth !== undefined || dashLed) {
-      // A dash_month beside a draft host is the draft's own date
-      // ("/R-i-2011-04" -> "D09-2011-04"); with no host it is the
-      // identifier's year/month.
-      const host = objs.find((e) => e["draft_version"] !== undefined);
-      const dm = extractValue(dashMonth as Tree);
-      if (dm !== undefined && host !== undefined) {
-        const hv = host["draft_version"];
-        const joined = Array.isArray(hv)
-          ? hv.map((v) => (isObj(v) ? ((v["value"] as string) ?? "") : String(v))).join("")
-          : String(extractValue(hv as Tree) ?? "");
-        host["draft_version"] = [joined, dashYear, String(dm)].join("-");
-        delete (dash as TreeObject)["dash_year"];
-        delete (dash as TreeObject)["dash_month"];
-      } else if (d["year"] === undefined) {
-        d["year"] = dashYear;
-        d["month"] = dm;
-      }
+      parsedHash["part"] = { value: dashY };
+    } else if (dashM !== undefined && embed() !== undefined) {
+      clearDash();
+    } else if ((dashM !== undefined || dashLed) && parsedHash["year"] === undefined) {
+      parsedHash["year"] = dashY;
+      parsedHash["month"] = dashM;
+    } else if (embed() !== undefined) {
+      clearDash();
+      // the hyphenated "/D-2-2007" spelling's year the spine captured at
+      // top level is the draft's own — vacate it
+      if (extractValue(parsedHash["year"] as Tree) === dashY) delete parsedHash["year"];
     } else {
-      const host = objs.find((e) => e["draft_version"] !== undefined);
-      if (host !== undefined) {
-        host["draft_version"] = `${joined}-${dashYear}`;
-        delete (dash as TreeObject)["dash_year"];
-        delete (dash as TreeObject)["dash_month"];
-      } else if (d["year"] === undefined) {
-        d["year"] = dashYear;
-        d["month"] = extractValue(dashMonth as Tree);
-      }
+      parsedHash["year"] = dashY;
+      parsedHash["month"] = dashM;
     }
   }
 
   buildSingleIdentifier(parsed: TreeObject, buildingSecondary: boolean): unknown {
     const parsedHash = asHash(parsed as Tree);
+    // The edition-2 wasm tree → the native engine's flat shape, before
+    // every dispatch reads it (the reference's prelude).
+    this.normalizeParsedHash(parsedHash);
 
     if (
       !buildingSecondary && parsedHash["primary_identifier"] !== undefined &&
@@ -291,6 +393,7 @@ class IeeeBuilder {
         if (codeObj?.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
         if (codeObj !== undefined && codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
         if (codeObj?.originalSeparator !== undefined) attributes["separator"] = codeObj.originalSeparator;
+        if (codeObj !== undefined) attributes["__code_obj"] = codeObj;
         // P = project (the document is a draft): the marker is
         // identity-bearing, so stripping the letter must not strip the
         // fact (docs/IEEE-DRAFT-STAGES.md §1.1).
@@ -299,7 +402,15 @@ class IeeeBuilder {
     }
     delete attributes["__code"];
     this.renameSupplementKeys(attributes);
-    return new klass(attributes as Record<string, unknown>) as unknown as Identifier;
+    // The parse path carries the freshly parsed Code (per-part
+    // separators — the reference's `code:` string → Components::Code.parse
+    // in base #initialize); the column-only rebuild stays the from_hash
+    // face.
+    const built = new klass(attributes as Record<string, unknown>) as unknown as Record<string, unknown>;
+    if (attributes["__code_obj"] instanceof IeeeCode) {
+      built["__code_obj"] = attributes["__code_obj"];
+    }
+    return built as unknown as Identifier;
   }
 
   renameSupplementKeys(attributes: Record<string, unknown>): void {
@@ -404,11 +515,10 @@ class IeeeBuilder {
 
     if (codeStr !== undefined && codeParts.length > 0) {
       // Captures carry their own separator when present (the artifact's
-      // part/subpart bind ".18" / "-10"); bare tokens fall back to the
-      // hand grammar's part_sep. Joins verbatim like the reference's
-      // extract_attributes — a dashed "62271-37-082" stays dashed.
-      const partSep = extractValue(parsed["part_sep"]) ?? ".";
-      codeStr += codeParts.map((cp) => /^[._-]/.test(cp) ? cp : `${partSep}${cp}`).join("");
+      // part/subpart bind ".18" / "-10"); join verbatim like the
+      // reference's extract_attributes — a dashed "62271-37-082" stays
+      // dashed.
+      codeStr += codeParts.join("");
     }
 
     if (
@@ -427,6 +537,7 @@ class IeeeBuilder {
     const codeObj = codeStr !== undefined ? IeeeCode.parse(codeStr) : undefined;
     if (codeStr !== undefined) attributes["__code"] = codeStr;
     if (codeObj !== undefined) {
+      attributes["__code_obj"] = codeObj;
       attributes["number"] = codeObj.number;
       if (codeObj.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
       if (codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
@@ -494,8 +605,11 @@ class IeeeBuilder {
     if (fdraft !== undefined && typeof fdraft === "object" && !Array.isArray(fdraft)) {
       const fdStage = extractValue((fdraft as TreeObject)["fdraft_stage"]);
       if (fdStage !== undefined) {
-        const fdYear = extractValue((fdraft as TreeObject)["year"]);
-        const fdMonth = extractValue((fdraft as TreeObject)["month"]);
+        // fdraft's month/year rename with the fdraft_ prefix on the
+        // edition-2 grammar (nested-only); the v1 spellings stay as the
+        // fallback.
+        const fdYear = extractValue(((fdraft as TreeObject)["fdraft_year"] ?? (fdraft as TreeObject)["year"]) as Tree);
+        const fdMonth = extractValue(((fdraft as TreeObject)["fdraft_month"] ?? (fdraft as TreeObject)["month"]) as Tree);
         let date = "";
         if (fdYear !== undefined) {
           date = `-${fdYear}`;
@@ -627,10 +741,15 @@ class IeeeBuilder {
         // "D09"/"D0.16" keep their conventional widths).
         if (version !== undefined) version = version.replace(/^-/, "").replace(/^0(?=\d+\.\d)/, "");
       }
-      // The revision capture carries its own leading dot (".1" — the
-      // #471 separator-in-capture rule); Draft#to_s prints the dot
-      // itself, so keep only the tail or "D6..1" renders doubled.
-      revision = extractValue(draftData["revision"])?.replace(/^\./, "");
+      // The dotted ordinal stays part of the designator (the #601
+      // convergence): a split field would make the parse and from_hash
+      // paths build different Draft objects on wire-identical rows.
+      // #to_s renders version + revision identically, so the whole tail
+      // rides the version on every route.
+      if (draftData["revision"] !== undefined && version !== undefined) {
+        const tail = extractValue(draftData["revision"])?.replace(/^\./, "");
+        if (tail !== undefined && tail !== "") version = `${version}.${tail}`;
+      }
       isoStage = extractValue(draftData["draft_iso_stage"]);
       isoIteration = extractValue(draftData["draft_iso_iteration"]);
       // FDIS/CDV/… are ISO/IEC stage tokens, not draft ordinals (C1
@@ -640,8 +759,15 @@ class IeeeBuilder {
       // Draft#to_s renders as the D= designator face ("…/D=DIS-2020").
       // The glued month-name date ("-June2010", the 2026-10-19 FCD
       // ruling) rides the designator's date slot with the month numeric.
-      month = extractValue(draftData["month"]);
-      year = extractValue(draftData["year"]);
+      // The edition-2 grammar renames draft_date's nested month/year/day
+      // captures with the draft_date_ prefix (kept off the identity
+      // keys); the v1 spellings stay as the fallback.
+      const monthSlice = draftData["draft_date_month"] ?? draftData["month"];
+      month = extractValue(monthSlice as Tree);
+      const yearSlice = draftData["draft_date_year"] ?? draftData["year"];
+      year = yearSlice !== undefined ? extractValue(yearSlice as Tree) : undefined;
+      const daySlice = draftData["draft_date_day"] ?? draftData["day"];
+      day = daySlice !== undefined ? extractValue(daySlice as Tree) : undefined;
       if (version !== undefined) {
         // The stage iteration rides glued onto the word ("DIS2" — the
         // lossless face, pubid#477; the 2026-10-19 DIS2 ruling).
@@ -661,7 +787,6 @@ class IeeeBuilder {
       if (year !== undefined && /^\d{2}$/.test(year)) {
         year = `${Number(year) < 30 ? 20 : 19}${year}`;
       }
-      day = extractValue(draftData["day"]);
       if (this.originalInput !== "" && month !== undefined) {
         commaBeforeMonth = new RegExp(`,\\s+${month.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i")
           .test(this.originalInput);
@@ -689,7 +814,8 @@ class IeeeBuilder {
     // "P802.11-REVmc/D8.0, Aug 2016" renders ".../D8.0-2016-08".
     // Drafts without a REV keep the comma face.
     if (
-      (attributes["revision"] !== undefined || attributes["rev_bare"] === true) &&
+      (attributes["revision"] !== undefined || attributes["rev_bare"] === true ||
+        attributes["cor_number"] !== undefined || attributes["cor_year"] !== undefined) &&
       month !== undefined && year !== undefined && version !== undefined
     ) {
       const monthNumber = DRAFT_MONTH_NAMES[String(month).replace(/\.$/, "")];
@@ -794,7 +920,12 @@ class IeeeBuilder {
 
   handleReaffirmed(parsed: TreeObject, attributes: Record<string, unknown>): void {
     if (isObj(parsed["reaffirmed"])) {
-      attributes["reaffirmed"] = extractValue((parsed["reaffirmed"] as TreeObject)["year"]);
+      // The edition-2 grammar renames the nested year capture
+      // (reaffirmed_year) so the reaffirmation year cannot leak onto the
+      // identity year key; the v1 spelling stays as the fallback.
+      const reaf = parsed["reaffirmed"] as TreeObject;
+      const value = reaf["reaffirmed_year"] ?? reaf["year"];
+      if (value !== undefined) attributes["reaffirmed"] = extractValue(value as Tree);
     } else if (parsed["reaffirmed"] !== undefined) {
       attributes["reaffirmed"] = extractValue(parsed["reaffirmed"]);
     }
@@ -866,6 +997,9 @@ class IeeeBuilder {
   // --- supplements and wrappers ----------------------------------------------
 
   reconstructBaseString(baseData: TreeObject): string {
+    // The part/subpart/year captures sit one level down, inside the raw
+    // part_subpart_year wrapper — hoist them before the flat reads.
+    this.unwrapPartSubpartYear(baseData);
     const baseParts: string[] = [];
     if (baseData["publishers"] !== undefined) {
       const pubData = asHash(baseData["publishers"] as Tree);
@@ -1031,6 +1165,7 @@ class IeeeBuilder {
     if (codeStr !== undefined) {
       const codeObj = IeeeCode.parse(codeStr);
       if (codeObj !== undefined) {
+        attributes["__code_obj"] = codeObj;
         attributes["number"] = codeObj.number;
         if (codeObj.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
         if (codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
@@ -1300,6 +1435,7 @@ class IeeeBuilder {
       }
       const codeObj = IeeeCode.parse(finalCode);
       if (codeObj !== undefined) {
+        printedAttrs["__code_obj"] = codeObj;
         printedAttrs["number"] = codeObj.number;
         if (codeObj.prefix !== undefined) printedAttrs["prefix"] = codeObj.prefix;
         if (codeObj.parts.length > 0) printedAttrs["parts"] = codeObj.parts;
@@ -1316,7 +1452,11 @@ class IeeeBuilder {
       for (const k of Object.keys(printedAttrs)) {
         if (printedAttrs[k] === undefined) delete printedAttrs[k];
       }
-      return new StandardClass(printedAttrs as unknown as Record<string, unknown>) as unknown as Identifier;
+      const printed = new StandardClass(printedAttrs as unknown as Record<string, unknown>) as unknown as Record<string, unknown>;
+      if (printedAttrs["__code_obj"] instanceof IeeeCode) {
+        printed["__code_obj"] = printedAttrs["__code_obj"];
+      }
+      return printed as unknown as Identifier;
     }
 
     // A stage word with a glued year tail ("/D=CD2-201802") rides the
@@ -1459,7 +1599,20 @@ class IeeeBuilder {
       if (attributes["draft_status"] !== undefined) {
         projectAttrs["draft_status"] = attributes["draft_status"];
       }
-      return new ProjectDraftIdentifierClass(projectAttrs as never) as unknown as Identifier;
+      // Ruby's draft_attrs[:code] = "P" + code re-strips in
+      // ProjectDraftIdentifier#initialize and parses the stripped string —
+      // rebuild the runtime code obj from the P-less columns the same way.
+      const strippedCode = new IeeeCode({
+        number: projectAttrs["number"],
+        prefix: projectAttrs["prefix"],
+        parts: projectAttrs["parts"],
+        original_separator: projectAttrs["separator"],
+      }).render();
+      const strippedObj = IeeeCode.parse(strippedCode);
+      if (strippedObj !== undefined) projectAttrs["__code_obj"] = strippedObj;
+      const projectBuilt = new ProjectDraftIdentifierClass(projectAttrs as never) as unknown as Record<string, unknown>;
+      projectBuilt["__code_obj"] = strippedObj;
+      return projectBuilt as unknown as Identifier;
     }
 
     // The iso_published joint rows normalize the publisher order to
@@ -1484,12 +1637,16 @@ class IeeeBuilder {
       attributes["copublisher"] = (attributes["publishers"] as string[]).slice(1);
     }
 
-    const joint = new JointDevelopmentClass(attributes) as unknown as Identifier;
-    if (parsed["amd_number"] === undefined) return joint;
+    const joint = new JointDevelopmentClass(attributes) as unknown as Record<string, unknown>;
+    if (attributes["__code_obj"] instanceof IeeeCode) {
+      joint["__code_obj"] = attributes["__code_obj"];
+    }
+    const jointIdentifier = joint as unknown as Identifier;
+    if (parsed["amd_number"] === undefined) return jointIdentifier;
 
     const amdYear = parsed["amd_year"] !== undefined ? extractValue(parsed["amd_year"]) : undefined;
     return new AmendmentClass({
-      base: joint,
+      base: jointIdentifier,
       number: extractValue(parsed["amd_number"]),
       year: amdYear,
     } as unknown as Record<string, unknown>) as unknown as Identifier;
@@ -1510,6 +1667,7 @@ class IeeeBuilder {
     if (codeStr !== undefined) {
       const codeObj = IeeeCode.parse(codeStr);
       if (codeObj !== undefined) {
+        attributes["__code_obj"] = codeObj;
         attributes["number"] = codeObj.number;
         if (codeObj.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
         if (codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
@@ -1531,7 +1689,11 @@ class IeeeBuilder {
     }
     this.handleParameters(parsed, attributes);
 
-    return new SiStandardClass(attributes) as unknown as Identifier;
+    const siBuilt = new SiStandardClass(attributes) as unknown as Record<string, unknown>;
+    if (attributes["__code_obj"] instanceof IeeeCode) {
+      siBuilt["__code_obj"] = attributes["__code_obj"];
+    }
+    return siBuilt as unknown as Identifier;
   }
 
   buildMultiNumbered(parsed: TreeObject): Identifier {
@@ -1687,6 +1849,7 @@ class IeeeBuilder {
     if (codeStr !== undefined) {
       const codeObj = IeeeCode.parse(codeStr);
       if (codeObj !== undefined) {
+        attributes["__code_obj"] = codeObj;
         attributes["number"] = codeObj.number;
         if (codeObj.prefix !== undefined) attributes["prefix"] = codeObj.prefix;
         if (codeObj.parts.length > 0) attributes["parts"] = codeObj.parts;
@@ -1700,7 +1863,11 @@ class IeeeBuilder {
     const separatorStr = extractValue(parsed["separator"]);
     if (separatorStr !== undefined) attributes["date_separator"] = separatorStr;
     attributes["original_format"] = separatorStr !== undefined || monthStr !== undefined ? "long" : "short";
-    return new AieeClass(attributes) as unknown as Identifier;
+    const aieeBuilt = new AieeClass(attributes) as unknown as Record<string, unknown>;
+    if (attributes["__code_obj"] instanceof IeeeCode) {
+      aieeBuilt["__code_obj"] = attributes["__code_obj"];
+    }
+    return aieeBuilt as unknown as Identifier;
   }
 
   buildIre(parsed: TreeObject): Identifier {
@@ -1814,7 +1981,10 @@ let cachedArtifactRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
 function parseSource(input: string): Tree {
   cachedArtifactRuntime ??= PubidRuntime.load("ieee");
   try {
-    return artifactToBuilderTree(cachedArtifactRuntime.parseShape(input));
+    // The edition-2 artifact's bindings block produces the builder-ready
+    // hash at the engine (typed scalars + raw wrappers) — the same bound
+    // tree the reference's Pubid::Parg::Model.bound hands its builder.
+    return artifactToBuilderTree(cachedArtifactRuntime.parseAndBind(input));
   } catch (e) {
     // The engine throws its own error class; the reference's fallback
     // logic keys on Parslet::ParseFailed, so normalize (the messageless
