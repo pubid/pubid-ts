@@ -134,14 +134,12 @@ export class IeeeCode {
   }
 
   /** The printed face. The reference's Components::Code#to_s keeps the
-   * separator each part was printed with ("7.4-3-2"); the gated corpus
-   * at testsuite main pins the uniform spelling for the mixed-separator
-   * family (the dashed/dotted part cross the testsuite's own
-   * _status.yaml documents as a known reference divergence), so this
-   * port renders the canonical face here too — the per-part spelling
-   * rides behind renderCode(true) until the corpus re-freezes. */
+   * separator each part was printed with ("7.4-3-2"), and the corpus
+   * canonically pins the printed spelling (the project-draft rows freeze
+   * "IEEE P7-4.3.2/D2" with the dashed spelling as the input alias), so
+   * this face renders per-part like the Ruby reference. */
   render(): string {
-    return this.renderCode(false);
+    return this.renderCode(true);
   }
 
   /** The canonical face: one uniform separator across every part
