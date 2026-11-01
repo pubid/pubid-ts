@@ -119,16 +119,22 @@ function buildRules(): Record<string, P> {
     digits.then(ref(rules, "number_suffix").then(digit.absent()).maybe()),
   );
 
+  // The polymorphic number wrapper is split per branch (asme's
+  // designator/designator_code pattern): first_number over the bare
+  // branches, first_number_composite over the branches carrying inner
+  // captures — with the alternation order untouched.
   rule("first_number", () =>
     ref(rules, "owmwp_date_number")
+      .as("first_number_composite")
       .or(
-        str("ADHOC"),
-        str("div").then(digits),
-        monthAbbrev().then(dash, monthAbbrev(), digits),
+        str("ADHOC").as("first_number"),
+        str("div").then(digits).as("first_number"),
+        monthAbbrev().then(dash, monthAbbrev(), digits).as("first_number"),
         digits
           .as("number")
           .then(str("v"), digits.as("volume_suffix"))
-          .as("number_with_volume"),
+          .as("number_with_volume")
+          .as("first_number_composite"),
         digits
           .then(
             dash,
@@ -136,28 +142,31 @@ function buildRules(): Record<string, P> {
             dash,
             digits,
             dot.then(digits).maybe(),
-          ),
-        digits.then(str("GB"), dash, digits, upperLetter.maybe()),
-        digits.then(upperLetter, dash, digits),
+          )
+          .as("first_number"),
+        digits.then(str("GB"), dash, digits, upperLetter.maybe()).as("first_number"),
+        digits.then(upperLetter, dash, digits).as("first_number"),
         str("v")
-          .then(digits.as("volume_number"), str("n"), digits.as("issue_number")),
-        digits.then(str("supprev")),
-        digits.then(str("e"), digits, str("rev"), digits),
+          .then(digits.as("volume_number"), str("n"), digits.as("issue_number"))
+          .as("first_number_composite"),
+        digits.then(str("supprev")).as("first_number"),
+        digits.then(str("e"), digits, str("rev"), digits).as("first_number"),
         digits
           .as("number")
           .then(str("rv"), digits.as("revision_year"))
-          .as("number_with_rev_year"),
-        digits.then(str("e"), digits, str("rev"), monthAbbrev(), digits),
-        digits.then(str("e"), digits, str("supp"), digits.maybe()),
-        str("e").then(digits, str("rev"), monthAbbrev(), digits),
-        str("e").then(digits, str("supp"), digits.maybe()),
-        digits.then(str("e"), digits),
-        str("e").then(digits, dash.then(digits).absent()),
-        lowerLetter.then(digits),
-        digits.then(str("supp"), monthAbbrev(), digits),
-        digits.then(str("supp"), digits.maybe()),
-        digits.then(str("sup"), monthAbbrev(), digits),
-        digits.then(str("sup")),
+          .as("number_with_rev_year")
+          .as("first_number_composite"),
+        digits.then(str("e"), digits, str("rev"), monthAbbrev(), digits).as("first_number"),
+        digits.then(str("e"), digits, str("supp"), digits.maybe()).as("first_number"),
+        str("e").then(digits, str("rev"), monthAbbrev(), digits).as("first_number"),
+        str("e").then(digits, str("supp"), digits.maybe()).as("first_number"),
+        digits.then(str("e"), digits).as("first_number"),
+        str("e").then(digits, dash.then(digits).absent()).as("first_number"),
+        lowerLetter.then(digits).as("first_number"),
+        digits.then(str("supp"), monthAbbrev(), digits).as("first_number"),
+        digits.then(str("supp"), digits.maybe()).as("first_number"),
+        digits.then(str("sup"), monthAbbrev(), digits).as("first_number"),
+        digits.then(str("sup")).as("first_number"),
         digits
           .as("number")
           .then(
@@ -167,20 +176,23 @@ function buildRules(): Record<string, P> {
             letter.absent(),
             dash.absent(),
             dot.absent(),
-          ),
+          )
+          .as("first_number_composite"),
         digits
           .as("number")
-          .then(str("pt"), digits.as("part_number"), str("e"), digits.as("edition_year")),
+          .then(str("pt"), digits.as("part_number"), str("e"), digits.as("edition_year"))
+          .as("first_number_composite"),
         digits
           .as("number")
-          .then(str("("), literalAlternation(["SP", "PT", "ES"]).as("language_code"), str(")")),
+          .then(str("("), literalAlternation(["SP", "PT", "ES"]).as("language_code"), str(")"))
+          .as("first_number_composite"),
         digits
           .as("number")
           .then(upperLetter.as("letter_suffix"), str("r"), digits.as("revision_id"))
-          .as("number_with_letter_revision"),
-        rules["digits_with_suffix"]!,
-      )
-      .as("first_number"),
+          .as("number_with_letter_revision")
+          .as("first_number_composite"),
+        rules["digits_with_suffix"]!.as("first_number"),
+      ),
   );
 
   // OWMWP date number: MM-DD-YYYY — must precede the other shapes.
@@ -197,44 +209,56 @@ function buildRules(): Record<string, P> {
       .as("owmwp_date_number"),
   );
 
+  // The polymorphic wrapper is split per branch —
+  // second_number_composite over the branches carrying inner captures
+  // (revision_letter, number_only+edition_id, revision_simple),
+  // second_number over the bare ones — with the alternation order and
+  // the first branch's month/draft guards untouched.
   rule("second_number", () =>
     monthAbbrev()
       .absent()
       .then(
         str("draft").absent(),
-        (
-          digits
-            .then(literalAlternation(["supp", "sup"]), digit.absent(), letter.absent())
-            .or(
-              digits.then(str("r"), digits, str("U"), lowerLetter),
-              digits.then(str("r"), digits, letter),
-              digits.as("number_only").then(
-                str("r"),
-                digits.then(dot.then(digits).maybe()).as("edition_id"),
-              ),
-              digits.then(str("_"), digits, dash, digits, upperLetter.maybe()),
-              lowerLetter.then(dash, digits),
-              digits.then(str("pt"), digits, dash.absent()),
-              digits.then(upperLetter),
-              digits
-                .as("number_only")
-                .then(str("r"), letter.as("letter"))
-                .as("revision_letter"),
-              str("r").then(letter).as("revision_letter_suffix"),
-              str("r")
-                .then(digits.then(dot.then(digits).maybe()).as("edition_id"))
-                .as("revision_simple"),
-              str("NCNR"),
-              str("PERMIS"),
-              str("BFRL"),
-              // A trailing lowercase means a capitalized word ("Suppl"),
-              // not a second number.
-              upperLetter.repeat(1, 3).then(lowerLetter.absent()),
-              rules["digits_with_suffix"]!
-                .then(dash.then(monthAbbrev(), digits, slash).absent()),
-              lowerLetter.then(digit.absent()),
-            )
-        ).as("second_number"),
+        digits
+          .as("number_only")
+          .then(str("r"), letter.as("letter"))
+          .as("revision_letter")
+          .as("second_number_composite"),
+      )
+      .or(
+        digits
+          .then(literalAlternation(["supp", "sup"]), digit.absent(), letter.absent())
+          .as("second_number"),
+        digits.then(str("r"), digits, str("U"), lowerLetter).as("second_number"),
+        digits.then(str("r"), digits, letter).as("second_number"),
+        digits
+          .as("number_only")
+          .then(str("r"), digits.then(dot.then(digits).maybe()).as("edition_id"))
+          .as("second_number_composite"),
+        digits.then(str("_"), digits, dash, digits, upperLetter.maybe()).as("second_number"),
+        lowerLetter.then(dash, digits).as("second_number"),
+        digits.then(str("pt"), digits, dash.absent()).as("second_number"),
+        digits.then(upperLetter).as("second_number"),
+        digits
+          .as("number_only")
+          .then(str("r"), letter.as("letter"))
+          .as("revision_letter")
+          .as("second_number_composite"),
+        str("r").then(letter).as("revision_letter_suffix"),
+        str("r")
+          .then(digits.then(dot.then(digits).maybe()).as("edition_id"))
+          .as("revision_simple")
+          .as("second_number_composite"),
+        str("NCNR").as("second_number"),
+        str("PERMIS").as("second_number"),
+        str("BFRL").as("second_number"),
+        // A trailing lowercase means a capitalized word ("Suppl"),
+        // not a second number.
+        upperLetter.repeat(1, 3).then(lowerLetter.absent()).as("second_number"),
+        rules["digits_with_suffix"]!
+          .then(dash.then(monthAbbrev(), digits, slash).absent())
+          .as("second_number"),
+        lowerLetter.then(digit.absent()).as("second_number"),
       ),
   );
 

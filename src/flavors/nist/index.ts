@@ -221,7 +221,9 @@ function locateIdentifierKlass(h: Record<string, unknown>): NistCtor {
   }
 
   if (series === "CS") {
-    const firstNum = h["first_number"];
+    // The composite branch of the split first_number wrapper (the
+    // grammar's v#n# branch) arrives under first_number_composite.
+    const firstNum = h["first_number"] ?? h["first_number_composite"];
     if (isObj(firstNum) && firstNum["volume_number"] !== undefined && firstNum["issue_number"] !== undefined) {
       return classForKind("commercial-standards-monthly");
     }
@@ -382,9 +384,17 @@ function cast(type: string, value: unknown, h: Record<string, unknown>, policy: 
       return { first_number: numberPart, edition: new NistEdition({ type: "e", id: s(owmwp["owmwp_year"]) }) };
     }
 
+    // The polymorphic number wrappers split per branch in the grammar
+    // (asme's designator/designator_code pattern): first_number /
+    // second_number arrive over the bare branches, first_number_composite /
+    // second_number_composite (raw) over the branches carrying inner
+    // captures. The composite keys map onto the same dispatch.
     case "first_number":
+    case "first_number_composite":
+      return castNumber("first_number", value, h, policy);
     case "second_number":
-      return castNumber(type, value, h, policy);
+    case "second_number_composite":
+      return castNumber("second_number", value, h, policy);
 
     case "crpl_range": {
       const strValue = s(value);
