@@ -921,6 +921,11 @@ class NistBuilder {
       h["supplement_year"] !== undefined ||
       h["supplement"] !== undefined ||
       h["supplement_empty"] !== undefined ||
+      // The circ_series route marks the bare "NBS.CIRC.sup" head: the
+      // edition-2 grammar cannot carry the zero-width supplement_empty
+      // marker the Parslet tree used, so the series wrapper IS the
+      // supplement signal.
+      h["circ_series"] !== undefined ||
       h["base_portion"] !== undefined
     ) {
       return this.buildCircularSupplement(h);
