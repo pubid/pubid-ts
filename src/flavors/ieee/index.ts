@@ -140,6 +140,19 @@ class IeeeBuilder {
   // composite rename, the wrapper unwrap, the draft-array repairs and
   // the dash-date hoist).
   normalizeParsedHash(parsedHash: TreeObject): void {
+    // The wasm bound map captures the optional rev_sep for every printed
+    // boundary; the reference's native engine binds it on the bare-REV
+    // ("-REV/D1.7" keeps "-") and lettered-revision branches
+    // ("-REVmc" keeps "-") and declines it on every numeric revision
+    // spelling (".Rev 3", "/rev43", "-rev1", "_Rev2", " Rev 8" — the
+    // rev_numbered route, parsanol-ruby#394 family), so the render glues
+    // the numeric lettered revisions on those rows.
+    if (parsedHash["rev_sep"] !== undefined) {
+      const revision = extractValue(parsedHash["revision"] as Tree) ?? "";
+      if (/^[0-9]+$/.test(revision)) {
+        delete parsedHash["rev_sep"];
+      }
+    }
     // The grammar binds the bare top-level draft clause as
     // draft_version_scalar (string) — surface it under the key the rest
     // of the builder has always read.
@@ -1387,7 +1400,10 @@ class IeeeBuilder {
       parsed["project_marker"] = "P";
     }
     if (
-      parsed["iso_published"] !== undefined && !pWithDraft &&
+      // The bound tree spreads the raw iso_published interior flat, so a
+      // stage-first joint row carries a top-level iso_stage — the stage
+      // word keeps the joint ISO face (the reference's iso_stage.nil? gate).
+      parsed["iso_published"] !== undefined && parsed["iso_stage"] === undefined && !pWithDraft &&
       (parsed["printed_dash_year"] !== undefined || parsed["printed_month_year"] !== undefined ||
         (numericDraft && parsed["draft_month"] !== undefined) ||
         (parsed["year"] === undefined && parsed["parameters"] !== undefined &&
@@ -1656,8 +1672,20 @@ class IeeeBuilder {
     const attributes: Record<string, unknown> = {};
     const siType = extractValue(parsed["si_type"]);
 
-    if (parsed["publishers"] !== undefined) {
-      const publishersStr = extractValue(parsed["publishers"]) ?? "";
+    // The bare top-level draft clause binds as draft_version_scalar
+    // (string) — surface it under the key this builder reads (the
+    // reference's build_si_psi_identifier).
+    if (parsed["draft_version"] === undefined && parsed["draft_version_scalar"] !== undefined) {
+      parsed["draft_version"] = parsed["draft_version_scalar"];
+      delete parsed["draft_version_scalar"];
+    }
+
+    // Extract publishers (should be "IEEE/ASTM") — the SI rule's bare
+    // publishers clause binds as publishers_scalar (string); the
+    // composite joint rows deliver publishers (raw).
+    const pubSrc = parsed["publishers"] ?? parsed["publishers_scalar"];
+    if (pubSrc !== undefined) {
+      const publishersStr = extractValue(pubSrc as Tree) ?? "";
       const pubs = publishersStr.split("/");
       attributes["publisher"] = pubs[0];
       if (pubs.length > 1) attributes["copublisher"] = pubs.slice(1);
@@ -1984,7 +2012,11 @@ function parseSource(input: string): Tree {
     // The edition-2 artifact's bindings block produces the builder-ready
     // hash at the engine (typed scalars + raw wrappers) — the same bound
     // tree the reference's Pubid::Parg::Model.bound hands its builder.
-    return artifactToBuilderTree(cachedArtifactRuntime.parseAndBind(input));
+    const bound = cachedArtifactRuntime.parseAndBind(input);
+    // A rejected input binds to null (the parseShape contract threw) —
+    // keep the throw so the reference's ParseFailed-keyed fallbacks fire.
+    if (bound === null || bound === undefined) throw new ParseFailed("no match", 0);
+    return artifactToBuilderTree(bound);
   } catch (e) {
     // The engine throws its own error class; the reference's fallback
     // logic keys on Parslet::ParseFailed, so normalize (the messageless
