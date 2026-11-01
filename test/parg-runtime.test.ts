@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { PubidRuntime } from "../src/parg/runtime.js";
+import { loadCorpus } from "../src/corpus/loader.js";
 import { loadSuites, runSuite, suitesDir } from "../src/parg/suite.js";
 
 const skipReason = existsSync(join(PubidRuntime.artifactsDir(), "iso.json"))
@@ -35,14 +36,49 @@ test(
     assert.equal(materialized.entry, "identifier");
     const schema = runtime.schema["identifier"];
     assert.ok(schema, "identifier entry must have a schema");
-    for (const path of Object.keys(schema.fields)) {
-      const leaf = path.includes("[]") ? (path.split("].").pop() ?? path) : path;
-      assert.ok(leaf in materialized.attributes, `materialized lacks ${leaf}`);
-    }
+    // A single sample input exercises only the branches it spells, so the
+    // per-attribute coverage contract moved to the corpus-wide test below
+    // (with 83 schema fields, one input cannot carry them all). What stays
+    // pinned here is the typed identity of the sample itself.
     assert.equal(materialized.attributes["publisher"], "ISO");
     assert.equal(
       materialized.attributes["publisher_name"],
       "International Organization for Standardization",
+    );
+  },
+);
+
+test(
+  "every identifier schema field materializes somewhere in the corpus (T1 coverage)",
+  {
+    skip: process.env["TESTSUITE_DIR"]
+      ? skipReason
+      : "TESTSUITE_DIR not set (the pubid-ts CI checks the testsuite out; the grammar CI's TS gate runs without it)",
+  },
+  () => {
+    const runtime = PubidRuntime.load("iso");
+    const schema = runtime.schema["identifier"];
+    assert.ok(schema, "identifier entry must have a schema");
+    const schemaFields = Object.keys(schema.fields);
+    const corpus = loadCorpus(process.env["TESTSUITE_DIR"]!);
+    const payloads = corpus.flavors.get("iso");
+    assert.ok(payloads, "the corpus must carry an iso flavor");
+    const uncovered = new Set(schemaFields);
+    for (const testCase of payloads.cases) {
+      if (uncovered.size === 0) break;
+      let bound;
+      try {
+        bound = runtime.materialize(testCase.representations.human);
+      } catch {
+        continue;
+      }
+      if (!bound) continue;
+      for (const leaf of Object.keys(bound.attributes)) uncovered.delete(leaf);
+    }
+    assert.deepEqual(
+      [...uncovered].sort(),
+      [],
+      "schema fields no corpus case materializes (schema/grammar drift)",
     );
   },
 );
