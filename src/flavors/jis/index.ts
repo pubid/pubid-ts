@@ -15,6 +15,10 @@ import { BaseUrnGenerator } from "../../model/urn-generator.js";
  * code ("B 0205-1") lives in the series/number/parts columns and is
  * composed on demand. URN: urn:jis:<code>[:year][:lang]["all"]? with a
  * supplement notation appended lowercased.
+ *
+ * WES (welding-engineering-standard, pubid#638) rides the same flavor:
+ * "WES <number>[-parts][:year[R]]…" with no series letter and no JIS
+ * prefix — the code itself carries the "WES" root.
  */
 
 function buildRules(): Record<string, P> {
@@ -102,7 +106,21 @@ function buildRules(): Record<string, P> {
       .then(rules["supplement"]!.maybe())
       .then(rules["symbol_clause"]!.maybe()),
   );
-  rule("root", () => rules["identifier"]!);
+  // WES (Japan Welding Engineering Society) rides the JIS flavor with the
+  // same tail but no prefix and no series letter; the root tries it first,
+  // as the reference grammar does.
+  rule("wes_identifier", () =>
+    str("WES").as("wes")
+      .then(space)
+      .then(rules["number"]!)
+      .then(rules["parts"]!)
+      .then(rules["year"]!.maybe())
+      .then(rules["language"]!.maybe())
+      .then(rules["all_parts"]!.maybe())
+      .then(rules["supplement"]!.maybe())
+      .then(rules["symbol_clause"]!.maybe()),
+  );
+  rule("root", () => rules["wes_identifier"]!.or(rules["identifier"]!));
   return rules;
 }
 
@@ -233,6 +251,52 @@ const KIND_CLASSES: Record<JisKind, IdentifierStatic> = {
   explanation: jisClass("explanation"),
 };
 
+// WES 7700-1:2019 — JSA sells Welding Engineering Standards next to JIS,
+// so they parse through the JIS flavor, but the id carries no series
+// letter and no JIS prefix ("WES" is the root of the designation).
+function wesClass(): IdentifierStatic {
+  class JisWesIdentifier extends JisIdentifier {
+    static polymorphicName = "pubid:jis:welding-engineering-standard";
+    static attributes = extendAttributes(BaseIdentifier, {
+      number: { type: "string" },
+      parts: { type: "string", collection: true },
+      year: { type: "integer" },
+      language: { type: "string" },
+      all_parts: { type: "boolean", default: false },
+      reaffirmed: { type: "boolean" },
+      symbol: { type: "string" },
+    });
+    static mappings = keyValue(
+      { wire: "number", to: "number" },
+      { wire: "parts", to: "parts" },
+      { wire: "year", to: "year" },
+      { wire: "language", to: "language" },
+      { wire: "all_parts", to: "all_parts" },
+      { wire: "reaffirmed", to: "reaffirmed" },
+      { wire: "symbol", to: "symbol" },
+    );
+
+    code(): string | undefined {
+      if (this.base !== undefined) return this.base.code();
+      let result = `WES ${this.number}`;
+      if (this.parts !== undefined) result += this.parts.map((p) => `-${p}`).join("");
+      return result;
+    }
+
+    render(): string {
+      let result = this.code() ?? "";
+      if (this.year !== undefined) result += `:${this.yearWithReaffirmation()}`;
+      if (this.language !== undefined) result += `(${this.language})`;
+      if (this.all_parts === true) result += "（規格群）";
+      return result + this.symbolSuffix();
+    }
+  }
+  registerType(JisWesIdentifier as unknown as IdentifierStatic);
+  return JisWesIdentifier as unknown as IdentifierStatic;
+}
+
+const WES_CLASS = wesClass();
+
 class JisUrnGenerator extends BaseUrnGenerator<JisIdentifier> {
   generate(): string {
     const id = this.identifier;
@@ -249,7 +313,7 @@ class JisUrnGenerator extends BaseUrnGenerator<JisIdentifier> {
     return parts.join(":");
   }
 }
-for (const klass of Object.values(KIND_CLASSES)) {
+for (const klass of [...Object.values(KIND_CLASSES), WES_CLASS]) {
   (klass as unknown as Record<string, unknown>).urnGenerator = JisUrnGenerator;
 }
 
@@ -293,6 +357,7 @@ class JisBuilder {
   }
 
   private buildSingle(tree: TreeObject): BaseIdentifier {
+    if (tree["wes"] !== undefined) return this.buildWes(tree);
     const type = tree["type"] === undefined || tree["type"] === null ? undefined : String(tree["type"]);
     const kind: JisKind =
       type === "TR" ? "technical-report" : type === "TS" ? "technical-specification" : "japanese-industrial-standard";
@@ -306,6 +371,18 @@ class JisBuilder {
     if (tree["all_parts"] !== undefined) attrs["all_parts"] = true;
     if (tree["reaffirmed"] !== undefined && tree["reaffirmed"] !== null) attrs["reaffirmed"] = true;
     return new (KIND_CLASSES[kind] as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
+  }
+
+  private buildWes(tree: TreeObject): BaseIdentifier {
+    const attrs: Record<string, unknown> = {
+      number: String(tree["number"]),
+      parts: extractParts(tree["parts"]),
+    };
+    if (tree["year"] !== undefined && tree["year"] !== null) attrs["year"] = Number(tree["year"]);
+    if (tree["language"] !== undefined && tree["language"] !== null) attrs["language"] = String(tree["language"]);
+    if (tree["all_parts"] !== undefined) attrs["all_parts"] = true;
+    if (tree["reaffirmed"] !== undefined && tree["reaffirmed"] !== null) attrs["reaffirmed"] = true;
+    return new (WES_CLASS as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
   }
 
   private buildSupplement(
