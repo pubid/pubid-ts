@@ -154,12 +154,15 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       if (id.part !== undefined) parts.push(`part.${id.part}`);
       if (id.annex !== undefined) parts.push(`annex.${id.annex}`);
       if (id.supplement !== undefined) parts.push(`suppl.${id.supplement}`);
-      // A volume carries an optional issue beside it; a version or a
-      // year is a bare segment.
+      // A volume carries an optional issue beside it (its own colon
+      // segment, "vol.30:issue.2"); the version stays a bare segment;
+      // the year is TAGGED ("y.2024") so it can never collide with a
+      // colon number ("IHO S-158:2024" -> "urn:iho:s:158:2024") —
+      // pubid#637's scheme.
       if (id.volume !== undefined) parts.push(`vol.${id.volume}`);
       if (id.issue !== undefined) parts.push(`issue.${id.issue}`);
       if (id.version !== undefined) parts.push(id.version);
-      if (id.year !== undefined) parts.push(id.year);
+      if (id.year !== undefined) parts.push(`y.${id.year}`);
       return parts.join(":");
     }
   }

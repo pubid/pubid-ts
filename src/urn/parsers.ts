@@ -287,33 +287,46 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/iho/urn_parser.rb — "IHO <TYPE>-<number> [<Part label>
-  // <value>] [<version>]".
+  // lib/pubid/iho/urn_parser.rb (pubid#637) — "IHO <TYPE>-<number>
+  // [<tagged segments>] [<version>]". Tags: part/ap/annex/suppl/vol/
+  // issue/y; the dotted a.b.c version is the only untagged tail; the
+  // number is unescaped and can span colon segments.
   iho: {
     prefix: "urn:iho:",
     reconstruct(body, parse) {
-      const partLabels: Record<string, string> = {
-        part: "Part",
-        ap: "Ap.",
-        annex: "Annex",
-        suppl: "Suppl",
+      const TAG_TEXT: Record<string, (v: string) => string> = {
+        part: (v) => ` Part ${v}`,
+        ap: (v) => ` Ap. ${v}`,
+        annex: (v) => ` Annex ${v}`,
+        suppl: (v) => ` Suppl ${v}`,
+        vol: (v) => ` Vol. ${v}`,
+        issue: (v) => ` (${v})`,
+        y: (v) => ` ${v}`,
       };
+      const VERSION_SEGMENT = /^\d+\.\d+\.\d+$/;
       const parts = splitParts(body);
       const typeToken = (parts[0] ?? "").toUpperCase();
-      const number = parts[1] ?? "";
+      const tagged = (s: string): boolean => /^[a-z]+\./i.test(s);
+      const untaggedNumber = (s: string): boolean =>
+        !tagged(s) && !VERSION_SEGMENT.test(s);
+      const first = parts[1] ?? "";
       let idx = 2;
-      let partLabel: string | undefined;
-      const kindToken = parts[idx];
-      if (kindToken !== undefined && /^[a-z]+\./i.test(kindToken)) {
-        const [kind = "", value = ""] = kindToken.split(".", 2);
-        const label = partLabels[kind.toLowerCase()] ?? (kind.charAt(0).toUpperCase() + kind.slice(1));
-        partLabel = `${label} ${value}`;
-        idx += 1;
+      while (idx < parts.length && untaggedNumber(parts[idx]!)) idx += 1;
+      const number = [first, ...parts.slice(2, idx)];
+      let text = `IHO ${typeToken}-${number.join(":")}`;
+      for (; idx < parts.length; idx += 1) {
+        const segment = parts[idx]!;
+        if (VERSION_SEGMENT.test(segment)) {
+          text += ` ${segment}`;
+          continue;
+        }
+        const dot = segment.indexOf(".");
+        const tag = segment.slice(0, dot);
+        const value = segment.slice(dot + 1);
+        const fn = TAG_TEXT[tag.toLowerCase()];
+        if (fn === undefined) throw new Error(`unknown iho urn tag: ${segment}`);
+        text += fn(value);
       }
-      const version = parts[idx];
-      let text = `IHO ${typeToken}-${number}`;
-      if (partLabel) text += ` ${partLabel}`;
-      if (version) text += ` ${version}`;
       return parse(text);
     },
   },
