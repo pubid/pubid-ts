@@ -74,6 +74,18 @@ class IecBuilder {
   private buildInner(data: Tree): BaseIdentifier {
     const tree = flatten(data);
 
+    // Ruby's bound hash is flat and vap_suffix is never a SUPP key, so
+    // the capture lands on the base build no matter which layer's
+    // second part carried it — the Vap wrapper nests INSIDE every
+    // supplement layer ("…+AMD1:1999 CSV/COR1:2003"). Push the capture
+    // down before dispatching; the recursion re-applies it until it
+    // reaches the base designation.
+    const vapSuffix = s(tree["vap_suffix"]);
+    if (vapSuffix !== undefined && isObj(tree["base"])) {
+      delete tree["vap_suffix"];
+      (tree["base"] as TreeObject)["vap_suffix"] = vapSuffix;
+    }
+
     // --- working programme / working document ---
     if (tree["wp_stage"] !== undefined) return this.buildWorkingProgramme(tree);
     if (tree["technical_committee"] !== undefined && tree["wd_number"] !== undefined) {
@@ -269,11 +281,7 @@ class IecBuilder {
     }
 
     const supplement = this.construct({ kind: kind as Parsed["kind"], attrs, typedStage }, attrs);
-    const suppRec = supplement as unknown as Record<string, unknown>;
-    suppRec["base"] = base;
-
-    const vapSuffix = s(tree["vap_suffix"]);
-    if (vapSuffix !== undefined) return this.wrapVap(supplement, vapSuffix);
+    (supplement as unknown as Record<string, unknown>)["base"] = base;
     return supplement;
   }
 
