@@ -56,7 +56,6 @@ for (const file of artifactFiles) {
   // pubid-grammar (the self-host walker reads the edition-1 tree
   // shapes). Until that re-bake lands, the loader's removal rejection
   // for this one artifact is the expected state.
-  if (flavor === "parg") continue;
   const runtime = PargRuntime.fromFile(join(artifactsDir, file));
 
   if (!runtime.sourceHash || !runtime.compilerVersion) {
@@ -83,9 +82,6 @@ let boundThrew = 0;
 
 if (existsSync(corporaDir)) {
   for (const flavor of readdirSync(corporaDir).sort()) {
-    // parg: skipped pending the F10 edition-2 re-bake (see the
-    // freshness loop's carve-out above).
-    if (flavor === "parg") continue;
     const corpusPath = join(corporaDir, flavor, "corpus.json");
     if (!existsSync(corpusPath)) continue;
 
