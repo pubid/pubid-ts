@@ -83,6 +83,9 @@ let boundThrew = 0;
 
 if (existsSync(corporaDir)) {
   for (const flavor of readdirSync(corporaDir).sort()) {
+    // parg: skipped pending the F10 edition-2 re-bake (see the
+    // freshness loop's carve-out above).
+    if (flavor === "parg") continue;
     const corpusPath = join(corporaDir, flavor, "corpus.json");
     if (!existsSync(corpusPath)) continue;
 
