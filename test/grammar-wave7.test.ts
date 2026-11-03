@@ -82,15 +82,33 @@ test("iho parses open-ended beyond the corpus", () => {
   const impl = grammarImplementation("iho")!;
   // Prefix-less form parses; renders with the IHO prefix.
   assert.equal(impl.parse("S-44 5.0.0").toHuman(), "IHO S-44 5.0.0");
-  // Number suffix spellings.
-  assert.equal(impl.parse("IHO P-1/21 1.0.0").toUrn(), "urn:iho:p:1/21:1.0.0");
+  // The slash chain is the volume's short face; the edition rides the
+  // base and renders ed- in the URN.
+  assert.equal(impl.parse("IHO P-1/21 1.0.0").toUrn(),
+    "urn:iho:p:1:vol-21:ed-1.0.0");
+  assert.equal(impl.parse("IHO P-1/21 1.0.0").toHuman(),
+    "IHO P-1 Vol. 21 1.0.0");
+  // Colon numbers round-trip unescaped; the edition stays bare dotted
+  // in the human face.
   assert.equal(impl.parse("IHO C-16:2 1.0.0").toHuman(), "IHO C-16:2 1.0.0");
-  // Appendix + part + annex + supplement combine.
-  assert.equal(impl.parse("IHO S-65 Ap. A-2 Part 4a Annex B Suppl 3 2.1.0").toUrn(),
-    "urn:iho:s:65:ap.A-2:part.4a:annex.B:suppl.3:2.1.0");
-  // "Appendix" spelled out renders as the canonical "Ap.".
-  assert.equal(impl.parse("IHO S-53 Appendix 1 1.0.0").toHuman(),
-    "IHO S-53 Ap. 1 1.0.0");
+  // Component-edition duality: supplement, part, annex and appendix
+  // parse in tail order and each carries its own edition.
+  assert.equal(
+    impl.parse("IHO S-65 2.1.0 Sup 3 Part 4a Annex B Appendix A-2").toUrn(),
+    "urn:iho:s:65:ed-2.1.0:sup-3:part-4a:annex-B:appendix-A:2",
+  );
+  // The volume carries its own edition ("separately-published").
+  assert.equal(impl.parse("IHO P-6 Vol. 2 1.0.1").toHuman(),
+    "IHO P-6 Vol. 2 1.0.1");
+  // "Appendix" is the canonical face; "Ap." input canonicalizes.
+  assert.equal(impl.parse("IHO S-53 Ap. 1 1.0.0").toHuman(),
+    "IHO S-53 Appendix 1 1.0.0");
+  // Legacy aliases bind their canonical components: the glued base
+  // becomes a Part, the bare year becomes a Vol.
+  assert.equal(impl.parse("IHO S-5A").toHuman(), "IHO S-5 Part A");
+  assert.equal(impl.parse("IHO P-5 2024").toHuman(), "IHO P-5 Vol. 2024");
+  // The v-shorthand pads to the dotted edition.
+  assert.equal(impl.parse("IHO S-100 v5.1").toHuman(), "IHO S-100 5.1.0");
 });
 
 test("iho rejects non-identifiers", () => {

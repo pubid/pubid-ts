@@ -287,44 +287,67 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/iho/urn_parser.rb (pubid#637) — "IHO <TYPE>-<number>
-  // [<tagged segments>] [<version>]". Tags: part/ap/annex/suppl/vol/
-  // issue/y; the dotted a.b.c version is the only untagged tail; the
-  // number is unescaped and can span colon segments.
+  // lib/pubid/iho/urn_parser.rb (positional segment grammar) —
+  // "urn:iho:<type>:<number>[:ed-…][:year-…][:sup-…][:part-…]
+  // [:annex-…][:appendix-…][:<sub>][:vol-…][:issue-…]". The number
+  // occupies every leading bare digit segment (colon numbers
+  // round-trip unescaped); every other component is marker-prefixed.
+  // Legacy 2.0.x spellings stay decodable: the bare a.b.c edition,
+  // the dotted keys part./ap./annex./suppl./appendix./vol./issue.
+  // (whose appendix value may carry the subnumber, "D-2") and the
+  // y. year tag whose value decodes into the volume.
   iho: {
     prefix: "urn:iho:",
     reconstruct(body, parse) {
+      const NEW_TAG = /^([a-z]+)-(.+)$/;
+      const LEGACY_TAG = /^([a-z]+)\.(.*)$/;
+      const VERSION_SEGMENT = /^\d+\.\d+\.\d+$/;
+      const DIGITS = /^\d+$/;
       const TAG_TEXT: Record<string, (v: string) => string> = {
+        ed: (v) => ` ${v}`,
+        year: (v) => ` (${v})`,
+        sup: (v) => ` Sup ${v}`,
         part: (v) => ` Part ${v}`,
-        ap: (v) => ` Ap. ${v}`,
         annex: (v) => ` Annex ${v}`,
-        suppl: (v) => ` Suppl ${v}`,
+        appendix: (v) => ` Appendix ${v}`,
         vol: (v) => ` Vol. ${v}`,
         issue: (v) => ` (${v})`,
+        // Legacy dotted keys: decodable, never emitted. The dotted
+        // appendix value carries its subnumber in one string ("D-2").
+        ap: (v) => ` Ap. ${v}`,
+        suppl: (v) => ` Suppl ${v}`,
         y: (v) => ` ${v}`,
       };
-      const VERSION_SEGMENT = /^\d+\.\d+\.\d+$/;
       const parts = splitParts(body);
       const typeToken = (parts[0] ?? "").toUpperCase();
-      const tagged = (s: string): boolean => /^[a-z]+\./i.test(s);
-      const untaggedNumber = (s: string): boolean =>
-        !tagged(s) && !VERSION_SEGMENT.test(s);
+      const tagged = (s: string): boolean => /^[a-z]+[-.]/i.test(s);
       const first = parts[1] ?? "";
       let idx = 2;
-      while (idx < parts.length && untaggedNumber(parts[idx]!)) idx += 1;
+      while (idx < parts.length && !tagged(parts[idx]!) && !VERSION_SEGMENT.test(parts[idx]!)) {
+        idx += 1;
+      }
       const number = [first, ...parts.slice(2, idx)];
       let text = `IHO ${typeToken}-${number.join(":")}`;
+      let appendixSeen = false;
       for (; idx < parts.length; idx += 1) {
         const segment = parts[idx]!;
         if (VERSION_SEGMENT.test(segment)) {
           text += ` ${segment}`;
           continue;
         }
-        const dot = segment.indexOf(".");
-        const tag = segment.slice(0, dot);
-        const value = segment.slice(dot + 1);
-        const fn = TAG_TEXT[tag.toLowerCase()];
-        if (fn === undefined) throw new Error(`unknown iho urn tag: ${segment}`);
+        if (DIGITS.test(segment)) {
+          // The appendix subnumber is the only bare atom past the
+          // markers, allowed directly after its appendix segment.
+          if (!appendixSeen) throw new Error(`unexpected bare segment: ${segment}`);
+          text += `-${segment}`;
+          continue;
+        }
+        const match = NEW_TAG.exec(segment) ?? LEGACY_TAG.exec(segment);
+        const tag = match?.[1]?.toLowerCase();
+        const value = match?.[2] ?? "";
+        const fn = tag !== undefined ? TAG_TEXT[tag] : undefined;
+        if (fn === undefined) throw new Error(`unknown iho urn segment: ${segment}`);
+        if (tag === "appendix") appendixSeen = true;
         text += fn(value);
       }
       return parse(text);
