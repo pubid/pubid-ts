@@ -20,11 +20,17 @@
 ### `fromHash(hash)`
 Deserialize the canonical hash; the idempotency gate relies on it.
 
+### `render()`
+The corpus row's canonical human spelling — `toString()` delegates here.
+
 ### `toHash()`
 The canonical serialized form - compared byte-exactly against the corpus identifier record.
 
 ### `toHuman()`
 The canonical human spelling.
+
+### `toString()`
+String coercion of the identifier — the canonical human spelling.
 
 ### `toUrn()`
 The URN; undefined when the flavor emits none.
@@ -118,11 +124,17 @@ tests/{flavor}/_negative.yaml - fail fixtures decoded by the exporter.
 ### `fromHash(hash)`
 Deserialize the canonical hash; the idempotency gate relies on it.
 
+### `render()`
+The renderer body every flavor writes; `toString()` delegates here.
+
 ### `toHash()`
 The canonical serialized form - compared byte-exactly against the corpus identifier record.
 
 ### `toHuman()`
 The canonical human spelling.
+
+### `toString()`
+String coercion of the identifier — the canonical human spelling.
 
 ### `toUrn()`
 The URN; undefined when the flavor emits none.
