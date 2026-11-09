@@ -19,6 +19,10 @@ export interface Identifier {
   toHash(): Record<string, unknown>;
   /** The canonical human spelling. */
   toHuman(): string;
+  /** The renderer body every flavor writes; `toString()` delegates here. */
+  render(): string;
+  /** String coercion of the identifier — the canonical human spelling. */
+  toString(): string;
   /** The URN; undefined when the flavor emits none. */
   toUrn(): string | undefined;
   /** Deserialize the canonical hash; the idempotency gate relies on it. */

@@ -67,6 +67,13 @@ test("fromHash dispatches on _type and round-trips", () => {
   assert.deepEqual(p.toHash(), hash);
 });
 
+test("toString coerces to the canonical human spelling, not [object Object]", () => {
+  const p = new Probe({ number: "5" });
+  assert.equal(`${p}`, "probe");
+  assert.equal(String(p), "probe");
+  assert.equal(p.toString(), p.toHuman());
+});
+
 test("custom mapping converters drive the wire shape", () => {
   class Mapped extends BaseIdentifier {
     static polymorphicName = "pubid:probe:mapped";

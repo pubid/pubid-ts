@@ -75,6 +75,15 @@ export class CorpusBackedIdentifier implements Identifier {
     return this.row.human;
   }
 
+  /** The corpus row's canonical human spelling — `toString()` delegates here. */
+  render(): string {
+    return this.row.human;
+  }
+
+  toString(): string {
+    return this.row.human;
+  }
+
   toUrn(): string | undefined {
     return this.row.urn;
   }

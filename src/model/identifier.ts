@@ -130,6 +130,12 @@ export abstract class BaseIdentifier {
     return this.render();
   }
 
+  /** String coercion answers the canonical human spelling — without this
+   *  override `String(id)` and template literals print "[object Object]". */
+  toString(): string {
+    return this.render();
+  }
+
   /** Ruby to_urn: the flavor's UrnGenerator, else the base template. */
   toUrn(): string {
     const Generator = this.constructor.urnGenerator ?? BaseUrnGenerator;
