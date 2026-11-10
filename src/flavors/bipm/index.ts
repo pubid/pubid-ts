@@ -8,13 +8,14 @@ import { BaseUrnGenerator } from "../../model/urn-generator.js";
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 
 /**
- * 1:1 port of lib/pubid/bipm/ — 90 corpus rows across six families:
+ * 1:1 port of lib/pubid/bipm/ — corpus rows across six families:
  * committee documents (REC/RES/DECN/ACT/DECL in short and long EN/FR
- * forms), meetings (EN ordinals, FR <sup>e</sup> réunion), the
- * Metrologia journal, the SI Brochure and its derived products, mises
- * en pratique (incl. Rapport BIPM-YYYY/NN), and CC guides. Historic
- * group names (CCDS) and two-letter language codes (EN/FR) normalize
- * at parse time and never reach the hash.
+ * forms, with the appendix/annex complement and the publisher-prefixed
+ * decision spelling), meetings (EN ordinals and double-dash forms, FR
+ * <sup>e</sup> réunion), the Metrologia journal, the SI Brochure and
+ * its derived products, mises en pratique (incl. Rapport BIPM-YYYY/NN),
+ * and CC guides. Historic group names (CCDS) and two-letter language
+ * codes (EN/FR) normalize at parse time and never reach the hash.
  */
 
 const GROUPS = [
@@ -90,16 +91,44 @@ function buildRules(): Record<string, P> {
   const ordinal = () => str("st").or(str("nd"), str("rd"), str("th"));
   const meetingWordFr = () => str("Réunion").or(str("réunion"));
 
-  // The trailing date is optional so "CCTF REC 2" parses date-less.
+  // The trailing date is optional so "CCTF REC 2" parses date-less. The
+  // appendix/annex complement tail ("CIPM DECN 112 A3.5 (2022, F)")
+  // rides the number: "A" + digits [ "." + digits ].
   rule("committee_short", () =>
     rules["group"]!
       .then(
         space,
         rules["type_abbrev"]!,
-        space.then(rules["number"]!).maybe(),
+        space.then(
+          rules["number"]!,
+          space
+            .then(
+              str("A").then(digits.as("appendix"), str(".").then(digits.as("annex")).maybe()),
+            )
+            .maybe(),
+        ).maybe(),
         space.then(rules["year_paren"]!).maybe(),
       )
       .as("committee_short"),
+  );
+  // The publisher-prefixed decision form the corpus cites
+  // ("BIPM DECN CIPM/101-1 (2012, EN)"): a literal BIPM publisher lead,
+  // the outcome type, then the body-qualified resource-specific-id
+  // "{body}/{id}". It names the same document as the unprefixed
+  // "<body> <TYPE> <id>" form, so the builder dispatches it through the
+  // same CommitteeDocument path.
+  rule("committee_prefixed", () =>
+    str("BIPM")
+      .then(
+        space,
+        rules["type_abbrev"]!,
+        space,
+        rules["group"]!,
+        str("/"),
+        rules["number"]!,
+        space.then(rules["year_paren"]!).maybe(),
+      )
+      .as("committee_prefixed"),
   );
   rule("committee_long_en", () =>
     rules["group"]!
@@ -120,6 +149,17 @@ function buildRules(): Record<string, P> {
         space,
         rules["group"]!,
         space.then(rules["year_paren_nolang"]!).maybe(),
+      )
+      // The corpus-cited French body-qualified form ("Décision
+      // CIPM/101-1 (2012)").
+      .or(
+        rules["type_name_fr"]!.then(
+          space,
+          rules["group"]!,
+          str("/"),
+          rules["number"]!,
+          space.then(rules["year_paren_nolang"]!).maybe(),
+        ),
       )
       .as("committee_long_fr"),
   );
@@ -150,6 +190,30 @@ function buildRules(): Record<string, P> {
       .then(space, rules["number"]!, ordinal(), space, str("Meeting"), space.then(rules["year_paren"]!).maybe())
       .or(
         rules["group"]!.then(
+          space,
+          str("Meeting"),
+          space,
+          rules["number"]!,
+          space.then(rules["year_paren"]!).maybe(),
+        ),
+      )
+      // The double-dash consumer spellings ("CGPM -- Meeting 1 (1889)").
+      .or(
+        rules["group"]!.then(
+          space,
+          str("--"),
+          space,
+          rules["number"]!,
+          ordinal(),
+          space,
+          str("Meeting"),
+          space.then(rules["year_paren"]!).maybe(),
+        ),
+      )
+      .or(
+        rules["group"]!.then(
+          space,
+          str("--"),
           space,
           str("Meeting"),
           space,
@@ -204,22 +268,39 @@ function buildRules(): Record<string, P> {
   rule("version", () => str("v").then(match("[0-9.]").repeat(1, Infinity)).as("version"));
   rule("years", () => digits.then(str("/").then(digits).maybe()).as("years"));
   rule("si_brochure", () =>
+    // The guide's French publication identifier leads with
+    // "Brochure sur le SI" instead of the English brochure name; all
+    // three leads render in the canonical "BIPM SI Brochure …" spelling.
     str("BIPM SI Brochure")
       .or(str("SI Brochure"))
+      .or(str("Brochure sur le SI"))
       .then(
         space,
         str("sur le SI").then(space).maybe(),
         rules["edition"]!,
-        space,
-        rules["version"]!,
+        // The version and the language code are optional (the guide's
+        // language-independent form, "SI Brochure 9e (2019, E)").
+        space.then(rules["version"]!).maybe(),
         space,
         str("("),
         rules["years"]!,
-        str(", "),
-        lang(),
+        str(", ").then(lang()).maybe(),
         str(")"),
       )
       .as("si_brochure"),
+  );
+  // The corpus-cited ordinal-edition spelling ("SI Brochure 9th edition
+  // (2019)") normalizes the English ordinal onto the canonical "9e".
+  rule("si_brochure_ordinal_edition", () =>
+    str("SI Brochure")
+      .then(
+        space,
+        digits.then(ordinal()).as("ordinal_edition"),
+        space,
+        str("edition"),
+        space.then(rules["year_paren"]!).maybe(),
+      )
+      .as("si_brochure_ordinal_edition"),
   );
 
   rule("brochure_variant", () =>
@@ -299,9 +380,11 @@ function buildRules(): Record<string, P> {
       rules["si_brochure"]!,
       rules["si_brochure_variant"]!,
       rules["si_brochure_section"]!,
+      rules["si_brochure_ordinal_edition"]!,
       rules["mep"]!,
       rules["guide"]!,
       rules["committee_long_fr"]!,
+      rules["committee_prefixed"]!,
       rules["group_leading"]!,
     ),
   );
@@ -377,6 +460,15 @@ function frenchConnective(group: string): string {
   return group === "CGPM" ? "de la" : "du";
 }
 
+/** The appendix/annex complement folds into the identifier segment as
+ *  "-a{appendix}[.{annex}]" (ruby committee_number_segment); a bare
+ *  number is digits and dashes only, so the suffix is unambiguous. */
+function committeeNumberSegment(id: BipmCommitteeDocument): string {
+  if (id.number === undefined) return "";
+  if (id.appendix === undefined) return id.number;
+  return `${id.number}-a${id.appendix}${id.annex === undefined ? "" : `.${id.annex}`}`;
+}
+
 export abstract class BipmIdentifier extends BaseIdentifier {
   static attributes = extendAttributes(BaseIdentifier, BIPM_ATTRS);
   static mappings = BIPM_MAPPINGS;
@@ -421,7 +513,7 @@ class BipmUrnGenerator extends BaseUrnGenerator<BipmIdentifier> {
     if (id instanceof BipmCommitteeDocument) {
       const parts = [
         "urn", "bipm", id.group?.toLowerCase() ?? "",
-        id.type_code?.toLowerCase() ?? "", id.number ?? "",
+        id.type_code?.toLowerCase() ?? "", committeeNumberSegment(id),
       ];
       if (id.year !== undefined) parts.push(String(id.year));
       return parts.join(":");
@@ -462,7 +554,15 @@ class BipmCommitteeDocument extends BipmIdentifier {
     }
     const lang = this.language === undefined ? "" : `, ${this.language}`;
     const type = this.type_code === undefined ? "" : ` ${this.type_code}`;
-    return `${this.group ?? ""}${type}${this.numberSegment()}${this.yearSegment(lang)}`;
+    return `${this.group ?? ""}${type}${this.numberSegment()}${this.appendixSegment()}${this.yearSegment(lang)}`;
+  }
+
+  /** The complement tail "{identifier} A{appendix}[.{annex}]" — parts and
+   *  subparts are dash forms inside `number` itself; appendices and
+   *  annexes are this separate tail. */
+  private appendixSegment(): string {
+    if (this.appendix === undefined) return "";
+    return ` A${this.appendix}${this.annex === undefined ? "" : `.${this.annex}`}`;
   }
 }
 registerType(BipmCommitteeDocument as unknown as IdentifierStatic);
@@ -511,7 +611,8 @@ class BipmSiBrochure extends BipmIdentifier {
     }
     const phrase = this.language === "F" ? "sur le SI " : "";
     const lang = this.language === undefined ? "" : `, ${this.language}`;
-    return `BIPM SI Brochure ${phrase}${this.edition} ${this.version} (${this.years}${lang})`;
+    const version = this.version === undefined ? "" : ` ${this.version}`;
+    return `BIPM SI Brochure ${phrase}${this.edition}${version} (${this.years}${lang})`;
   }
 }
 registerType(BipmSiBrochure as unknown as IdentifierStatic);
@@ -567,6 +668,12 @@ class BipmBuilder {
     };
 
     if (tree["committee_short"] !== undefined) return this.buildCommittee(node("committee_short"), "short");
+    if (tree["committee_prefixed"] !== undefined) {
+      // The corpus's "BIPM DECN CIPM/101-1 (2012, EN)" publisher-prefixed
+      // spelling names the same document as the unprefixed short form; the
+      // BIPM lead is the constant publisher, so it carries no attribute.
+      return this.buildCommittee(node("committee_prefixed"), "short");
+    }
     if (tree["committee_long_en"] !== undefined) return this.buildCommittee(node("committee_long_en"), "long", "E");
     if (tree["committee_bare"] !== undefined) return this.buildCommittee(node("committee_bare"), "short");
     if (tree["committee_long_fr"] !== undefined) return this.buildCommittee(node("committee_long_fr"), "long", "F");
@@ -598,6 +705,21 @@ class BipmBuilder {
     if (tree["si_brochure_section"] !== undefined) {
       const n = node("si_brochure_section");
       return new BipmSiBrochure({ part: s(n["part"]) });
+    }
+    if (tree["si_brochure_ordinal_edition"] !== undefined) {
+      // The guide prints the edition "9e"; the corpus-cited "9th edition"
+      // spelling is the English ordinal form of the same edition,
+      // normalized onto the canonical "9e" value. The version is absent
+      // from the input, so it stays nil and drops from the hash.
+      const n = node("si_brochure_ordinal_edition");
+      const edition = `${(s(n["ordinal_edition"]) ?? "").replace(/(st|nd|rd|th)$/, "")}e`;
+      const year = s(n["year"]);
+      return new BipmSiBrochure({
+        number: edition,
+        edition,
+        ...(year !== undefined ? { years: year } : {}),
+        language: normalizeLanguage(s(n["language"])),
+      });
     }
     if (tree["mep"] !== undefined) {
       const n = node("mep");
@@ -634,6 +756,8 @@ class BipmBuilder {
       ...(year !== undefined ? { year: Number(year) } : {}),
       language: normalizeLanguage(language ?? s(n["language"])),
       form,
+      appendix: s(n["appendix"]),
+      annex: s(n["annex"]),
     });
   }
 

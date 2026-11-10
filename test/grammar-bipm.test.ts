@@ -5,7 +5,7 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// bipm — 90 corpus rows across six families, plus 5 negatives
+// bipm — corpus rows across six families, plus 6 negatives
 // (JCGM identifiers belong to the jcgm flavor and must be rejected here).
 
 const TESTSUITE_DIR =

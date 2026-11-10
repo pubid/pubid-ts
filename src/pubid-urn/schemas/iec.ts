@@ -26,6 +26,12 @@ export const iecSchema = define("iec", (s) => {
   s.atom("sheet_number", "sheet");
   s.atom("sheet_year", "sheetyear");
   s.atom("vap", "vap", "list");
+  s.atom("technical_committee", "tc");
+  s.atom("wd_language", "wdlang");
+  s.atom("wd_stage", "wdstage");
+  s.atom("wp_stage", "wpstage");
+  s.atom("wp_type", "wptype");
+  s.atom("cispr_identifier", "cispr", "id");
   s.atom("languages.*.code", "lang");
   s.atom("identifiers", "ids", "ids");
 

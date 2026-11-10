@@ -260,7 +260,10 @@ function iecSingleClass(kind: IecTypeCode): IdentifierStatic {
   return IecSingleIdentifier as unknown as IdentifierStatic;
 }
 
-/** Working documents: the TC/wd fields are runtime-only (hash is bare). */
+/** Working documents: the committee/number/language/stage identity
+ *  serializes (pubid#687) — the document number is the inherited
+ *  `number`, and the five plain strings sit in the hash under their own
+ *  keys (ruby WorkingDocument's key_value block, render_default off). */
 function iecWorkingDocumentClass(): IdentifierStatic {
   class IecWorkingDocument extends IecIdentifier {
     static polymorphicName = "pubid:iec:working-document";
@@ -269,7 +272,6 @@ function iecWorkingDocumentClass(): IdentifierStatic {
       wp_stage: { type: "string" },
       wp_type: { type: "string" },
       technical_committee: { type: "string" },
-      wd_number: { type: "string" },
       wd_language: { type: "string" },
       wd_stage: { type: "string" },
     });
@@ -278,12 +280,16 @@ function iecWorkingDocumentClass(): IdentifierStatic {
       { wire: "part", to: "part" },
       { wire: "subpart", to: "subpart" },
       { wire: "edition", to: "edition" },
+      { wire: "technical_committee", to: "technical_committee" },
+      { wire: "wd_language", to: "wd_language" },
+      { wire: "wd_stage", to: "wd_stage" },
+      { wire: "wp_stage", to: "wp_stage" },
+      { wire: "wp_type", to: "wp_type" },
     );
 
     declare readonly wp_stage: string | undefined;
     declare readonly wp_type: string | undefined;
     declare readonly technical_committee: string | undefined;
-    declare readonly wd_number: string | undefined;
     declare readonly wd_language: string | undefined;
     declare readonly wd_stage: string | undefined;
 
@@ -304,8 +310,8 @@ function iecWorkingDocumentClass(): IdentifierStatic {
       }
       const parts: string[] = [];
       if (this.technical_committee !== undefined) parts.push(this.technical_committee);
-      if (this.wd_number !== undefined) {
-        let numPart = this.wd_number;
+      if (this.number !== undefined) {
+        let numPart = String(this.number);
         if (this.wd_language !== undefined) numPart += `(${this.wd_language})`;
         parts.push(numPart);
       }
@@ -328,6 +334,10 @@ function iecTrfClass(): IdentifierStatic {
       cispr_number: { type: "string" },
       cispr_part: { type: "string" },
       trf_info: { type: "string" },
+      // The embedded CISPR document is part of the form's identity and
+      // serializes under its own key (pubid#687), dispatching on the
+      // nested _type like ruby's polymorphic attribute.
+      cispr_identifier: { type: IecIdentifier as unknown as IdentifierStatic },
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
@@ -351,17 +361,31 @@ function iecTrfClass(): IdentifierStatic {
         },
         fromWire: (h) => (Array.isArray(h["copublishers"]) ? (h["copublishers"] as string[]).map(String) : undefined),
       },
+      { wire: "cispr_identifier", to: "cispr_identifier" },
     );
 
     declare readonly cispr_number: string | undefined;
     declare readonly cispr_part: string | undefined;
     declare readonly trf_info: string | undefined;
+    declare readonly cispr_identifier: BaseIdentifier | undefined;
 
     render(): string {
       let result = this.publisherPortion() + " ";
-      if (this.cispr_number !== undefined) {
-        let numStr = this.cispr_number;
-        if (this.cispr_part !== undefined && this.cispr_part !== "") numStr += `-${this.cispr_part}`;
+      // The parse path carries the CISPR document in the runtime columns;
+      // a fromHash-built form carries the nested identifier — read the
+      // document from whichever one is set (ruby renderer).
+      const cispr = this.cispr_identifier as unknown as
+        | { number?: unknown; part?: unknown }
+        | undefined;
+      const cisprNumber = this.cispr_number ??
+        (cispr?.number === undefined || cispr.number === null ? undefined : String(cispr.number));
+      const cisprPart = this.cispr_part ??
+        (cispr?.part === undefined || cispr.part === null || cispr.part === ""
+          ? undefined
+          : String(cispr.part));
+      if (cisprNumber !== undefined) {
+        let numStr = cisprNumber;
+        if (cisprPart !== undefined && cisprPart !== "") numStr += `-${cisprPart}`;
         let cisprStr = `CISPR ${numStr}`;
         if (this.date !== undefined) cisprStr += `:${this.date.render()}`;
         result += cisprStr;

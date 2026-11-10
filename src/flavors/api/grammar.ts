@@ -95,9 +95,19 @@ function buildRules(): Record<string, P> {
   );
 
   rule("second_identifier", () =>
-    ref(rules, "doc_type")
+    // The reference's grammar binds the second side's captures under
+    // second_* names (second_type/second_number/second_part), so the
+    // builder can fold first+second and let the second side overwrite.
+    ref(rules, "doc_type").as("second_type")
       .then(ref(rules, "space"))
-      .then(docTail()),
+      .then(
+        match("[0-9A-Z]").repeat(1, Infinity).as("second_number")
+          .then(
+            (ref(rules, "dash").then((match("[0-9A-Z]").repeat(1, Infinity)).as("second_part"))).maybe(),
+          )
+          .then(ref(rules, "part_notation").maybe())
+          .then(ref(rules, "date_dash").or(ref(rules, "date_colon")).maybe()),
+      ),
   );
 
   rule("combined_identifier", () =>

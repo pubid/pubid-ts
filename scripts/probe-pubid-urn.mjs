@@ -59,7 +59,13 @@ const hashOverrides = existsSync(fixturePath)
  * model removes it from this list — the probe fails on an unknown
  * flavor here, so a stale entry cannot rot.
  */
-const BUILD_PENDING = new Set(["ccsds"]);
+const BUILD_PENDING = new Set([
+  "ccsds",
+  // The testsuite's SAE corpus round landed identifier hashes for the
+  // flavor (testsuite 1ac4ec81); the URN schema table is ported but the
+  // SAE identifier model is not, so the rebuild pends on it like ccsds.
+  "sae",
+]);
 
 /**
  * Rows where the canonical rebuild (c) is pending on the port's own
