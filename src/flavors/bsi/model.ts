@@ -1000,14 +1000,6 @@ export const ConsolidatedIdentifierClass = bsiClassWith(
       .replace(/ - TC$/, "")
       .replace(/ PDF$/, "")
       .replace(/ \([A-Z][a-z]+\)$/, "");
-// The gem serializes only the `type` block onto the consolidated
-// wrapper (the members carry their own full typed-stage trio).
-(ConsolidatedIdentifierClass as unknown as { compactHash: unknown }).compactHash =
-  (model: BaseIdentifier, hash: Record<string, unknown>): void => {
-    const ts = (model as unknown as { typedStage?: BsiTypedStage }).typedStage;
-    if (ts === undefined || ts.code === "pubbs") return;
-    hash["type"] = { name: ts.name, abbr: ts.abbr[0], type_code: ts.typeCode };
-  };
     for (const supp of supplements) {
       if (supp instanceof Amendment) {
         if (supp.amd_suffix_form) {
@@ -1053,6 +1045,19 @@ export const ConsolidatedIdentifierClass = bsiClassWith(
     return result;
   },
 );
+
+// The gem serializes only the `type` block onto the consolidated
+// wrapper (the members carry their own full typed-stage trio). This
+// override is installed at load time, NOT inside the render closure: a
+// fromHash -> toHash of a not-yet-rendered consolidated id must
+// serialize identically (the pubid-scheme URN's canonical gate,
+// pubid-ts#161, depends on it).
+(ConsolidatedIdentifierClass as unknown as { compactHash: unknown }).compactHash =
+  (model: BaseIdentifier, hash: Record<string, unknown>): void => {
+    const ts = (model as unknown as { typedStage?: BsiTypedStage }).typedStage;
+    if (ts === undefined || ts.code === "pubbs") return;
+    hash["type"] = { name: ts.name, abbr: ts.abbr[0], type_code: ts.typeCode };
+  };
 
 // ConsolidatedIdentifier#to_urn override (renderer.rb class method):
 // base URN plus per-supplement segments.

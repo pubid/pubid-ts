@@ -22,6 +22,7 @@ import type { AttributeTable, FieldMapping, AttributeSpec, ComponentCtor } from 
 import { FLAT_SCALAR_COMPONENTS, FLAT_SCALAR_FIELDS, BASE_ATTRIBUTES } from "./attribute.js";
 import { Component } from "./component.js";
 import { BaseUrnGenerator } from "./urn-generator.js";
+import { generate as generatePubidUrn } from "../pubid-urn/index.js";
 
 export interface IdentifierStatic {
   new (attrs?: Record<string, unknown>): BaseIdentifier;
@@ -140,6 +141,12 @@ export abstract class BaseIdentifier {
   toUrn(): string {
     const Generator = this.constructor.urnGenerator ?? BaseUrnGenerator;
     return new Generator(this).generate();
+  }
+
+  /** The pubid-scheme URN (pubid#656): the lossless form,
+   *  `PubidUrn.parse(this.toPubidUrn()).toHash == this.toHash`. */
+  toPubidUrn(): string {
+    return generatePubidUrn(this.toHash());
   }
 
   fromHash(hash: Record<string, unknown>): BaseIdentifier {
