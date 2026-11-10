@@ -14,3 +14,5 @@ export { corpusModeImplementation, CorpusBackedIdentifier } from "./implementati
 // (pubid/pubid-ts#63 - the estate serving codec).
 export { grammarImplementation } from "./flavors/index.js";
 export { subsetMatch, valueMatch, exactMatch } from "./model/subset-match.js";
+// The pubid-scheme URN codec and the slug form (pubid-ts#161).
+export * as PubidUrn from "./pubid-urn/index.js";
