@@ -1,4 +1,6 @@
-testsuite_ref: a64da1c0f152d822bd9733d8de008b0cb77173d7
+# pubid-testsuite main: the pubid#690 serialized-identity round (the IEC
+# working-document / TRF identity corpus + official-URN additions).
+testsuite_ref: 1ac4ec81d2786e19b91a886cde02fe23f306de45
 # pubid-grammar main: the mode-pinned flavors, the char-column corpora
 # freeze and the emission-stamped artifacts (pubid-grammar#62's train).
 grammar_ref: main

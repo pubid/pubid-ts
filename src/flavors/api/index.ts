@@ -59,13 +59,42 @@ function assignAttributes(identifier: Identifier, data: Record<string, unknown>)
   }
 }
 
+// The bound grammar wraps the combined form's first/second identifiers
+// under "first"/"second"; the reference folds both wrappers into one
+// hash in parse order, so the second side's number/part/year overwrite
+// the first's — and select_class saw no top-level :type, so a combined
+// form always built the typeless class. Reproduce both.
+const SECOND_KEYS = ["second_number", "second_part", "second_year", "second_type"];
+const SECOND_OVERWRITES: Record<string, string> = {
+  second_number: "number",
+  second_part: "part",
+  second_year: "year",
+};
+
+function unflattenCombined(data: Record<string, unknown>): Record<string, unknown> {
+  if (!SECOND_KEYS.some((k) => k in data)) return data;
+  const out = { ...data };
+  delete out["type"];
+  for (const [source, target] of Object.entries(SECOND_OVERWRITES)) {
+    if (source in out) out[target] = out[source];
+  }
+  return out;
+}
+
 export function buildApiIdentifier(tree: Tree): Identifier {
   const data = flatten(tree) as Record<string, unknown>;
-  const typeStr = strv(data["type"]);
+  const first = isObj(data["first"]) ? (data["first"] as Record<string, unknown>) : undefined;
+  const second = isObj(data["second"]) ? (data["second"] as Record<string, unknown>) : undefined;
+  // Parse-order fold: the first side's captures, then the second's.
+  const combined = { ...data, ...(first ?? {}), ...(second ?? {}) };
+  delete combined["first"];
+  delete combined["second"];
+  const unflattened = unflattenCombined(combined);
+  const typeStr = strv(unflattened["type"]);
   const klass = (typeStr !== undefined ? TYPE_CLASS_MAP[typeStr] : undefined)
     ?? TypelessStandardClass;
   const identifier = new (klass as unknown as Ctor)();
-  assignAttributes(identifier, data);
+  assignAttributes(identifier, unflattened);
   return identifier;
 }
 

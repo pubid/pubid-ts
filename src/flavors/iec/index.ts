@@ -157,12 +157,18 @@ class IecBuilder {
 
     const attrs: Record<string, unknown> = {};
     this.commonAttrs(tree, attrs);
-    // TRF with an embedded CISPR document: the CISPR number is runtime-only
-    // (hash carries just year/publisher; the URN names the CISPR document).
+    // TRF with an embedded CISPR document: the form itself has no number
+    // — the document it reports on is built as the nested identifier and
+    // serializes under `cispr_identifier` (pubid#687). The runtime
+    // columns stay for the renderer and the official-URN slot.
     if (tree["trf_org"] !== undefined) {
       const cisprComponents = numberComponents(tree["number_with_part"]);
       attrs["cispr_number"] = cisprComponents["number"];
       attrs["cispr_part"] = cisprComponents["part"];
+      const cispr = new (IEC_CLASSES.KIND_CLASSES["is"]! as unknown as new (
+        a?: Record<string, unknown>,
+      ) => BaseIdentifier)({ publisher: "CISPR", ...cisprComponents });
+      attrs["cispr_identifier"] = cispr;
       delete attrs["number"];
       delete attrs["part"];
       delete attrs["subpart"];
@@ -330,9 +336,14 @@ class IecBuilder {
   }
 
   private buildWorkingProgramme(tree: TreeObject): BaseIdentifier {
+    // The grammar captures a trailing space on wp_type ("PWI TR 100-36"
+    // -> "TR "); ruby strips it at the construction site (its builder's
+    // :wp_type cast) so the stored value — and the hash and URN — is the
+    // stripped form, an all-space value dropping out entirely.
+    const wpTypeRaw = s(tree["wp_type"])?.replace(/\s+$/, "");
     const attrs: Record<string, unknown> = {
       wp_stage: s(tree["wp_stage"]),
-      wp_type: s(tree["wp_type"]),
+      wp_type: wpTypeRaw === "" ? undefined : wpTypeRaw,
     };
     if (tree["wp_raw"] !== undefined) {
       // TC-style name ("SyCCOMM-1"): split the trailing number as the part.
@@ -357,7 +368,9 @@ class IecBuilder {
   private buildWorkingDocument(tree: TreeObject): BaseIdentifier {
     const attrs: Record<string, unknown> = {
       technical_committee: s(tree["technical_committee"]),
-      wd_number: s(tree["wd_number"]),
+      // The document number is the inherited `number` (pubid#687: the
+      // parallel wd_number slot used to serialize nowhere).
+      number: s(tree["wd_number"]),
       wd_language: s(tree["wd_language"]),
       wd_stage: s(tree["wd_stage"]),
     };
