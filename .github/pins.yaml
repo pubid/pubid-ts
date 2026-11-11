@@ -1,6 +1,7 @@
-# pubid-testsuite main: the pubid#690 serialized-identity round (the IEC
-# working-document / TRF identity corpus + official-URN additions).
-testsuite_ref: 1ac4ec81d2786e19b91a886cde02fe23f306de45
+# pubid-testsuite main: the ieee+nist render-fidelity corpus round (the
+# ieee JointDevelopment month-face canonical splits + the id renumbering;
+# corpus-check run 42621583834).
+testsuite_ref: 8e441a97555b42c0f786790b42e81ff78e2eaaa6
 # pubid-grammar main: the mode-pinned flavors, the char-column corpora
 # freeze and the emission-stamped artifacts (pubid-grammar#62's train).
 grammar_ref: main

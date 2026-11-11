@@ -254,10 +254,19 @@ export class IeeeDraft {
     // are accepted aliases. Captures [stage, iteration]. The iteration
     // ordinal stays short (one or two digits): a glued D= date
     // ("-201908", the pubid#203 convention) must ride the version body
-    // verbatim, not fold into the iteration slot.
-    const compound = /=D?(PWI|NP|WD|CDV|FDIS|DIS|CD)(\d{1,2}[a-z]?)?(?:[.-](\d{1,2}[a-z]?))?$/;
+    // verbatim, not fold into the iteration slot. The glued designator
+    // date decomposes ("-201908" -> year + zero-padded month): the
+    // reference's builder carries it on the parse-path Draft object
+    // (iso_stage + year + month), and the render's stage-draft guard
+    // reads the stage — a re-parse that kept it in the version body
+    // would print the type word the designator face never takes.
+    // FCD rides the stage list (the ECHO_SUFFIX spelling).
+    const compound =
+      /=D?(PWI|NP|WD|CDV|FDIS|FCD|DIS|CD)(\d{1,2}[a-z]?)?(?:[.-](\d{1,2}[a-z]?))?(?:-(\d{4})(\d{2}))?$/;
     let isoStage: string | undefined;
     let isoIteration: string | undefined;
+    let glueYear: string | undefined;
+    let glueMonth: string | undefined;
     const cm = compound.exec(body);
     if (cm !== null) {
       // The glued digits ride the STAGE ("D=CD1", matching the reference's
@@ -265,6 +274,8 @@ export class IeeeDraft {
       // ".iter" slot ("=DIS.3").
       isoStage = cm[1] + (cm[2] ?? "");
       isoIteration = cm[3];
+      glueYear = cm[4];
+      glueMonth = cm[5];
       body = body.slice(0, cm.index);
     }
 
@@ -277,7 +288,16 @@ export class IeeeDraft {
     );
     const m = suffix.exec(body);
     if (m === null) {
-      return new IeeeDraft({ version: body, iso_stage: isoStage, iso_iteration: isoIteration });
+      // A glue-consumed body ("=FDIS-201908") carries the designator's
+      // own date on the year/month slots (the parse-path Draft object's
+      // shape), so the render re-composes the glued face verbatim.
+      return new IeeeDraft({
+        version: body,
+        iso_stage: isoStage,
+        iso_iteration: isoIteration,
+        year: glueYear,
+        month: glueMonth,
+      });
     }
     return new IeeeDraft({
       version: body.slice(0, m.index),
@@ -640,8 +660,16 @@ export function renderIeeeBase(id: IeeeIdentifier): string {
   // publisher -- the ISO-led joint drafts (pubid#597) print it too.
   const shouldRenderType = /^(IEEE|AIEE)/.test(id.publisher ?? "") || isProjectDraft;
   const stageObj = id.typed_stage;
+  // An ISO/IEC stage-token draft (CD1, FDIS - the draft carries the
+  // stage) is its own draft marker: the designator face it renders
+  // (".../D=CD1", pubid#203) never takes the word Draft, so the type
+  // word is skipped whatever the publisher arrangement - the joint rows
+  // ("IEEE/IEC Draft P60076-57-129/D=FDIS-201707") would otherwise
+  // print Draft on one construction path and drop it on the re-parsed
+  // designation path, and the render would not re-parse to itself.
+  const stageDraft = id.draftObject()?.isoStage !== undefined;
   if (
-    shouldRenderType && !(stageObj?.projectStatus === true) &&
+    shouldRenderType && !stageDraft && !(stageObj?.projectStatus === true) &&
     ((id.type !== undefined && id.type.trim() !== "" && id.type !== "P") ||
       isProjectDraft) &&
     !/unapproved/i.test(id.draft_status ?? "")
@@ -1485,7 +1513,17 @@ export const JointDevelopmentClass = ieeeClass(
       let result = parts.join(" ");
       if (id.year !== undefined && !designatorCarriesYear &&
           !(ieeeDraft ?? "").endsWith(`-${id.year}`)) {
-        result += `-${id.year}`;
+        // The month face follows the standing month rule (the reference's
+        // to_ieee_format): a numeric month is the glued short form
+        // ("-2018-05", the grammar reads only two digits), a text month
+        // the comma long form (", February 2018", which re-parses through
+        // the joint date clause). Dropping the month published a different
+        // date ("P90003, February 2018 (E)" printed as "P90003-2018").
+        result += /^\d+$/.test(id.month ?? "")
+          ? `-${id.year}-${(id.month ?? "").padStart(2, "0")}`
+          : id.month !== undefined
+          ? `, ${id.month} ${id.year}`
+          : `-${id.year}`;
       }
       const marker = (id as unknown as Record<string, unknown>)["parenthetical_content"] as string | undefined;
       if (marker !== undefined) result += ` (${marker})`;

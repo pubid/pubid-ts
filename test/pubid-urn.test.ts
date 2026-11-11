@@ -64,12 +64,12 @@ const BUILD_PENDING = new Set(["ccsds", "sae"]);
 /** Rows pending the rebuild on the port's own pinned quirks (the nist
  *  yaml-float wire quirk; see scripts/probe-pubid-urn.mjs). */
 const REBUILD_PENDING = new Set([
-  "nist.commercial_standard.1870",
-  "nist.commercial_standard.1951",
-  "nist.commercial_standard.2046",
-  "nist.commercial_standard.2067",
-  "nist.commercial_standard.2079",
-  "nist.commercial_standard.2123",
+  "nist.commercial_standard.1872",
+  "nist.commercial_standard.1953",
+  "nist.commercial_standard.2048",
+  "nist.commercial_standard.2069",
+  "nist.commercial_standard.2081",
+  "nist.commercial_standard.2125",
 ]);
 
 const canon = (node: unknown): unknown => {
