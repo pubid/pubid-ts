@@ -35,8 +35,9 @@ test("bipm parses open-ended beyond the corpus", () => {
     number: "2",
   });
   assert.equal(impl.parse("CCTF REC 2 (2012, EN)").toHuman(), "CCTF REC 2 (2012, E)");
-  // The bare MRA form has no type code — empty URN segment, double colon.
-  assert.equal(impl.parse("CIPM 2005-06").toUrn(), "urn:bipm:cipm::2005-06");
+  // The bare MRA form has no type code — empty URN segment, double colon
+  // (the v1 version segment leads every family, pubid#694 ruling R2).
+  assert.equal(impl.parse("CIPM 2005-06").toUrn(), "urn:bipm:v1:cipm::2005-06");
   // Loose French meeting spellings normalize to the canonical sup form.
   assert.equal(
     impl.parse("CCAUV 10e réunion (2015)").toHuman(),
@@ -49,7 +50,7 @@ test("bipm parses open-ended beyond the corpus", () => {
     _type: "pubid:bipm:si-brochure",
     part: "1",
   });
-  assert.equal(impl.parse("SI Brochure").toUrn(), "urn:bipm:si-brochure::::");
+  assert.equal(impl.parse("SI Brochure").toUrn(), "urn:bipm:v1:bipm:si-brochure:::");
   // MEPs and guides raise on toUrn (the Ruby generator does too).
   assert.throws(() => impl.parse("Rapport BIPM-2019/05").toUrn());
   assert.throws(() => impl.parse("CCDS-GD-MeP-1").toUrn());

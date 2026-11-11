@@ -1,7 +1,9 @@
-# pubid-testsuite main: the ieee+nist render-fidelity corpus round (the
-# ieee JointDevelopment month-face canonical splits + the id renumbering;
-# corpus-check run 42621583834).
-testsuite_ref: 8e441a97555b42c0f786790b42e81ff78e2eaaa6
-# pubid-grammar main: the mode-pinned flavors, the char-column corpora
-# freeze and the emission-stamped artifacts (pubid-grammar#62's train).
-grammar_ref: main
+# pubid-testsuite: the bipm #694 corpus round (the three 2026-11-11
+# rulings - v1 URN faces, French body-prefixed canonical, the si-brochure
+# bare-number editions; pubid/pubid-testsuite#101 head f2d5e3a - the tree
+# the vendored corpus and the parity fixture were generated from).
+testsuite_ref: f2d5e3a
+# pubid-grammar main (5babb72): the artifacts vendor/parg was mirrored
+# from, byte-checked by the "Vendored artifacts match the pinned grammar
+# ref" gate.
+grammar_ref: 5babb72

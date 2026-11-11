@@ -278,14 +278,18 @@ function buildRules(): Record<string, P> {
         space,
         str("sur le SI").then(space).maybe(),
         rules["edition"]!,
-        // The version and the language code are optional (the guide's
-        // language-independent form, "SI Brochure 9e (2019, E)").
+        // The version and the trailing parenthetical are optional (the
+        // guide's language-independent form "SI Brochure 9e (2019, E)";
+        // the year-less editions "BIPM SI Brochure 9e" and "… (E)" must
+        // re-parse as canonically rendered, pubid#694 ruling R1).
         space.then(rules["version"]!).maybe(),
-        space,
-        str("("),
-        rules["years"]!,
-        str(", ").then(lang()).maybe(),
-        str(")"),
+        space
+          .then(
+            str("(")
+              .then(rules["years"]!, str(", ").then(lang()).maybe(), str(")"))
+              .or(str("(").then(lang(), str(")"))),
+          )
+          .maybe(),
       )
       .as("si_brochure"),
   );
@@ -301,6 +305,23 @@ function buildRules(): Record<string, P> {
         space.then(rules["year_paren"]!).maybe(),
       )
       .as("si_brochure_ordinal_edition"),
+  );
+
+  // The unmerged si-brochure-id proposal's bare-number edition spellings
+  // ("SI Brochure 9", "SI Brochure 9 (E)", "SI Brochure 9 (2024) (F)"):
+  // the edition carries no trailing "e", and the year and the language
+  // may each sit in their own parentheses (pubid#694 ruling R1). A
+  // parse-in alias of the canonical "9e" edition — the builder appends
+  // the "e" the proposal drops.
+  rule("si_brochure_bare_edition", () =>
+    str("SI Brochure")
+      .then(
+        space,
+        digits.as("bare_edition"),
+        space.then(str("("), rules["years"]!, str(")")).maybe(),
+        space.then(str("("), lang(), str(")")).maybe(),
+      )
+      .as("si_brochure_bare_edition"),
   );
 
   rule("brochure_variant", () =>
@@ -381,6 +402,7 @@ function buildRules(): Record<string, P> {
       rules["si_brochure_variant"]!,
       rules["si_brochure_section"]!,
       rules["si_brochure_ordinal_edition"]!,
+      rules["si_brochure_bare_edition"]!,
       rules["mep"]!,
       rules["guide"]!,
       rules["committee_long_fr"]!,
@@ -511,28 +533,40 @@ class BipmUrnGenerator extends BaseUrnGenerator<BipmIdentifier> {
   generate(): string {
     const id = this.identifier;
     if (id instanceof BipmCommitteeDocument) {
+      // The guide-of-record faces (pubid#694, ruling R2): the v1 version
+      // segment leads every family and the type segment spells the English
+      // type name lowercased ("decision"), never the REC/RES/DECN code.
+      // type_code is nil for the bare MRA form -> empty type segment.
+      const typeSegment = id.type_code === undefined
+        ? ""
+        : (TYPE_NAME_EN[id.type_code] ?? id.type_code).toLowerCase();
       const parts = [
-        "urn", "bipm", id.group?.toLowerCase() ?? "",
-        id.type_code?.toLowerCase() ?? "", committeeNumberSegment(id),
+        "urn", "bipm", "v1", id.group?.toLowerCase() ?? "",
+        typeSegment, committeeNumberSegment(id),
       ];
       if (id.year !== undefined) parts.push(String(id.year));
       return parts.join(":");
     }
     if (id instanceof BipmMeeting) {
-      const parts = ["urn", "bipm", id.group?.toLowerCase() ?? "", "meeting", id.number ?? ""];
+      const parts = ["urn", "bipm", "v1", id.group?.toLowerCase() ?? "", "meeting", id.number ?? ""];
       if (id.year !== undefined) parts.push(String(id.year));
       return parts.join(":");
     }
     if (id instanceof BipmMetrologiaArticle) {
-      const parts = ["urn", "bipm", "metrologia", String(id.volume())];
+      const parts = ["urn", "bipm", "v1", "metrologia", String(id.volume())];
       if (id.issue !== undefined) parts.push(id.issue);
       if (id.article !== undefined) parts.push(id.article);
       return parts.join(":");
     }
     if (id instanceof BipmSiBrochure) {
+      // The guide's edition-number carries no "e" ("9e" emits "9"); the
+      // version drops its "v"; the year is the latest of the years range;
+      // the language segment is dropped entirely.
       return [
-        "urn", "bipm", "si-brochure", id.language?.toLowerCase() ?? "",
-        id.edition ?? "", id.version ?? "", id.years ?? "",
+        "urn", "bipm", "v1", "bipm", "si-brochure",
+        (id.edition ?? "").replace(/e$/i, ""),
+        (id.version ?? "").replace(/^v/i, ""),
+        (id.years ?? "").split("/").pop() ?? "",
       ].join(":");
     }
     throw new ParseFailed(`Cannot build URN for BIPM identifier: ${id.constructor.polymorphicName}`, 0);
@@ -547,6 +581,14 @@ class BipmCommitteeDocument extends BipmIdentifier {
     if (this.form === "long") {
       if (this.language === "F") {
         const name = TYPE_NAME_FR[this.type_code ?? ""] ?? "";
+        // The guide's body-prefixed French pattern ("Décision CIPM/111-10
+        // (2022)") is the canonical long face (pubid#694, ruling R3): the
+        // group qualifies the resource-specific id with a slash. A
+        // number-less document keeps the connective spelling the guide's
+        // general French pattern uses ("Statement de la CGPM (1889)").
+        if (this.number !== undefined) {
+          return `${name} ${this.group}/${this.number}${this.yearSegment()}`;
+        }
         return `${name}${this.numberSegment()} ${frenchConnective(this.group ?? "")} ${this.group}${this.yearSegment()}`;
       }
       const name = TYPE_NAME_EN[this.type_code ?? ""] ?? "";
@@ -609,10 +651,18 @@ class BipmSiBrochure extends BipmIdentifier {
       const part = this.part === undefined ? "" : ` Part ${this.part}`;
       return `BIPM SI Brochure${part}`;
     }
+    // The parens carry the year, the language or both, and stay off
+    // entirely when the reference names neither ("SI Brochure 9e", the
+    // bare edition without a year — pubid#694's renderer fix).
     const phrase = this.language === "F" ? "sur le SI " : "";
     const lang = this.language === undefined ? "" : `, ${this.language}`;
     const version = this.version === undefined ? "" : ` ${this.version}`;
-    return `BIPM SI Brochure ${phrase}${this.edition}${version} (${this.years}${lang})`;
+    const tail = this.years !== undefined ? `${this.years}${lang}` : (this.language ?? "");
+    let result = `BIPM SI Brochure ${phrase}${this.edition}${version}`;
+    if (this.years !== undefined || this.language !== undefined) {
+      result += ` (${tail})`;
+    }
+    return result;
   }
 }
 registerType(BipmSiBrochure as unknown as IdentifierStatic);
@@ -721,6 +771,23 @@ class BipmBuilder {
         language: normalizeLanguage(s(n["language"])),
       });
     }
+    if (tree["si_brochure_bare_edition"] !== undefined) {
+      // The proposal drops the trailing "e"; the builder appends it back
+      // so the bare-number spellings are parse-in aliases of the canonical
+      // "9e" edition (pubid#694 ruling R1). The year and the language sit
+      // in separate parentheses; an absent year stays undefined (a partial
+      // reference, like "SI Brochure 9th edition" without a year).
+      const n = node("si_brochure_bare_edition");
+      const edition = `${s(n["bare_edition"])}e`;
+      const year = s(n["year"]);
+      const language = normalizeLanguage(s(n["language"]));
+      return new BipmSiBrochure({
+        number: edition,
+        edition,
+        ...(year !== undefined ? { years: year } : {}),
+        ...(language !== undefined ? { language } : {}),
+      });
+    }
     if (tree["mep"] !== undefined) {
       const n = node("mep");
       const mepCode = s(n["mep_code"]);
@@ -778,41 +845,85 @@ export function bipmGrammarImplementation(): FlavorImplementation {
     // Inverse of BipmUrnGenerator (lib/pubid/bipm/urn_parser.rb): rebuild
     // the identifier DIRECTLY from the URN fields — the printed forms carry
     // surface detail (meeting ordinals, French wording) the URN omits.
+    //
+    // Two URN generations parse (pubid#694): the canonical face leads with
+    // the guide's `v1` version segment; the pre-adoption face this flavor
+    // emitted for years stays parseable as a documented parse-in alias of
+    // the same identity. The EMITTER is the new shape; an alias never
+    // renders back as itself, it rebuilds the identifier whose toUrn is
+    // the v1 face.
     parseUrn(urn: string): Identifier {
       const body = urn.replace(/^urn:bipm:/, "");
       // Keep trailing empty segments (gem splits with -1).
       const parts = body.split(":");
       const presence = (v: string | undefined) =>
         v === undefined || v === "" ? undefined : v;
-      if (parts[0] === "metrologia") {
+      const canonical = parts[0] === "v1";
+      const p = canonical ? parts.slice(1) : parts;
+      if (p[0] === "metrologia") {
         return new BipmMetrologiaArticle({
-          number: presence(parts[1]),
-          issue: parts[2],
-          article: parts[3],
+          number: presence(p[1]),
+          issue: p[2],
+          article: p[3],
         }) as unknown as Identifier;
       }
-      if (parts[0] === "si-brochure") {
+      if (canonical && p[0] === "bipm") {
+        // `bipm:si-brochure:<edition-number>:<version-number>:<year>` —
+        // the guide strips the "e" off the edition and the "v" off the
+        // version and drops the language segment, so they are restored
+        // here; the year stores back verbatim (idempotent emission).
+        const edition = presence(p[2]);
+        const version = presence(p[3]);
         return new BipmSiBrochure({
-          number: presence(parts[2]),
-          language: (parts[1] ?? "").toUpperCase(),
-          edition: parts[2],
-          version: parts[3],
-          years: parts[4],
+          number: edition ? `${edition}e` : undefined,
+          edition: edition ? `${edition}e` : undefined,
+          version: version ? `v${version}` : undefined,
+          years: presence(p[4]),
         }) as unknown as Identifier;
       }
-      const group = (parts[0] ?? "").toUpperCase();
-      if (parts[1] === "meeting") {
+      if (p[0] === "si-brochure") {
+        // Legacy face: `si-brochure:<lang>:<edition>:<version>:<years>`.
+        return new BipmSiBrochure({
+          number: presence(p[2]),
+          language: (p[1] ?? "").toUpperCase(),
+          edition: p[2],
+          version: p[3],
+          years: p[4],
+        }) as unknown as Identifier;
+      }
+      const group = (p[0] ?? "").toUpperCase();
+      if (p[1] === "meeting") {
         return new BipmMeeting({
           group,
-          number: parts[2] ?? "",
-          year: parts[3] ? Number(parts[3]) : undefined,
+          number: p[2] ?? "",
+          year: p[3] ? Number(p[3]) : undefined,
         }) as unknown as Identifier;
       }
+      // The legacy face carried the lowercase type abbreviation ("res");
+      // the v1 face carries the lowercase English type name ("resolution").
+      // Both resolve through TYPE_WORD_TO_CODE, so an empty segment (the
+      // bare MRA form) stays a nil type_code on either face.
+      const segment = presence(p[1]);
+      const word = segment === undefined
+        ? undefined
+        : canonical
+        ? segment.charAt(0).toUpperCase() + segment.slice(1)
+        : segment.toUpperCase();
+      // Inverse of committeeNumberSegment: split the folded
+      // "-a{appendix}[.{annex}]" tail back out of the identifier segment.
+      // A bare number is digits and dashes only, so the letter-prefixed
+      // tail is unambiguous.
+      const raw = p[2] ?? "";
+      const folded = /^(.+?)-a(\d+)(?:\.(\d+))?$/.exec(raw);
+      const number = folded ? folded[1] : raw;
       return new BipmCommitteeDocument({
         group,
-        type_code: presence(parts[1])?.toUpperCase(),
-        number: presence(parts[2]),
-        year: parts[3] ? Number(parts[3]) : undefined,
+        type_code: word === undefined ? undefined : TYPE_WORD_TO_CODE[word],
+        number: presence(number),
+        year: p[3] ? Number(p[3]) : undefined,
+        ...(folded
+          ? { appendix: folded[2], ...(folded[3] !== undefined ? { annex: folded[3] } : {}) }
+          : {}),
       }) as unknown as Identifier;
     },
 
