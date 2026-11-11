@@ -2,8 +2,8 @@
 # rulings - v1 URN faces, French body-prefixed canonical, the si-brochure
 # bare-number editions; pubid/pubid-testsuite#101 head f2d5e3a - the tree
 # the vendored corpus and the parity fixture were generated from).
-testsuite_ref: f2d5e3a
+testsuite_ref: f2d5e3a0154e2c1d30537e915abe739c88abbaae
 # pubid-grammar main (5babb72): the artifacts vendor/parg was mirrored
 # from, byte-checked by the "Vendored artifacts match the pinned grammar
 # ref" gate.
-grammar_ref: 5babb72
+grammar_ref: 5babb721c32b0128feb7e7fe3a6f5d4bd1a067b1
