@@ -1,8 +1,8 @@
-# pubid-testsuite: the bipm #694 corpus round (the three 2026-11-11
-# rulings - v1 URN faces, French body-prefixed canonical, the si-brochure
-# bare-number editions; pubid/pubid-testsuite#101 head f2d5e3a - the tree
-# the vendored corpus and the parity fixture were generated from).
-testsuite_ref: f2d5e3a0154e2c1d30537e915abe739c88abbaae
+# pubid-testsuite: the nist FIPS render-face corpus round (the official
+# FIPS PUB <number> face; pubid/pubid-testsuite#103 head ad5b4bd - the
+# tree the vendored corpus and the parity fixture were generated from;
+# carries the other 2026-11-11/12 wave rounds on main too).
+testsuite_ref: ad5b4bdeeaefd749ffdab7cabae79f280a411758
 # pubid-grammar main (5babb72): the artifacts vendor/parg was mirrored
 # from, byte-checked by the "Vendored artifacts match the pinned grammar
 # ref" gate.
