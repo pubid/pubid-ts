@@ -787,11 +787,15 @@ function nistClass(spec: TypeSpec): IdentifierStatic {
         // The official published face is "FIPS PUB <number>": FIPS is
         // government-published and "PUB" (Federal Information Processing
         // Standards PUBlication) is part of the official designation
-        // (owner ruling 2026-11-12). A parsed NIST publisher renders the
+        // (owner ruling 2026-11-12). A spelled NIST publisher renders the
         // official face; the historical NBS-prefixed rows keep
         // "NBS FIPS <number>", and the bare publisher-less spelling keeps
-        // its short "FIPS <number>" face. The tail rides the lead.
-        const pub = this.publisher;
+        // its short "FIPS <number>" face. The lead reads
+        // shortRenderPublisher() (the printed-publisher view), so a
+        // series-default publisher filled without being spelled (#704's
+        // ruby model) can never flip the bare face; the tail rides the
+        // lead.
+        const pub = this.shortRenderPublisher();
         const series = this.seriesCode() ?? "";
         let result =
           pub === "NIST"
