@@ -77,14 +77,15 @@ const BUILD_PENDING = new Set([
  * (a),(b),(d),(e) run for these rows too.
  */
 const REBUILD_PENDING = new Set([
-  // nist ids renumbered with the testsuite's round #99 (the drift-repair
-  // id renumbering; same rows, +2 — the six yaml-float quirk rows).
-  "nist.commercial_standard.1872",
-  "nist.commercial_standard.1953",
-  "nist.commercial_standard.2048",
-  "nist.commercial_standard.2069",
-  "nist.commercial_standard.2081",
-  "nist.commercial_standard.2125",
+  // nist ids renumbered with the testsuite's FIPS render-face round
+  // (corpus/fips-pub-face: the face shift moves the flavor's global
+  // case-id counter; same rows).
+  "nist.commercial_standard.2019",
+  "nist.commercial_standard.2100",
+  "nist.commercial_standard.2195",
+  "nist.commercial_standard.2216",
+  "nist.commercial_standard.2228",
+  "nist.commercial_standard.2272",
 ]);
 
 const canon = (node) => {

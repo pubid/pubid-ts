@@ -152,6 +152,18 @@ export function preprocessNist(input: string): PreprocessorResult {
   cleaned = cleaned.replace(/\b(ir|sp|tn|hb|fips|ams|vts)\b/i, (m) => m.toUpperCase());
   cleaned = cleaned.replace(/\bLC\b(?!IRC)/g, "LCIRC");
 
+  // normalize_fips_pub_alias: the FIPS series' official printed face is
+  // "FIPS PUB <number>" — FIPS is government-published and "PUB" (Federal
+  // Information Processing Standards PUBlication) is part of the official
+  // designation — and the RENDERER emits that face directly (owner ruling
+  // 2026-11-12, mirroring the gem). The grammar reads the
+  // publisher-bearing spelling only through this fold (pubid#697): the
+  // printed spellings — "FIPS PUB 205" and the publisher-prefixed
+  // "NIST FIPS PUB 205" (pubid#702) — fold onto the one model "NIST FIPS
+  // <number>" the grammar already builds (same hash, same URN, same MR
+  // string). Anchored at the head; bare "FIPS" is untouched.
+  cleaned = cleaned.replace(/^(?:NIST )?FIPS PUB\b/i, "NIST FIPS");
+
   // normalize_lcirc_supplement_contexts
   cleaned = cleaned.replace(/\bNBS LCIRC\b(?=.*\b(?:supp?|sup\+|r\d+\/)\d)/, "NBS.LCIRC");
   cleaned = cleaned.replace(/\bNBS\.LCIRC\.(\d+r\d+\/\d{4})/, "NBS LCIRC $1");

@@ -35,7 +35,13 @@ test("nist parses open-ended beyond the corpus", () => {
   const impl = grammarImplementation("nist")!;
   // Compound numbers across series.
   assert.equal(impl.parse("NIST SP 800-53").toHuman(), "NIST SP 800-53");
-  assert.equal(impl.parse("NIST FIPS 173-1").toHuman(), "NIST FIPS 173-1");
+  // The official FIPS render face is "FIPS PUB <number>" ("PUB" is part
+  // of the Federal Information Processing Standards PUBlication
+  // designation); every printed spelling parses to the same identity.
+  assert.equal(impl.parse("NIST FIPS 173-1").toHuman(), "FIPS PUB 173-1");
+  assert.equal(impl.parse("FIPS PUB 173-1").toHuman(), "FIPS PUB 173-1");
+  assert.equal(impl.parse("NIST FIPS PUB 173-1").toHuman(), "FIPS PUB 173-1");
+  assert.equal(impl.parse("FIPS 205").toHuman(), "FIPS 205");
   // Edition revisions and update components.
   assert.equal(impl.parse("NBS CIRC 100e2").toHuman(), "NBS CIRC 100e2");
   assert.equal(impl.parse("NIST SP 800-53r4").toHuman(), "NIST SP 800-53r4");
