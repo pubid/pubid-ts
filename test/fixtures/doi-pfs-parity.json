@@ -1,0 +1,629 @@
+{
+  "provenance": {
+    "generator": "scripts/doi-pfs-parity-ruby-probe.rb",
+    "source_spec": "spec/pubid/doi_pfs/parity_spec.rb",
+    "pubid_ref": "2667283e4e884a933572676d1cfe1481bf06fdb9",
+    "pubid_dirty_tree": false,
+    "notes": "to_mr_string has no TS counterpart yet (the TS model surface is toString/toHash/toUrn/toPubidUrn); the column is recorded so the shared set stays complete for both engines."
+  },
+  "positives": [
+    {
+      "input": "doi:10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "DOI:10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "Doi:10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "/10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "doi:/10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "https://doi.org/10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "http://doi.org/10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "https://10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "http://10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "doi.org/10.1000/182",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/182",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "182"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-182"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.1006/jmbi.1998.2354",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1006/jmbi.1998.2354",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1006",
+            "suffix": "jmbi.1998.2354"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1006:suffix-jmbi.1998.2354"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1006/jmbi.1998.2354",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1006",
+            "suffix": "jmbi.1998.2354"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1006:suffix-jmbi.1998.2354"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "DOI:10.6028/NIST.2022-04-15.001",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.6028/NIST.2022-04-15.001",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "https://doi.org/10.6028/NIST.2022-04-15.001",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.6028/NIST.2022-04-15.001",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.6028",
+            "suffix": "NIST.2022-04-15.001"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.6028:suffix-NIST.2022-04-15.001"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.5291/TRENDSCAN-DATA-2018(a)",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.5291/TRENDSCAN-DATA-2018(a)",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.5291",
+            "suffix": "TRENDSCAN-DATA-2018(a)"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.5291:suffix-TRENDSCAN-DATA-2018~28a~29"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.5291/TRENDSCAN-DATA-2018(a)",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.5291",
+            "suffix": "TRENDSCAN-DATA-2018(a)"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.5291:suffix-TRENDSCAN-DATA-2018~28a~29"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.1000/abc_def-xyz.2023",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.1000/abc_def-xyz.2023",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "abc_def-xyz.2023"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-abc_def-xyz.2023"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.1000/abc_def-xyz.2023",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.1000",
+            "suffix": "abc_def-xyz.2023"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.1000:suffix-abc_def-xyz.2023"
+        }
+      },
+      "agree": true
+    },
+    {
+      "input": "10.10000/long-registrar",
+      "ruby": {
+        "doi": {
+          "to_s": "doi:10.10000/long-registrar",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.10000",
+            "suffix": "long-registrar"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.10000:suffix-long-registrar"
+        },
+        "doi_pfs": {
+          "to_s": "doi:10.10000/long-registrar",
+          "to_hash": {
+            "_type": "pubid:doi:resource",
+            "prefix": "10.10000",
+            "suffix": "long-registrar"
+          },
+          "to_urn": "urn:doi",
+          "to_mr_string": "",
+          "to_pubid_urn": "urn:pubid:doi:resource:prefix-10.10000:suffix-long-registrar"
+        }
+      },
+      "agree": true
+    }
+  ],
+  "negatives": [
+    {
+      "input": "doi:",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:10",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:10.X/abc",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:10.1000/",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "nonsense",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "10.X/abc",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "10.1/abc",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "10./abc",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:abc/def",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:10.1000/a b",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "doi:10.1000/a:b",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "https://doi.org/",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "10.1000",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "https://doi.org/doi:10.1000/182",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "https://doi.org/DOI:10.1000/182",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    },
+    {
+      "input": "http://doi.org/doi:10.1000/182",
+      "ruby": {
+        "doi": "rejected",
+        "doi_pfs": "rejected"
+      }
+    }
+  ]
+}

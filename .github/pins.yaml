@@ -4,8 +4,9 @@
 # rounds (#105 <- #104 <- #103) - the tree the vendored corpus and the
 # parity fixture were generated from.
 testsuite_ref: ec171b521b78a17506a94306f09a0a5f90308ee7
-# pubid-grammar main (0793420): the supplement branch's base side
-# gains the [language] slot (#109) - the artifacts vendor/parg was
-# mirrored from, byte-checked by the "Vendored artifacts match the
-# pinned grammar ref" gate.
-grammar_ref: 079342020818cace01a89308dedb8dc802cee1b1
+# pubid-grammar main (b8cab61): the PFS compiler and the doi spike
+# (#108, the doi_pfs artifact the compiled TS flavor loads - pubid#706)
+# plus its CI split - the artifacts vendor/parg was mirrored from,
+# byte-checked by the "Vendored artifacts match the pinned grammar ref"
+# gate.
+grammar_ref: b8cab61eb9ca0b77627a942b6fac8a6ec2d68f16
