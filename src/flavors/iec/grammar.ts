@@ -262,6 +262,15 @@ function buildRules(): Record<string, P> {
   );
   rule("supplement_identifier_no_third", () =>
     rules["identifier_copublishers_no_third"]!.as("base")
+      // The [language] slot between the base designation and the
+      // supplement token: the renderer prints the BASE document's
+      // languages right after its date
+      // ("ISO/IEC 19772:2009(en)/DAM1:2019" — the rendered twin of the
+      // stored "ISO/IEC 19772:2009/DAM 1:2019(E)" input), and without
+      // the slot the canonical face could not re-parse. The capture
+      // lands on the base (the builder's supplement branch routes it
+      // there, like the supplement's own third_part language).
+      .then(rules["language"]!.maybe())
       .then(str("/"), rules["supplement_type_with_stage"]!)
       .then(spaceQ, rules["second_part"]!),
   );
