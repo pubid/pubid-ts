@@ -138,8 +138,9 @@ function buildRules(): Record<string, P> {
   // --- supplements ---
   const SUPP_ABBRS = [
     "PRF Amd", "PWI Amd", "NP Amd", "ANW Amd", "WD Amd",
-    "PRF Cor", "PWI Cor", "NP Cor", "ANW Cor", "WD Cor", "CDCor", "WDCor",
-    "CDAM", "DAM", "FDAM", "DCOR", "FDCOR", "AMD", "Amd", "COR", "Cor", "ISH", "Ish",
+    "PRF Cor", "PWI Cor", "NP Cor", "ANW Cor", "WD Cor", "CDCor", "CDCOR", "WDCor",
+    "CDAM", "DAM", "FDAM", "PDAM", "FPDAM", "DCOR", "FDCOR", "AMD", "Amd", "COR", "Cor",
+    "CDISH", "DISH", "ISH", "Ish",
   ];
   rule("supplement_type_with_stage", () =>
     SUPP_ABBRS.reduce<P>((acc, a) => acc.or(str(a)), str(SUPP_ABBRS[0]!))
@@ -278,10 +279,57 @@ function buildRules(): Record<string, P> {
       .then(space, rules["second_part"]!, rules["third_part"]!),
   );
 
+  // --- the legacy DAM-family prefix face (the JTC1 ballot spelling;
+  // decode-to-modern, owner ruling 2026-11-12) ---
+  // The stage token precedes the base designation — "IEC/FDAM 60038-1",
+  // "ISO/IEC PDAM 12207", "ISO/IEC PDAM 2 10646:2012",
+  // "ISO/IEC FPDAM 9075/1", "ISO/IEC FDAM 1 14496-12:2004". A number
+  // between the token and the designation is the SUPPLEMENT number; the
+  // designation is the base's and is kept whole (unnumbered
+  // DAM/PDAM/FDAM/FPDAM means Amendment 1, and the old slash-part
+  // spelling "9075/1" carries the base's part). The date rides with the
+  // designation — old notation prints the base's year, and the draft
+  // supplement carries none of its own. Longest tokens first: FPDAM
+  // before PDAM, FDAM before DAM. The slash-part alternative precedes
+  // the dash-part one: the designation body also matches a bare number,
+  // so a slash-part input must be claimed first or the "/1" would
+  // dangle unclaimed.
+  rule("legacy_dam_token", () =>
+    str("FPDAM").or(str("PDAM"), str("FDAM"), str("DAM")).as("legacy_stage"),
+  );
+  // The copublisher captures as its own top-level scalar (the wasm
+  // binder scatters array bindings over the sibling list when a bare
+  // copublisher node rides a flat shape — the parg uses the same
+  // legacy_copublisher_item rule for that).
+  rule("legacy_copublisher_item", () =>
+    str("/").then(spaceQ, ORGS.reduce<P>((acc, o) => acc.or(str(o)), str(ORGS[0]!)).as("legacy_copublisher")),
+  );
+  rule("legacy_base_designation", () =>
+    match("[0-9]").repeat(1, 6).as("legacy_base_number")
+      .then(str("/"), match("[0-9]").repeat(1, Infinity).as("legacy_base_part"))
+      .or(rules["number_with_part"]!.as("legacy_base_number_with_part")),
+  );
+  rule("legacy_supplement", () =>
+    rules["prefix_sole_publisher"]!
+      .then(
+        spaceQ,
+        rules["legacy_copublisher_item"]!.maybe(),
+        spaceQ,
+        str("/").maybe(),
+        rules["legacy_dam_token"]!,
+        space,
+        match("[0-9]").repeat(1, Infinity).as("legacy_supplement_number").then(space).maybe(),
+        rules["legacy_base_designation"]!,
+        (spaceQ.then(rules["date"]!)).maybe(),
+        rules["third_part"]!,
+      ),
+  );
+
   rule("identifier", () =>
     rules["working_programme"]!
       .or(rules["technical_group"]!)
       .or(rules["working_document"]!)
+      .or(rules["legacy_supplement"]!)
       .or(rules["sheet_supplement_identifier"]!)
       .or(rules["sheet_identifier"]!)
       .or(rules["supplement_supplement_identifier"]!)

@@ -13,6 +13,7 @@ export const plateauSchema = define("plateau", (s) => {
   s.atom("publisher", "pub");
   s.atom("edition", "ed");
   s.atom("annex", "annex", "int");
+  s.atom("volume", "vol");
 
   s.type("pubid:plateau:annex", "annex", {
     core: [],

@@ -3,7 +3,7 @@ import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import { BaseIdentifier } from "../../model/identifier.js";
 import { PubidDate, Language, Iteration } from "../../model/component.js";
-import { isoGrammar } from "./grammar.js";
+import { isoGrammar, BALLOT_STAGE_CODES } from "./grammar.js";
 import {
   IsoBundledIdentifier,
   IsoDirectives,
@@ -254,6 +254,15 @@ class IsoBuilder {
 
   private buildStandard(treeIn: TreeObject): BaseIdentifier {
     const tree = { ...treeIn };
+    // Historic TYPE-first ballot face ("ISO/IEC FDAM 1 14496-12:2004",
+    // "ISO/PDAM 19973-2", "ISO 15877-5:2009 FDAM 1"): the ballot_* keys
+    // are one amendment layer over the whole base, never a second
+    // supplement layer (the stored twins keep one level), so the layer
+    // is assembled here, before the supplement branch could read the
+    // ballot token as an outer wrapper.
+    if (tree["ballot_type_with_stage"] !== undefined) {
+      return this.buildBallotSupplement(tree);
+    }
     // Legacy ISO/R: publisher ISO + type "R".
     if (tree["iso_r_prefix"] !== undefined) {
       tree["publisher"] = "ISO";
@@ -304,7 +313,67 @@ class IsoBuilder {
     }
 
     const identifier = new (klass as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
+    // The owner's no-number rule, applied on every construction path
+    // that routes through this builder (parse, URN, bundle members): a
+    // DAM-family ballot-stage amendment token with no number anywhere
+    // names Amendment 1 ("ISO 19973-2/PDAM", "ISO/IEC PDAM 12207"). The
+    // number is identity-bearing, so the default lands at build time and
+    // the wire hash serializes it — parse and fromHash(toHash) agree
+    // because both carry the filled number. The ballot stages are
+    // matched by the typed stage's code (the per-typed-stage key) —
+    // PDAM's stageCode is "cd", the harmonized range it lives in.
+    if (typeKey === "amd" && attrs["number"] === undefined &&
+        BALLOT_STAGE_CODES.includes(
+          (attrs["typedStageState"] as TypedStageState | undefined)?.entry.code ?? "",
+        )) {
+      (identifier as unknown as Record<string, unknown>)["number"] = "1";
+    }
     return identifier;
+  }
+
+  /**
+   * Historic TYPE-first ballot face (owner ruling 2026-11-12, Option B
+   * decode-to-modern): "[P|F]?DAM [N] BASE [stamp]" decodes to ONE
+   * amendment over the WHOLE base, rendered as the canonical on-base
+   * slash face. The stage comes from the ballot token; the number from
+   * the TYPE token, then the on-base stamp, then the owner's no-number
+   * rule (a ballot face with no number anywhere names Amendment 1); the
+   * stamp's date is the ballot supplement's date. The base keeps every
+   * component it carried: a legacy slash-part stays a part of the base
+   * number ("ISO/IEC FPDAM 9075/1" → base "9075-1"), and the base's own
+   * type token stays the base's ("ISO/IEC PDAM TR 9573-11" → base
+   * "TR 9573-11") — nothing migrates into the supplement slot. The
+   * stamp's token letters (Amd/Am/…) are decode-away: the ballot's
+   * stage is the TYPE token's.
+   */
+  private buildBallotSupplement(tree: TreeObject): BaseIdentifier {
+    const fields: Record<string, unknown> = {
+      type_with_stage: s(tree["ballot_type_with_stage"]),
+    };
+
+    const number = s(tree["ballot_number"]) ??
+      s(tree["ballot_stamp_number"]) ??
+      s(tree["ballot_stamp_dot_number"]) ??
+      "1";
+    fields["number_with_part"] = number;
+
+    // The on-base stamp: its date (or undated marker) is the ballot
+    // supplement's; its number feeds the precedence above; its token
+    // letters were matched uncaptured and decode away.
+    const stampDate = s(tree["ballot_stamp_date"]);
+    if (stampDate !== undefined) {
+      const [year, month, day] = stampDate.split("-");
+      fields["date"] = new PubidDate({ year, month, day });
+    } else if (tree["ballot_stamp_undated_marker"] !== undefined) {
+      fields["date"] = new PubidDate({ undated: true });
+    }
+
+    const rest: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(tree)) {
+      if (!key.startsWith("ballot_")) rest[key] = value;
+    }
+
+    return this.build({ ...fields, base: rest } as unknown as Tree);
   }
 
   private buildDirectives(tree: TreeObject, state: TypedStageState): BaseIdentifier {

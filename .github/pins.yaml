@@ -1,9 +1,10 @@
-# pubid-testsuite: the nist FIPS render-face corpus round (the official
-# FIPS PUB <number> face; pubid/pubid-testsuite#103 head ad5b4bd - the
-# tree the vendored corpus and the parity fixture were generated from;
-# carries the other 2026-11-11/12 wave rounds on main too).
-testsuite_ref: ad5b4bdeeaefd749ffdab7cabae79f280a411758
-# pubid-grammar main (5babb72): the artifacts vendor/parg was mirrored
-# from, byte-checked by the "Vendored artifacts match the pinned grammar
-# ref" gate.
-grammar_ref: 5babb721c32b0128feb7e7fe3a6f5d4bd1a067b1
+# pubid-testsuite main (b33a02e): the iec legacy-decode round rebuilt on
+# the iso historic-ballot decode round, on the nist FIPS render-face
+# round (#105 <- #104 <- #103) - the tree the vendored corpus and the
+# parity fixture were generated from.
+testsuite_ref: b33a02eea96f1e52aace6f675b57328d421691bb
+# pubid-grammar main (b76be8d): the legacy_supplement respell and the
+# iso ballot branches (#106 wave) - the artifacts vendor/parg was
+# mirrored from, byte-checked by the "Vendored artifacts match the
+# pinned grammar ref" gate.
+grammar_ref: b76be8d558af094609fee4cd1f8d0cd9beb37305

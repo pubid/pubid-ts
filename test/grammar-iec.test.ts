@@ -19,7 +19,12 @@ test("every iec corpus case passes through the grammar", () => {
   const report = runFlavor("iec", payloads, impl, new PendingRegistry());
   assert.equal(report.failures.length, 0, report.failures.slice(0, 12).join("; "));
   assert.equal(report.outcome, "pass");
-  assert.equal(report.cases, payloads.cases.length);
+  // Review rows (the debt fixtures' unparsed ground truths) report
+  // separately and never gate.
+  assert.equal(
+    report.cases + report.review + report.quarantined,
+    payloads.cases.length,
+  );
   assert.ok(report.cases > 12000);
 });
 

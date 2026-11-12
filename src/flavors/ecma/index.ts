@@ -145,11 +145,49 @@ class EcmaBuilder extends BaseBuilder {
   }
 }
 
+/**
+ * The human edition spellings that alias the glued " ed<N>" token
+ * (pubid#698; ruby Ecma::Parser.normalize_input), in rewrite order.
+ * Each rule rewrites INTO the exact canonical face, so the parse (and
+ * therefore the render, the URN and the index key) is the one " ed<N>"
+ * already produces, and a canonical face passes through
+ * byte-identically.
+ *
+ *   ECMA-262 Edition 5.1   the document cover's own form
+ *   ECMA-262 ed. 5.1       dotted, spaced
+ *   ECMA-262 ed 5.1        spaced, undotted
+ *   ECMA-262 ed.5.1        dotted, unspaced
+ *   ECMA 262 5.1           bare trailing edition
+ *
+ * " ed5.1" (no separator) is the grammar's own face and is left alone;
+ * a " vol<N>" number is never rewritten — the bare-trailing rule fires
+ * only behind a document number's own digit ("ECMA 262 5.1"), so the
+ * space-separator form itself ("ECMA 6") keeps its number and the
+ * grammar's ed-then-vol order is untouched.
+ */
+const EDITION_ALIASES: [RegExp, string][] = [
+  // "Edition <N>" starts mid-word, so the replacement carries no space
+  // of its own — the space before it is kept as-is.
+  [/\bedition[.\s]*(\d+(?:\.\d+)?)\b/gi, "ed$1"],
+  // "ed. <N>" / "ed <N>" / "ed.<N>": same mid-word shape. The glued
+  // "ed5.1" has no separator after "ed" and cannot match [.\s]+.
+  [/\bed[.\s]+(\d+(?:\.\d+)?)\b/g, "ed$1"],
+  // Bare trailing edition: fires only when a document number is already
+  // present (a digit directly before the space — "ECMA 262 5.1"). A
+  // glued "vol2" has no space, and a spaced "vol 2" has no digit before
+  // the space, so a volume number is never rewritten.
+  [/(\d) (\d+(?:\.\d+)?)$/, "$1 ed$2"],
+];
+
 export function ecmaGrammarImplementation(): FlavorImplementation {
   const builder = new EcmaBuilder();
   return {
     parse(input: string): Identifier {
-      const tree = parseGrammar(ecmaGrammar, input);
+      const normalized = EDITION_ALIASES.reduce(
+        (acc, [pattern, replacement]) => acc.replace(pattern, replacement),
+        input,
+      );
+      const tree = parseGrammar(ecmaGrammar, normalized);
       if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
         throw new ParseFailed("ECMA: unexpected parse tree", 0);
       }

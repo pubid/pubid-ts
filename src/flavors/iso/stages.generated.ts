@@ -46,7 +46,7 @@ export const ISO_TYPED_STAGES: IsoTypedStage[] = [
     code: "prf_amd", stageCode: "prf", typeCode: "amd", abbr: ["PRF Amd"], harmonized: ["50.00"]
   }),
   TS("amd", {
-    code: "published", stageCode: "published", typeCode: "amd", abbr: ["Amd", "AMD", "Amd."], shortAbbr: "AMD", longAbbr: "Amd", harmonized: ["60.00", "60.60"]
+    code: "published", stageCode: "published", typeCode: "amd", abbr: ["Amd", "AMD", "Amd.", "Am"], shortAbbr: "AMD", longAbbr: "Amd", harmonized: ["60.00", "60.60"]
   }),
   TS("cor", {
     code: "pwi_cor", stageCode: "proposal", typeCode: "cor", abbr: ["PWI Cor"], harmonized: ["00.00", "00.20", "00.60", "00.92", "00.93", "00.98", "00.99"]
