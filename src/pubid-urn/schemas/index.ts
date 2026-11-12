@@ -1,5 +1,5 @@
 /**
- * The registry of all 44 flavor pubid-urn schema tables — the TS mirror
+ * The registry of all 45 flavor pubid-urn schema tables — the TS mirror
  * of lib/pubid.rb's autoloaded Pubid::<Flavor>::PubidUrnSchema chain.
  * Declared tables only: importing this module has no side effects; the
  * pubid-urn module builds its flavor lookup lazily from this array.
@@ -21,6 +21,7 @@ import { cencenelecSchema } from "./cencenelec.js";
 import { cieSchema } from "./cie.js";
 import { csaSchema } from "./csa.js";
 import { doiSchema } from "./doi.js";
+import { doiPfsSchema } from "./doi_pfs.js";
 import { eascSchema } from "./easc.js";
 import { ecmaSchema } from "./ecma.js";
 import { etsiSchema } from "./etsi.js";
@@ -68,6 +69,7 @@ export const PUBID_URN_SCHEMAS: FlavorSchema[] = [
   cieSchema,
   csaSchema,
   doiSchema,
+  doiPfsSchema,
   eascSchema,
   ecmaSchema,
   etsiSchema,

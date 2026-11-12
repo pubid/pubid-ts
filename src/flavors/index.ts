@@ -3,6 +3,7 @@ import { lookupUrnParser, parseUrnFor } from "../urn/parsers.js";
 import { oimlGrammarImplementation } from "./oiml/implementation.js";
 import { xsfGrammarImplementation } from "./xsf/index.js";
 import { doiGrammarImplementation } from "./doi/index.js";
+import { doiPfsGrammarImplementation } from "./doi_pfs/index.js";
 import { ianaGrammarImplementation } from "./iana/index.js";
 import { unGrammarImplementation } from "./un/index.js";
 import { plateauGrammarImplementation } from "./plateau/index.js";
@@ -81,6 +82,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return xsfGrammarImplementation();
     case "doi":
       return doiGrammarImplementation();
+    case "doi_pfs":
+      return doiPfsGrammarImplementation();
     case "iana":
       return ianaGrammarImplementation();
     case "un":
