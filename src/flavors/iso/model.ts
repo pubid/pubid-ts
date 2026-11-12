@@ -135,7 +135,16 @@ export abstract class IsoIdentifier extends BaseIdentifier {
   protected stageFormatLong(): boolean {
     const ts = this.typedStageState;
     if (ts === undefined) return false;
-    if (ts.entry.longAbbr !== undefined && ts.originalAbbr?.startsWith(ts.entry.longAbbr)) return true;
+    if (
+      ts.entry.longAbbr !== undefined && ts.originalAbbr !== undefined &&
+      (ts.originalAbbr.startsWith(ts.entry.longAbbr) ||
+        // The shorter long-family spellings ("Am", the alias of "Amd"
+        // the owner ruled renders canonical) are prefixes of the long
+        // abbr; the short family ("AMD") matches neither direction.
+        ts.entry.longAbbr.startsWith(ts.originalAbbr))
+    ) {
+      return true;
+    }
     if (ts.entry.longAbbr !== undefined && ts.originalAbbr?.includes("Directives")) return true;
     return false;
   }

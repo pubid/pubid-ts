@@ -1,5 +1,6 @@
 import { Grammar, P, match, ref, str } from "../../grammar/engine.js";
 import { stageTokens } from "./model.js";
+import { ISO_TYPED_STAGES } from "./stages.generated.js";
 
 /**
  * Port of lib/pubid/iso/parser.rb. The identifier alternation order is
@@ -11,6 +12,12 @@ import { stageTokens } from "./model.js";
  */
 
 const SUPPLEMENT_TYPE_KEYS = ["amd", "cor", "suppl", "ext", "add"];
+
+/** The DAM-family ballot stage codes (grammar table
+ * typed_stages_ballots: PDAM, DAM, DAmd, FDAM, FDAmd, FPDAM — exactly
+ * these entries' abbrs); the TYPE-first ballot branch stays scoped to
+ * the ballot family. */
+export const BALLOT_STAGE_CODES = ["pdam", "damd", "fdamd", "fpdam"];
 
 const BASE_STAGE_TOKENS = stageTokens().filter((t) => {
   // Supplement tokens are excluded from the base table by type key, but
@@ -448,6 +455,102 @@ function buildRules(): Record<string, P> {
       .as("joint_identifier"),
   );
 
+  // Historic TYPE-first ballot faces (decode-to-modern, owner ruling
+  // 2026-11-12): the DAM-family token in TYPE position — "ISO/IEC FDAM 1
+  // 14496-12:2004", "ISO/PDAM 19973-2" — and the space-attached ballot
+  // face "ISO 15877-5:2009 FDAM 1". Both branches sit LAST in the
+  // identifier alternation, so they are purely additive: every face an
+  // earlier branch parses keeps its exact parse. The ballot token
+  // captures as ballot_type_with_stage; a number on the TYPE token is
+  // space-bounded (ballot_number) so "PDAM 19973-2" keeps 19973 in the
+  // base; an on-base stamp's number/date capture as ballot_stamp_* (the
+  // stamp token itself matches uncaptured — the ballot's stage comes
+  // from the TYPE token and the decode keeps no spelling). The builder
+  // folds the captures into ONE amendment layer over the whole base, the
+  // number taken from the TYPE token, the stamp, or the implied 1.
+  const ballotStageTokens = ISO_TYPED_STAGES
+    .filter((st) => BALLOT_STAGE_CODES.includes(st.code))
+    .flatMap((st) => st.abbr);
+  const ballotTypeAlt = literalAlternation(ballotStageTokens).as("ballot_type_with_stage");
+
+  rule("ballot_type_with_stage", () => ballotTypeAlt);
+
+  // An on-base stamp riding a ballot face ("/Amd 9:2001", "/Amd.1",
+  // "/Am1:2006"): it carries the amendment's number and ballot date
+  // while its own token letters are decode-away (matched uncaptured).
+  // The stamp's date captures under its own ballot_stamp_* names —
+  // reusing the base date capture would collide with second_part's at
+  // the sequence merge and the stamp's year would eat the base's.
+  rule("ballot_stamp", () =>
+    str("/")
+      .then(literalAlternation(supplementTypeTokens))
+      .then(
+        space
+          .maybe()
+          .then(digit.repeat(1, 5).as("ballot_stamp_number"))
+          .then(
+            str(":")
+              .or(dash)
+              .then(
+                yearDigits
+                  .then(dash.then(monthDigits).maybe(), dash.then(dayDigits).maybe())
+                  .as("ballot_stamp_date"),
+              )
+              .or(
+                str(":")
+                  .or(dash)
+                  .then(str("--").or(str("—")).as("ballot_stamp_undated_marker")),
+              )
+              .maybe(),
+          )
+          .or(str(".").then(digits.as("ballot_stamp_dot_number"))),
+      ),
+  );
+  // "ISO/IEC FDAM 1 14496-12:2004", "ISO/PDAM 19973-2": the ballot
+  // token first, then the base kept whole. The TYPE-token number is
+  // space-bounded on both sides — mandatory trailing space — so
+  // "PDAM 19973-2" cannot read 19973 as the ballot number: with no
+  // second space the group backtracks and 19973 parses in second_part.
+  rule("ballot_supplement_identifier", () =>
+    rules["prefix_with_copublishers"]!
+      .then(
+        space.maybe(),
+        str("/").maybe(),
+        ballotTypeAlt,
+        space.then(digit.repeat(1, Infinity).as("ballot_number")).then(space).maybe(),
+        space.maybe(),
+        rules["type_with_stage"]!.maybe(),
+        space.maybe(),
+        rules["second_part"]!,
+        rules["ballot_stamp"]!.maybe(),
+      ),
+  );
+
+  // The space-attached ballot face: "ISO 15877-5:2009 FDAM 1" — the
+  // base designation first, then the ballot token attached by a space.
+  // The base front is inlined (not identifier_copublishers_no_third):
+  // that rule ends in third_part_edition, whose own optional space
+  // would consume the separator the ballot token needs. No base
+  // edition is served here — none of the stored or owner-cited ballot
+  // faces carries one.
+  rule("ballot_space_supplement_identifier", () =>
+    rules["guide_prefix"]!
+      .as("type_with_stage_fr")
+      .then(space)
+      .maybe()
+      .then(
+        rules["prefix_with_copublishers"]!.maybe(),
+        space.maybe(),
+        str("/").maybe(),
+        rules["type_with_stage"]!.maybe(),
+        space.maybe(),
+        rules["second_part"]!,
+        space,
+        ballotTypeAlt,
+        space.then(digit.repeat(1, Infinity).as("ballot_number")).maybe(),
+      ),
+  );
+
   rule("identifier", () =>
     rules["bare_tc_document"]!.or(
       rules["nsb_iso_identifier"]!,
@@ -461,6 +564,10 @@ function buildRules(): Record<string, P> {
       rules["supplement_identifier"]!,
       rules["joint_identifier"]!,
       rules["identifier_copublishers"]!,
+      // The historic ballot faces go last — purely additive branches
+      // (an input an earlier member parses keeps that parse).
+      rules["ballot_supplement_identifier"]!,
+      rules["ballot_space_supplement_identifier"]!,
     ),
   );
   rule("root", () => rules["identifier"]!);

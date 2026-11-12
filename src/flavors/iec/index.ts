@@ -86,6 +86,21 @@ class IecBuilder {
       (tree["base"] as TreeObject)["vap_suffix"] = vapSuffix;
     }
 
+    // The third_part language rides the BASE document on every
+    // attached-supplement layer: the ruby grammar binds the layers'
+    // language unprefixed, the supplement field set keeps none
+    // (SUPP_KEYS), and the wire carries base.languages — the ruby
+    // render prints it inside the base portion
+    // ("ISO/IEC 19772:2009(en)/DAM1:2019"). Push it down before
+    // dispatching; the recursion re-applies it until it reaches the
+    // base. A standalone supplement (no base tree) keeps its own
+    // languages, like ruby's standalone slice.
+    const languages = tree["languages"];
+    if (languages !== undefined && isObj(tree["base"])) {
+      delete tree["languages"];
+      (tree["base"] as TreeObject)["languages"] = languages;
+    }
+
     // --- working programme / working document ---
     if (tree["wp_stage"] !== undefined) return this.buildWorkingProgramme(tree);
     if (tree["technical_committee"] !== undefined && tree["wd_number"] !== undefined) {
@@ -93,6 +108,11 @@ class IecBuilder {
     }
     if (tree["technical_committee"] !== undefined) {
       throw new ParseFailed("IEC: technical groups are not corpus-covered", 0);
+    }
+
+    // --- the legacy DAM-family prefix face (decode-to-modern) ---
+    if (tree["legacy_stage"] !== undefined) {
+      return this.buildLegacySupplement(tree);
     }
 
     // --- fragment of an amendment/corrigendum (third_part notation) ---
@@ -180,6 +200,45 @@ class IecBuilder {
       attrs,
     };
 
+    // The ensure_base decode (ruby SupplementIdentifier#ensure_base;
+    // the 2026-11-12 owner ruling reversing #693): a standalone draft
+    // face whose designation is designation-shaped ("IEC/DCOR 60038-1",
+    // "IEC CDISH 60050-191") moves the designation WHOLE onto a
+    // concrete InternationalStandard base — number, part, subpart and
+    // the date (old notation prints the base's year) — while the
+    // supplement keeps a number of its own, defaulting to 1 (the
+    // no-number rule: an unnumbered DCOR/DISH/CDISH means
+    // Corrigendum/Interpretation-Sheet 1). The concrete base is what
+    // makes the decode hash-match (and equal) the modern on-base parse
+    // of the same document. A supplement with no part (a true
+    // standalone like "IEC/AMD 1:2017") keeps its own number below.
+    if (
+      (kind === "amd" || kind === "cor" || kind === "ish") &&
+      tree["base"] === undefined &&
+      attrs["part"] !== undefined
+    ) {
+      const baseAttrs: Record<string, unknown> = {};
+      for (const key of ["publisher", "copublishers", "number", "part", "subpart", "date"] as const) {
+        if (attrs[key] !== undefined) baseAttrs[key] = attrs[key];
+      }
+      const base = new (IEC_CLASSES.KIND_CLASSES["is"]! as unknown as new (
+        a?: Record<string, unknown>,
+      ) => BaseIdentifier)(baseAttrs);
+      const suppAttrs: Record<string, unknown> = { base, number: "1" };
+      // Supplements copy the delegated publisher/copublishers level
+      // (ruby reads them through the base; the stored wire copies the
+      // non-default level).
+      if (attrs["publisher"] !== undefined && attrs["publisher"] !== "IEC") {
+        suppAttrs["publisher"] = attrs["publisher"];
+      }
+      if (Array.isArray(attrs["copublishers"]) && (attrs["copublishers"] as string[]).length > 0) {
+        suppAttrs["copublishers"] = attrs["copublishers"];
+      }
+      const supplement = this.construct({ kind: kind as Parsed["kind"], attrs: suppAttrs, typedStage }, suppAttrs);
+      (supplement as unknown as Record<string, unknown>)["base"] = base;
+      return supplement;
+    }
+
     // Consolidated supplements (+AMD…+AMD…)
     const consolidated = tree["consolidated_supplements"];
     let identifier = this.construct(parsed, attrs);
@@ -250,6 +309,59 @@ class IecBuilder {
       vap,
       ...(edition !== undefined ? { edition } : {}),
     });
+  }
+
+  /**
+   * The legacy DAM-family prefix face (IEC/FDAM 60038-1, ISO/IEC PDAM
+   * 2 10646:2012, ISO/IEC FPDAM 9075/1): the JTC1 ballot spelling puts
+   * the stage token before the base designation. Decode onto the
+   * modern identity (owner ruling 2026-11-12): the designation is the
+   * BASE's, kept whole — the old slash-part spelling "9075/1" is base
+   * 9075 part 1 — and the supplement's number is the captured N,
+   * defaulting to 1 (the no-number rule). The date rides with the
+   * designation (old notation prints the base's year); a draft
+   * supplement carries none of its own. The base builds through the
+   * ordinary single-document path, so it is the same
+   * InternationalStandard the modern on-base parse holds and
+   * parse(legacy) == parse(modern).
+   */
+  private buildLegacySupplement(tree: TreeObject): BaseIdentifier {
+    const baseTree: TreeObject = {};
+    if (tree["publisher"] !== undefined) baseTree["publisher"] = tree["publisher"];
+    if (tree["legacy_copublisher"] !== undefined) {
+      baseTree["copublishers"] = [s(tree["legacy_copublisher"])];
+    }
+    if (tree["legacy_base_number"] !== undefined) {
+      // The slash-part designation ("9075/1") captured number and part
+      // separately; they go on straight as the plain strings the
+      // retyped attributes are.
+      baseTree["number_with_part"] = {
+        number: s(tree["legacy_base_number"]),
+        ...(s(tree["legacy_base_part"]) !== undefined ? { part: s(tree["legacy_base_part"]) } : {}),
+      };
+    } else if (tree["legacy_base_number_with_part"] !== undefined) {
+      const designation = tree["legacy_base_number_with_part"];
+      baseTree["number_with_part"] = isObj(designation as Tree)
+        ? flatten(designation as Tree)["number_with_part"]
+        : designation;
+    }
+    if (tree["date"] !== undefined) baseTree["date"] = tree["date"];
+    if (tree["undated_marker"] !== undefined) baseTree["undated_marker"] = tree["undated_marker"];
+    if (tree["edition"] !== undefined) baseTree["edition"] = tree["edition"];
+    if (tree["languages"] !== undefined) baseTree["languages"] = tree["languages"];
+
+    // The wrap: one amendment/corrigendum layer over the whole base;
+    // third_part's fragment notation rides the outermost layer.
+    const suppTree: TreeObject = {
+      base: baseTree,
+      type_with_stage: s(tree["legacy_stage"]),
+      number_with_part: { number: s(tree["legacy_supplement_number"]) ?? "1" },
+    };
+    if (tree["fragment_type"] !== undefined) {
+      suppTree["fragment_type"] = tree["fragment_type"];
+      suppTree["fragment_number"] = tree["fragment_number"];
+    }
+    return this.buildInner(suppTree as unknown as Tree);
   }
 
   private buildSupplement(tree: TreeObject): BaseIdentifier {

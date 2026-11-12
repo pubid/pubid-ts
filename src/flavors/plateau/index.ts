@@ -40,6 +40,16 @@ function buildRules(): Record<string, P> {
   );
   rule("edition_latin", () => digits.then(str("."), digits).as("edition"));
   rule("edition", () => space.then(rules["edition_part"]!.or(rules["edition_latin"]!)));
+  // MLIT's volume label after the edition: 本編 (main volume) or
+  // 本編＋付録 (main volume with appendix). ASCII or full-width (U+3000)
+  // space; ASCII "+" or full-width "＋" (U+FF0B), which the builder
+  // normalizes to "＋".
+  rule("volume_sep", () => str(" ").or(str("　")));
+  rule("volume", () =>
+    rules["volume_sep"]!.then(
+      str("本編").then(str("＋").or(str("+")).then(str("付録")).maybe()).as("volume"),
+    ),
+  );
   rule("annex_supplement", () =>
     space.then(str("Annex")).then(space, match("[A-Z]").as("annex_letter")),
   );
@@ -47,7 +57,7 @@ function buildRules(): Record<string, P> {
     str("PLATEAU")
       .then(space, rules["doc_type"]!, space, rules["number"]!)
       .then(rules["annex"]!.maybe())
-      .then(rules["edition"]!.maybe()),
+      .then(rules["edition"]!.then(rules["volume"]!.maybe()).maybe()),
   );
   rule("identifier", () =>
     rules["handbook"]!
@@ -71,21 +81,29 @@ function plateauClass(kind: PlateauKind): IdentifierStatic {
       number: { type: "integer" },
       annex: { type: "integer" },
       edition: { type: "string" },
+      // The volume label MLIT prints after the edition: "本編" (the main
+      // volume alone) or "本編＋付録" (main volume and appendix, one
+      // PDF). A nil volume means the publication has no volume label:
+      // "#00 第5.0版" does not subsume "#00 第5.0版 本編＋付録".
+      volume: { type: "string" },
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
       { wire: "edition", to: "edition" },
       { wire: "annex", to: "annex" },
+      { wire: "volume", to: "volume" },
     );
 
     declare readonly number: number;
     declare readonly annex: number | undefined;
     declare readonly edition: string | undefined;
+    declare readonly volume: string | undefined;
 
     render(): string {
       let result = `PLATEAU ${isHandbook ? "Handbook" : "Technical Report"} #${pad2(this.number)}`;
       if (this.annex !== undefined) result += `-${this.annex}`;
       if (isHandbook && this.edition !== undefined) result += ` 第${this.edition}版`;
+      if (this.volume !== undefined) result += ` ${this.volume}`;
       return result;
     }
   }
@@ -127,6 +145,12 @@ export function plateauGrammarImplementation(): FlavorImplementation {
       // rule and dropped for Technical Report (Ruby builder parity).
       if (data["edition"] !== undefined && data["edition"] !== null && kind === "handbook") {
         attrs["edition"] = String(data["edition"]);
+      }
+      // The grammar reads a volume label only after an edition, on the
+      // Handbook; the builder normalizes the ASCII "+" to the
+      // full-width "＋" (MLIT prints full-width).
+      if (data["volume"] !== undefined && data["volume"] !== null && kind === "handbook") {
+        attrs["volume"] = String(data["volume"]).replaceAll("+", "＋");
       }
       return new (KIND_CLASSES[kind] as new (attrs?: Record<string, unknown>) => BaseIdentifier)(attrs) as unknown as Identifier;
     },

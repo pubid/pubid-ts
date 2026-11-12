@@ -98,8 +98,40 @@ function buildRules(): Record<string, P> {
   rule("part_dated", () =>
     rules["part_edition_rule"]!.then(rules["part_year_rule"]!.maybe()),
   );
+  // --- S-4 loose-leaf sections and specifications (issue #691) ---
+  // The spec number's vocabulary: the S-4 sections run 100-600 (Part C
+  // 100-500), so the leaf number is 3 digits with hundreds digit 1-6 —
+  // the same shape the bare citation branch leans on to keep the B
+  // Bibliographic series (B-1..B-13 style) distinct from B-4xx specs.
+  const specShape = match("[1-6]").then(match("[0-9]").repeat(2, 2));
+  // The citation letter is the spec's part (A/B/C); the builder binds
+  // it into `part` and rejects a conflicting Part-rule capture.
+  rule("spec_citation_body", () =>
+    str("A").or(str("B"), str("C")).as("spec_part")
+      .then(dash, specShape.as("spec"))
+      .then(dot.then(digits.as("spec_sub")).maybe())
+      .then(
+        str("(").then(match("[A-Z]").repeat(1, Infinity).as("spec_variant"), str(")")).maybe(),
+      ),
+  );
+  // The compact anchor form: the citation follows the code after one
+  // space ("IHO S-4 B-401").
+  rule("spec_citation", () => space.then(rules["spec_citation_body"]!));
+  // The spelled section long form: "Part B, Section 400" — the spelled
+  // number becomes the spec (the section-level citation), and a
+  // trailing citation (", Section 400, B-401") makes it a cross-check
+  // only.
+  rule("part_section_tail", () =>
+    str(",").then(space, str("Section"), space, specShape.as("spec_section"))
+      .then(str(",").then(space, rules["spec_citation_body"]!).maybe()),
+  );
   rule("part", () =>
-    space.then(str("Part")).then(space, rules["part_value"]!, rules["part_dated"]!.maybe()),
+    space.then(str("Part")).then(
+      space,
+      rules["part_value"]!,
+      rules["part_dated"]!.maybe(),
+      rules["part_section_tail"]!.maybe(),
+    ),
   );
 
   rule("supplement_edition_rule", () =>
@@ -198,13 +230,32 @@ function buildRules(): Record<string, P> {
         rules["dated"]!.maybe(),
         rules["supplement"]!.maybe(),
         rules["part"]!.maybe(),
+        rules["spec_citation"]!.maybe(),
         rules["annex"]!.maybe(),
         rules["appendix"]!.maybe(),
         rules["serial"]!.maybe(),
         rules["year_qualifier"]!.maybe(),
       ),
   );
-  rule("root", () => rules["identifier"]!);
+  // The bare citation branch (the entry's FIRST alternative): "B-401" /
+  // "IHO B-401" — implicit S-4 anchor (the builder synthesizes series S
+  // number 4). B only: bare C-x stays the Circular Letter series, and
+  // the 3-digit [1-6]xx shape keeps the B Bibliographic series (B-12)
+  // on the main branch.
+  rule("bare_spec_citation", () =>
+    str("IHO").then(space).maybe()
+      .then(
+        str("B").as("spec_part"),
+        dash,
+        specShape.as("spec"),
+        dot.then(digits.as("spec_sub")).maybe(),
+        str("(").then(match("[A-Z]").repeat(1, Infinity).as("spec_variant"), str(")")).maybe(),
+      ),
+  );
+  rule("identifier_entry", () =>
+    rules["bare_spec_citation"]!.or(rules["identifier"]!),
+  );
+  rule("root", () => rules["identifier_entry"]!);
   return rules;
 }
 
@@ -241,6 +292,13 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       volume_edition: { type: "string" },
       volume_year: { type: "string" },
       issue: { type: "string" },
+      // The S-4 loose-leaf spec citation (issue #691): spec is the leaf
+      // number, the dotted sub and the parenthesized variant its
+      // children. The citation letter rides `part`; the spelled section
+      // is resolve-only (never an atom).
+      spec: { type: "string" },
+      spec_sub: { type: "string" },
+      spec_variant: { type: "string" },
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
@@ -263,6 +321,9 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       { wire: "volume_edition", to: "volume_edition" },
       { wire: "volume_year", to: "volume_year" },
       { wire: "issue", to: "issue" },
+      { wire: "spec", to: "spec" },
+      { wire: "spec_sub", to: "spec_sub" },
+      { wire: "spec_variant", to: "spec_variant" },
     );
 
     declare readonly number: string;
@@ -285,6 +346,9 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     declare readonly volume_edition: string | undefined;
     declare readonly volume_year: string | undefined;
     declare readonly issue: string | undefined;
+    declare readonly spec: string | undefined;
+    declare readonly spec_sub: string | undefined;
+    declare readonly spec_variant: string | undefined;
 
     render(): string {
       let result = `IHO ${letter}-${this.number}`;
@@ -294,7 +358,14 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
         if (this.supplement_edition !== undefined) result += ` ${this.supplement_edition}`;
         if (this.supplement_year !== undefined) result += ` (${this.supplement_year})`;
       }
-      if (this.part !== undefined) {
+      if (this.spec !== undefined) {
+        // The S-4 citation face replaces the Part face (same
+        // containment slot: the citation letter IS the part):
+        // "B-401", "B-122.1", "B-521(I)".
+        result += ` ${this.part}-${this.spec}`;
+        if (this.spec_sub !== undefined) result += `.${this.spec_sub}`;
+        if (this.spec_variant !== undefined) result += `(${this.spec_variant})`;
+      } else if (this.part !== undefined) {
         result += ` Part ${this.part}`;
         if (this.part_edition !== undefined) result += ` ${this.part_edition}`;
         if (this.part_year !== undefined) result += ` (${this.part_year})`;
@@ -341,6 +412,15 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
         if (id.part_edition !== undefined) parts.push(`ed-${id.part_edition}`);
         if (id.part_year !== undefined) parts.push(`year-${id.part_year}`);
       }
+      // The S-4 spec citation: a child of its part (the citation letter
+      // rides the part- atom), the dotted sub and the parenthesized
+      // variant its own children. The spelled SECTION is NOT emitted —
+      // derivable from the spec's hundreds digit.
+      if (id.spec !== undefined) {
+        parts.push(`spec-${id.spec}`);
+        if (id.spec_sub !== undefined) parts.push(`specsub-${id.spec_sub}`);
+        if (id.spec_variant !== undefined) parts.push(`specvar-${id.spec_variant}`);
+      }
       if (id.annex !== undefined) {
         parts.push(`annex-${id.annex}`);
         if (id.annex_edition !== undefined) parts.push(`ed-${id.annex_edition}`);
@@ -381,6 +461,19 @@ const LETTER_TO_CLASS = new Map<string, IdentifierStatic>(
 );
 
 class IhoBuilder extends BaseBuilder {
+  // The S-4 anchor: the loose-leaf publication every spec citation
+  // resolves through (bare "B-401" carries it implicitly).
+  static S4_TYPE = "S";
+  static S4_NUMBER = "4";
+  // A citation letter is one of S-4's lettered Parts; the section
+  // vocabulary (100-600, Part C 100-500) is theirs.
+  static SPEC_LETTERS = ["A", "B", "C"];
+  // Components an S-4 spec citation cannot carry: the citation is a
+  // leaf of the Part, not a wrappable publication.
+  static SPEC_FOREIGN_COMPONENTS = [
+    "supplement", "annex", "appendix", "appendix_subnumber", "volume", "issue",
+  ];
+
   protected selectClass(data: Record<string, unknown>): IdentifierStatic {
     const kind = LETTER_TO_CLASS.get(String(data["type"]));
     if (kind === undefined) {
@@ -413,6 +506,75 @@ class IhoBuilder extends BaseBuilder {
       ) {
         if (flat["year"] === undefined) flat["year"] = flat[yearKey];
         delete flat[yearKey];
+      }
+    }
+    // The S-4 spec citation resolution (ruby resolve_spec_citation!):
+    // the citation letter folds into `part` (a Part-rule capture must
+    // agree), and the long form's spelled section becomes the spec
+    // alone — beside a citation it only cross-checks the citation's
+    // derived section ("Part B, Section 400, B-401" stores spec 401;
+    // "Part B, Section 500, B-401" is rejected).
+    const letter = flat["spec_part"];
+    const spelled = flat["spec_section"];
+    delete flat["spec_part"];
+    delete flat["spec_section"];
+    if (letter !== undefined) {
+      if (flat["part"] === undefined || flat["part"] === letter) {
+        flat["part"] = letter;
+      } else {
+        throw new ParseFailed(
+          `IHO: the citation letter ${String(letter)} conflicts with part ${String(flat["part"])}`,
+          0,
+        );
+      }
+    }
+    if (spelled !== undefined) {
+      if (flat["spec"] === undefined) {
+        flat["spec"] = spelled;
+      } else {
+        const section = `${String(flat["spec"])[0]}00`;
+        if (spelled !== section) {
+          throw new ParseFailed(
+            `IHO: the spelled section ${String(spelled)} disagrees with the citation ${String(flat["part"])}-${String(flat["spec"])}`,
+            0,
+          );
+        }
+      }
+    }
+    if (flat["spec"] !== undefined) {
+      if (!IhoBuilder.SPEC_LETTERS.includes(String(flat["part"]))) {
+        throw new ParseFailed(
+          `IHO: an S-4 spec citation needs a lettered Part (A/B/C), not ${JSON.stringify(flat["part"])}`,
+          0,
+        );
+      }
+      if (flat["part_edition"] !== undefined || flat["part_year"] !== undefined) {
+        throw new ParseFailed(
+          "IHO: a spec citation rides the S-4 edition, not a part edition",
+          0,
+        );
+      }
+      const foreign = IhoBuilder.SPEC_FOREIGN_COMPONENTS.filter((k) => flat[k] !== undefined);
+      if (foreign.length > 0) {
+        throw new ParseFailed(
+          `IHO: an S-4 spec citation is a leaf of its Part and cannot carry ${foreign.join(", ")}`,
+          0,
+        );
+      }
+      // The series letter: a bare citation branch parse has no series
+      // capture, and its anchor is implicitly the S-4 publication (the
+      // number binds with it). An explicit series must BE the anchor.
+      if (flat["type"] === undefined) {
+        flat["type"] = IhoBuilder.S4_TYPE;
+        flat["number"] = IhoBuilder.S4_NUMBER;
+      } else if (
+        flat["type"] !== IhoBuilder.S4_TYPE ||
+        flat["number"] !== IhoBuilder.S4_NUMBER
+      ) {
+        throw new ParseFailed(
+          `IHO: an S-4 spec citation requires the S-4 anchor: ${String(flat["type"])}-${String(flat["number"])} cannot carry spec ${String(flat["spec"])}`,
+          0,
+        );
       }
     }
     return super.build(flat);

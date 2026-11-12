@@ -70,8 +70,20 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("ndts", "ndts", "ts", "NDTS"),
   TS("dpas", "dpas", "pas", "DPAS"),
   TS("cdpas", "cdpas", "pas", "CDPAS"),
-  TS("dam", "dam", "amd", "DAM"),
-  TS("fdam", "fdam", "amd", "FDAM"),
+  // The DAM family's ballot stages carry the CIRCULATION slots as the
+  // lead harmonized code (30.20/50.20), not ISO's 30.00/50.00 — CDAM/
+  // FDAM keep those (type, leading code) URN keys (gem Amendment
+  // registry; the codes are the per-typed-stage keys the wire
+  // serializes: pdam, damd, fdamd, fpdam).
+  TS("pdam", "cd", "amd", "PDAM", "30.20"),
+  TS("damd", "damd", "amd", "DAM", "40.00"),
+  TS("fdamd", "fdamd", "amd", "FDAM", "50.00", ["FDAM", "PRF Amd"]),
+  TS("fpdam", "fdamd", "amd", "FPDAM", "50.20"),
+  // "CDCOR" is the all-caps spelling the attached-supplement renderer
+  // emits (abbr.first upcase) when a legacy prefix face decodes onto a
+  // CDCor draft; appended as a token so the canonical render re-parses
+  // (spelling-only: abbr stays "CDCor").
+  TS("cdcor", "cd", "cor", "CDCor", "30.00", ["CDCor", "CDCOR"]),
   TS("dcor", "dcor", "cor", "DCOR"),
   TS("fdcor", "fdcor", "cor", "FDCOR"),
   TS("cdish", "cdish", "ish", "CDISH"),
@@ -409,6 +421,10 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
     static attributes = extendAttributes(BaseIdentifier, {
       base: { type: IecIdentifier as unknown as IdentifierStatic },
       number: { type: "string" },
+      // The draft stage rides the wire as the typed stage's code
+      // ("stage: fdamd") — the single classes declare the same attr
+      // (SINGLE_ATTRS.stage); construct sets it on the parse path.
+      stage: { type: "string" },
       synthetic_base: { type: "boolean", default: false },
     });
     static mappings = keyValue(
@@ -432,6 +448,10 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
         },
         fromWire: (h) => (Array.isArray(h["copublishers"]) ? (h["copublishers"] as string[]).map(String) : undefined),
       },
+      // The draft stage rides the wire as the typed stage's code
+      // ("stage: fdamd"); the single classes map the same key (ruby
+      // serializes typed_stage.code and restores it in from_hash).
+      { wire: "stage", to: "stage" },
       { wire: "base", to: "base" },
     );
 
@@ -448,7 +468,12 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
         return result;
       }
       let result = base.render();
-      result += `/${abbr}${this.number ?? ""}`;
+      // The attached-supplement renderer prints the typed stage's own
+      // abbreviation, upcased (ruby renderer.rb: abbr.first.upcase) —
+      // a published Amendment renders "/AMD1", a draft stage its own
+      // token ("/FDAM1", "/DCOR1", "/CDCOR1" from the "CDCor" entry's
+      // spelling-only upcase).
+      result += `/${(this.typedStage?.abbr ?? abbr).toUpperCase()}${this.number ?? ""}`;
       if (this.date !== undefined) result += `:${this.date.render()}`;
       if (this.edition !== undefined) result += ` ED${this.edition}`;
       return result;

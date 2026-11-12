@@ -80,8 +80,11 @@ test("iso rejects non-identifiers", () => {
   assert.throws(() => impl.parse("ISO"));
   assert.throws(() => impl.parse("ISO/IEC"));
   assert.throws(() => impl.parse("DIN 1234"));
-  // The bare prefix + DAM shape rejects on Ruby too.
-  assert.throws(() => impl.parse("ISO/DIS Amd 1"));
+  // The bare prefix + DAM shape decodes now (the ballot branch): the
+  // update-code rewrite turns the DIS+Amd spelling into "ISO/DAM 1"
+  // and the ruby oracle (Pubid::Iso.parse at main 33d41db4, post-#707)
+  // parses it as the ballot decode "ISO 1/DAM 1" too.
+  assert.equal(impl.parse("ISO/DIS Amd 1").toHuman(), "ISO 1/DAM 1");
   assert.throws(() => impl.parse("ISO 8601:2019 extra"));
   // The known reference defect — Ruby rejects it too.
   assert.throws(() => impl.parse("ISO/IEC DIR 1 + IEC SUP:2016-05-05-05"));

@@ -18,6 +18,9 @@ export const ihoSchema = define("iho", (s) => {
   s.atom("part", "part");
   s.atom("part_edition", "parted");
   s.atom("part_year", "party");
+  s.atom("spec", "spec");
+  s.atom("spec_sub", "specsub");
+  s.atom("spec_variant", "specvar");
   s.atom("annex", "annex");
   s.atom("annex_edition", "anned");
   s.atom("annex_year", "annyear");
