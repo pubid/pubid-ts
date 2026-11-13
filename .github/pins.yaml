@@ -4,10 +4,11 @@
 # pubid#711) - the tree the vendored corpus and the parity fixture
 # were regenerated from.
 testsuite_ref: 5dedf7b4a6c3f434956de5b910ed088f34383280
-# pubid-grammar main (3e8bb73918c9500c8aec68f02de687607df0eedb): the jis WES language/type slots (#114 -
-# (E)/(J) binds as wes_language when a colon follows, TR/TS as
-# wes_type) plus the jis rebake under Ruby 3.4.8 (the CI ruby) on the
-# iho S-4 loose-leaf round - the artifacts vendor/parg was mirrored
-# from, byte-checked by the "Vendored artifacts match the pinned
-# grammar ref" gate.
-grammar_ref: 3e8bb73918c9500c8aec68f02de687607df0eedb
+# pubid-grammar main (61e7c5ca7a12dddc9e4c8708a8f48e8f878c5dc4): the PFS compiler v2 (#119 -
+# pubid#706 phase 3: collection bindings, conditional render segments,
+# the ed.N fold, supplement wrapper types, int-kind URN cores, the
+# urn.official composition slots and the mr: hooks) - the etsi_pfs,
+# cen_pfs and iso artifacts rebaked under it are the artifacts vendor/parg
+# was mirrored from, byte-checked by the "Vendored artifacts match the
+# pinned grammar ref" gate.
+grammar_ref: 61e7c5ca7a12dddc9e4c8708a8f48e8f878c5dc4
