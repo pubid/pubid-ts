@@ -110,6 +110,31 @@ ships per flavor where the Ruby reference implements a URN parser
 (oiml today; the remaining flavors throw a clear "not yet supported"
 error naming this issue until their ports land).
 
+## Worker-safe registration: the pubid-scheme URN codec
+
+The package root (and the grammar barrel `dist/flavors/index.js` it
+re-exports) statically reaches `dist/parg/runtime.js`, whose module
+scope walks up to a `package.json` through `node:fs` — impossible in a
+worker bundle. Identifier-type *registration* carries no such
+dependency, so the worker entry composes the per-flavor registration
+manifest (`src/flavors/register-types.ts`) with the codec, and one
+import registers every flavor:
+
+```ts
+import { PubidUrn } from "@pubid/pubid/dist/register-types.js";
+
+const id = PubidUrn.fromSlug("iso/is/9001/year-2015"); // resolves
+```
+
+With the manifest loaded, `PubidUrn.fromSlug` covers all 41 flavors
+that resolve identifier types (nist, ieee and oiml included — the three
+the barrel could not reach from a worker). `grammarImplementation`
+(open-ended parse routing) deliberately stays behind the node-only
+barrel: it cannot load in a worker today. The invariants are pinned by
+`test/register-types.test.ts`: the manifest registers exactly the
+barrel's type set, and no node-only module is reachable from the worker
+entry's import graph.
+
 ## Development
 
 ```sh
