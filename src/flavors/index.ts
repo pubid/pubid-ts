@@ -22,6 +22,7 @@ import { calconnectPfsGrammarImplementation } from "./calconnect_pfs/index.js";
 import { gbGrammarImplementation } from "./gb/index.js";
 import { jcgmGrammarImplementation } from "./jcgm/index.js";
 import { etsiGrammarImplementation } from "./etsi/index.js";
+import { etsiPfsGrammarImplementation } from "./etsi_pfs/index.js";
 import { jisGrammarImplementation } from "./jis/index.js";
 import { iecGrammarImplementation } from "./iec/index.js";
 import { cieGrammarImplementation } from "./cie/index.js";
@@ -121,6 +122,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return jcgmGrammarImplementation();
     case "etsi":
       return etsiGrammarImplementation();
+    case "etsi_pfs":
+      return etsiPfsGrammarImplementation();
     case "jis":
       return jisGrammarImplementation();
     case "iec":
