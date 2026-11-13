@@ -14,15 +14,23 @@ export const jisSchema = define("jis", (s) => {
   s.atom("parts", "part", "list");
   s.atom("year", "year", "int");
   s.atom("reaffirmed", "reaffirmed", "bool");
+  s.atom("language", "lang");
+
+  s.facet("language_before_year", "langfirst", "bool");
 
   s.type("pubid:jis:all-parts", "all");
-  s.type("pubid:jis:amendment", "amd");
-  s.type("pubid:jis:corrigendum", "cor");
-  s.type("pubid:jis:explanation", "e");
+  s.type("pubid:jis:amendment", "amd", { core: [["number", "int"]] });
+  s.type("pubid:jis:corrigendum", "cor", { core: [["number", "int"]] });
+  s.type("pubid:jis:explanation", "e", {
+    core: [],
+    atoms: [["number", "n", "int"]],
+  });
   s.type("pubid:jis:identifier", "id");
   s.type("pubid:jis:japanese-industrial-standard", "jis");
   s.type("pubid:jis:standard", "std");
   s.type("pubid:jis:technical-report", "tr");
   s.type("pubid:jis:technical-specification", "ts");
   s.type("pubid:jis:welding-engineering-standard", "wes");
+  s.type("pubid:jis:welding-engineering-technical-report", "westr");
+  s.type("pubid:jis:welding-engineering-technical-specification", "wests");
 });

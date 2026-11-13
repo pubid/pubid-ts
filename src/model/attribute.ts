@@ -24,6 +24,9 @@ export interface AttributeSpec {
   collection?: boolean;
   /** Materialize [] when the input hash omits the key (tgpp parts). */
   initializeEmpty?: boolean;
+  /** Ruby `equality_ignored`: the attribute serializes, but `==` skips it
+   *  (jis language_before_year — where the source printed "(E)" is spelling). */
+  equalityIgnored?: boolean;
 }
 
 export type AttributeTable = Record<string, AttributeSpec>;

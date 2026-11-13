@@ -1,16 +1,13 @@
-# pubid-testsuite main (ece339a): the nist default-series plain-number
-# corpus round (#107 - the docnumber-shaped citation faces join the
-# corpus: "NIST 800-90B"/"NIST 800-53" as non-normalized aliases of the
-# canonical "NIST SP ..." cases, the bare "800-90B"/"800-53" spellings
-# as canonical publisher_was_parsed: false cases - pubid#711) on the
-# 2026-11-12 decode rounds (#106 <- #105 <- #104 <- #103) - the tree
-# the vendored corpus and the parity fixture were generated from.
-testsuite_ref: ece339a3f7f34db17fe20b69b25dcc3616ae910d
-# pubid-grammar main (b5f1399): the nist default-series plain-number
-# branch (#110, the two trailing identifier alternatives riding the
-# report-number tail - the nist.json artifact the TS nist runtime
-# loads, pubid#711) on the PFS compiler and the doi spike (#108, the
-# doi_pfs artifact the compiled TS flavor loads - pubid#706) plus its
-# CI split - the artifacts vendor/parg was mirrored from, byte-checked
-# by the "Vendored artifacts match the pinned grammar ref" gate.
-grammar_ref: b5f139972f833eb2f11812a4cd7b8df8ac0f1475
+# pubid-testsuite main (5dedf7b4a6c3f434956de5b910ed088f34383280): the itu no-sector OB corpus round
+# (pubid#696 - the Operational Bulletin rows freeze without the sector
+# atom) riding the nist default-series plain-number round (#107,
+# pubid#711) - the tree the vendored corpus and the parity fixture
+# were regenerated from.
+testsuite_ref: 5dedf7b4a6c3f434956de5b910ed088f34383280
+# pubid-grammar main (3e8bb73918c9500c8aec68f02de687607df0eedb): the jis WES language/type slots (#114 -
+# (E)/(J) binds as wes_language when a colon follows, TR/TS as
+# wes_type) plus the jis rebake under Ruby 3.4.8 (the CI ruby) on the
+# iho S-4 loose-leaf round - the artifacts vendor/parg was mirrored
+# from, byte-checked by the "Vendored artifacts match the pinned
+# grammar ref" gate.
+grammar_ref: 3e8bb73918c9500c8aec68f02de687607df0eedb

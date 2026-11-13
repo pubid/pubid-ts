@@ -153,6 +153,24 @@ export abstract class BaseIdentifier {
     return this.constructor.fromHash(hash);
   }
 
+  /** Ruby == (lutaml equality with `equality_ignored`): canonical-hash
+   *  equality that skips the attributes a flavor declares
+   *  equalityIgnored. The skipped keys stay in to_hash — it is ==, not
+   *  serialization, that reads the flag. */
+  equals(other: BaseIdentifier): boolean {
+    return canonicalKey(this.equalityHash()) === canonicalKey(other.equalityHash());
+  }
+
+  /** The canonical hash minus every equalityIgnored attribute's wire key. */
+  protected equalityHash(): Record<string, unknown> {
+    const hash = { ...this.toHash() };
+    for (const [name, spec] of Object.entries(this.classAttributes())) {
+      if (spec.equalityIgnored !== true) continue;
+      delete hash[this.wireKeyFor(name).wire];
+    }
+    return hash;
+  }
+
   /** SubsetMatch: an all-parts reference skips the part attributes. */
   subsetAllPartsWildcard(): boolean {
     return Boolean((this as unknown as Record<string, unknown>)["all_parts"]);

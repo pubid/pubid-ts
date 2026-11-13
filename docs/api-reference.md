@@ -121,6 +121,9 @@ tests/{flavor}/_negative.yaml - fail fixtures decoded by the exporter.
 
 ## `Identifier`
 
+### `equals(other)`
+Ruby ==: canonical equality skipping equalityIgnored attributes
+
 ### `fromHash(hash)`
 Deserialize the canonical hash; the idempotency gate relies on it.
 
