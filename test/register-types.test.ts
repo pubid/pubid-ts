@@ -111,9 +111,12 @@ test("the worker entry's import graph is worker-safe", () => {
 // and this number. The declared-but-unregistered remainder is the
 // pre-existing schema/model skew (schema tables declaring types whose
 // class is not ported — ccsds and sae wholesale, one or two generic
-// types elsewhere); the barrel resolves them to exactly the same 74
-// missing types, verified 2026-11-13.
-const REGISTERED_TYPES = 291;
+// types elsewhere; the compiled alias flavors re-declare their scheme's
+// types — doi_pfs adds two unresolved ones, calconnect_pfs re-declares
+// the coded calconnect pair of which the standard type resolves); the
+// barrel resolves them to exactly the same 75 missing types, verified
+// 2026-11-13.
+const REGISTERED_TYPES = 292;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;
