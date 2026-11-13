@@ -18,6 +18,7 @@ import { ansiGrammarImplementation } from "./ansi/index.js";
 import { oasisGrammarImplementation } from "./oasis/index.js";
 import { ihoGrammarImplementation } from "./iho/index.js";
 import { calconnectGrammarImplementation } from "./calconnect/index.js";
+import { calconnectPfsGrammarImplementation } from "./calconnect_pfs/index.js";
 import { gbGrammarImplementation } from "./gb/index.js";
 import { jcgmGrammarImplementation } from "./jcgm/index.js";
 import { etsiGrammarImplementation } from "./etsi/index.js";
@@ -112,6 +113,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return ihoGrammarImplementation();
     case "calconnect":
       return calconnectGrammarImplementation();
+    case "calconnect_pfs":
+      return calconnectPfsGrammarImplementation();
     case "gb":
       return gbGrammarImplementation();
     case "jcgm":
