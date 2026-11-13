@@ -27,6 +27,9 @@ export interface Identifier {
   toUrn(): string | undefined;
   /** Deserialize the canonical hash; the idempotency gate relies on it. */
   fromHash(hash: Record<string, unknown>): Identifier;
+  /** Ruby ==: canonical equality skipping equalityIgnored attributes
+   *  (the (E) position is spelling, the language itself is not). */
+  equals?(other: Identifier): boolean;
 }
 
 export type ImplementationRegistry = Map<string, FlavorImplementation>;

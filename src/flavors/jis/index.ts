@@ -18,7 +18,12 @@ import { BaseUrnGenerator } from "../../model/urn-generator.js";
  *
  * WES (welding-engineering-standard, pubid#638) rides the same flavor:
  * "WES <number>[-parts][:year[R]]…" with no series letter and no JIS
- * prefix — the code itself carries the "WES" root.
+ * prefix — the code itself carries the "WES" root. A WES id may also
+ * carry a TR/TS type after the root ("WES TR 2032:2024", its own
+ * welding-engineering-technical-report/-specification classes,
+ * pubid#716) and a language before the year ("WES 1112(E):2022",
+ * bound only when a colon follows; recorded as language_before_year,
+ * which equality ignores — the two (E) positions are one document).
  */
 
 function buildRules(): Record<string, P> {
@@ -108,12 +113,24 @@ function buildRules(): Record<string, P> {
   );
   // WES (Japan Welding Engineering Society) rides the JIS flavor with the
   // same tail but no prefix and no series letter; the root tries it first,
-  // as the reference grammar does.
+  // as the reference grammar does. A WES id may also carry a TR/TS type
+  // after the root ("WES TR 2032:2024") and a language before the year
+  // ("WES 1112(E):2022" — bound only when a colon follows, so
+  // "WES 1112(E)" with no year still reads as no language).
+  rule("wes_type", () => (str("TR").or(str("TS"))).as("wes_type").then(space));
+  rule("wes_language", () =>
+    jpLparen.or(str("(")).then(
+      match("[EJ]").as("wes_language"),
+      jpRparen.or(str(")")),
+    ).then(colon.present()),
+  );
   rule("wes_identifier", () =>
     str("WES").as("wes")
       .then(space)
+      .then(rules["wes_type"]!.maybe())
       .then(rules["number"]!)
       .then(rules["parts"]!)
+      .then(rules["wes_language"]!.maybe())
       .then(rules["year"]!.maybe())
       .then(rules["language"]!.maybe())
       .then(rules["all_parts"]!.maybe())
@@ -146,6 +163,7 @@ abstract class JisIdentifier extends BaseIdentifier {
   declare readonly parts: string[] | undefined;
   declare readonly year: number | undefined;
   declare readonly language: string | undefined;
+  declare readonly language_before_year: boolean | undefined;
   declare readonly all_parts: boolean | undefined;
   declare readonly reaffirmed: boolean | undefined;
   declare readonly symbol: string | undefined;
@@ -164,6 +182,14 @@ abstract class JisIdentifier extends BaseIdentifier {
     return `${this.year}${this.reaffirmed === true ? "R" : ""}`;
   }
 
+  /** The ":year[R]" and "(lang)" tail, in the order the source used
+   *  (ruby year_and_language). */
+  yearAndLanguage(): string {
+    const yearPart = this.year !== undefined ? `:${this.yearWithReaffirmation()}` : "";
+    const langPart = this.language !== undefined ? `(${this.language})` : "";
+    return this.language_before_year === true ? langPart + yearPart : yearPart + langPart;
+  }
+
   symbolSuffix(): string {
     if (this.symbol === undefined) return "";
     return this.symbol === "" ? " SYMBOL" : ` SYMBOL ${this.symbol}`;
@@ -180,6 +206,7 @@ const JIS_MAPPINGS = keyValue(
   { wire: "parts", to: "parts" },
   { wire: "year", to: "year" },
   { wire: "language", to: "language" },
+  { wire: "language_before_year", to: "language_before_year" },
   { wire: "all_parts", to: "all_parts" },
   { wire: "reaffirmed", to: "reaffirmed" },
   { wire: "symbol", to: "symbol" },
@@ -202,6 +229,7 @@ function jisClass(kind: JisKind): IdentifierStatic {
           parts: { type: "string", collection: true },
           year: { type: "integer" },
           language: { type: "string" },
+          language_before_year: { type: "boolean", equalityIgnored: true },
           all_parts: { type: "boolean", default: false },
           reaffirmed: { type: "boolean" },
           symbol: { type: "string" },
@@ -223,8 +251,7 @@ function jisClass(kind: JisKind): IdentifierStatic {
       const typePrefix = KIND_PREFIXES[kind];
       let result = typePrefix === undefined ? "JIS" : `JIS ${typePrefix}`;
       result += ` ${this.code()}`;
-      if (this.year !== undefined) result += `:${this.yearWithReaffirmation()}`;
-      if (this.language !== undefined) result += `(${this.language})`;
+      result += this.yearAndLanguage();
       if (this.all_parts === true) result += "（規格群）";
       return result + this.symbolSuffix();
     }
@@ -251,17 +278,31 @@ const KIND_CLASSES: Record<JisKind, IdentifierStatic> = {
   explanation: jisClass("explanation"),
 };
 
+type WesKind =
+  | "welding-engineering-standard"
+  | "welding-engineering-technical-report"
+  | "welding-engineering-technical-specification";
+
+const WES_TYPE_PREFIXES: Record<string, string | undefined> = {
+  "welding-engineering-standard": undefined,
+  "welding-engineering-technical-report": "TR",
+  "welding-engineering-technical-specification": "TS",
+};
+
 // WES 7700-1:2019 — JSA sells Welding Engineering Standards next to JIS,
 // so they parse through the JIS flavor, but the id carries no series
-// letter and no JIS prefix ("WES" is the root of the designation).
-function wesClass(): IdentifierStatic {
+// letter and no JIS prefix ("WES" is the root of the designation). The
+// TR/TS type token after the root picks the WES TR / WES TS classes
+// (pubid#716): "WES TR 2032" is not "WES 2032" and not "TR Z 2032".
+function wesClass(kind: WesKind): IdentifierStatic {
   class JisWesIdentifier extends JisIdentifier {
-    static polymorphicName = "pubid:jis:welding-engineering-standard";
+    static polymorphicName = `pubid:jis:${kind}`;
     static attributes = extendAttributes(BaseIdentifier, {
       number: { type: "string" },
       parts: { type: "string", collection: true },
       year: { type: "integer" },
       language: { type: "string" },
+      language_before_year: { type: "boolean", equalityIgnored: true },
       all_parts: { type: "boolean", default: false },
       reaffirmed: { type: "boolean" },
       symbol: { type: "string" },
@@ -271,6 +312,7 @@ function wesClass(): IdentifierStatic {
       { wire: "parts", to: "parts" },
       { wire: "year", to: "year" },
       { wire: "language", to: "language" },
+      { wire: "language_before_year", to: "language_before_year" },
       { wire: "all_parts", to: "all_parts" },
       { wire: "reaffirmed", to: "reaffirmed" },
       { wire: "symbol", to: "symbol" },
@@ -278,15 +320,16 @@ function wesClass(): IdentifierStatic {
 
     code(): string | undefined {
       if (this.base !== undefined) return this.base.code();
-      let result = `WES ${this.number}`;
+      const prefix = WES_TYPE_PREFIXES[kind];
+      const root = prefix === undefined ? "WES" : `WES ${prefix}`;
+      let result = `${root} ${this.number}`;
       if (this.parts !== undefined) result += this.parts.map((p) => `-${p}`).join("");
       return result;
     }
 
     render(): string {
       let result = this.code() ?? "";
-      if (this.year !== undefined) result += `:${this.yearWithReaffirmation()}`;
-      if (this.language !== undefined) result += `(${this.language})`;
+      result += this.yearAndLanguage();
       if (this.all_parts === true) result += "（規格群）";
       return result + this.symbolSuffix();
     }
@@ -295,7 +338,11 @@ function wesClass(): IdentifierStatic {
   return JisWesIdentifier as unknown as IdentifierStatic;
 }
 
-const WES_CLASS = wesClass();
+const WES_CLASSES: Record<WesKind, IdentifierStatic> = {
+  "welding-engineering-standard": wesClass("welding-engineering-standard"),
+  "welding-engineering-technical-report": wesClass("welding-engineering-technical-report"),
+  "welding-engineering-technical-specification": wesClass("welding-engineering-technical-specification"),
+};
 
 class JisUrnGenerator extends BaseUrnGenerator<JisIdentifier> {
   generate(): string {
@@ -313,7 +360,7 @@ class JisUrnGenerator extends BaseUrnGenerator<JisIdentifier> {
     return parts.join(":");
   }
 }
-for (const klass of [...Object.values(KIND_CLASSES), WES_CLASS]) {
+for (const klass of [...Object.values(KIND_CLASSES), ...Object.values(WES_CLASSES)]) {
   (klass as unknown as Record<string, unknown>).urnGenerator = JisUrnGenerator;
 }
 
@@ -379,10 +426,28 @@ class JisBuilder {
       parts: extractParts(tree["parts"]),
     };
     if (tree["year"] !== undefined && tree["year"] !== null) attrs["year"] = Number(tree["year"]);
-    if (tree["language"] !== undefined && tree["language"] !== null) attrs["language"] = String(tree["language"]);
+    const wesType =
+      tree["wes_type"] === undefined || tree["wes_type"] === null ? undefined : String(tree["wes_type"]);
+    const kind: WesKind =
+      wesType === "TR"
+        ? "welding-engineering-technical-report"
+        : wesType === "TS"
+        ? "welding-engineering-technical-specification"
+        : "welding-engineering-standard";
+    // "wes_language" is a language printed before the year
+    // ("WES 1112(E):2022"); an id carries one language, not two.
+    if (tree["wes_language"] !== undefined && tree["wes_language"] !== null) {
+      if (tree["language"] !== undefined && tree["language"] !== null) {
+        throw new ParseFailed("JIS: a WES id carries one language, not two", 0);
+      }
+      attrs["language"] = String(tree["wes_language"]);
+      attrs["language_before_year"] = true;
+    } else if (tree["language"] !== undefined && tree["language"] !== null) {
+      attrs["language"] = String(tree["language"]);
+    }
     if (tree["all_parts"] !== undefined) attrs["all_parts"] = true;
     if (tree["reaffirmed"] !== undefined && tree["reaffirmed"] !== null) attrs["reaffirmed"] = true;
-    return new (WES_CLASS as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
+    return new (WES_CLASSES[kind] as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
   }
 
   private buildSupplement(
