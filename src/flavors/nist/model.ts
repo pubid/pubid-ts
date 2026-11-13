@@ -740,6 +740,15 @@ interface TypeSpec {
   kind: string;
   seriesCode?: string;
   defaultPublisher?: string;
+  /** Ruby `self.default_series` — the series an input implies when it
+   *  spells none (the default-series plain-number branch, pubid#711);
+   *  the Builder fills the attribute. nil: no default. */
+  defaultSeries?: string;
+  /** Ruby `self.series_default_publisher` — the publisher a series
+   *  implies when the input spells none (the #704 shape); filled by the
+   *  Builder after it records publisher_was_parsed: false, so the bare
+   *  face keeps rendering bare. nil: no default. */
+  seriesDefaultPublisher?: string;
   supplementSeam?: boolean;
   /** "fips": MR form starts at the series; "crpl": the CRPL-F band form. */
   style?: "fips" | "crpl";
@@ -753,6 +762,11 @@ function nistClass(spec: TypeSpec): IdentifierStatic {
   class NistConcrete extends (spec.supplementSeam === true ? NistSupplementIdentifier : NistIdentifier) {
     static polymorphicName = `pubid:nist:${spec.kind}`;
     static urnGenerator = NistUrnGenerator;
+    /** Ruby `self.default_series` (pubid#711) — read by the Builder. */
+    static nistDefaultSeries = spec.defaultSeries;
+    /** Ruby `self.series_default_publisher` (#704/#712) — read by the
+     *  Builder's series-default-publisher fill. */
+    static nistDefaultPublisher = spec.seriesDefaultPublisher;
 
     seriesCode(): string | undefined {
       return spec.seriesCode;
@@ -900,7 +914,17 @@ export abstract class NistSupplementIdentifier extends NistIdentifier {
 }
 
 const TYPE_SPECS: TypeSpec[] = [
-  { kind: "special-publication", seriesCode: "SP" },
+  {
+    kind: "special-publication", seriesCode: "SP",
+    // The default-series plain-number branch (pubid#711): a citation
+    // shaped like the docnumber ("800-90B", publisher-led
+    // "NIST 800-90B") names an SP document — the docid-derived
+    // citation of NIST.SP.800-90B is exactly "800-90B" — and a bare
+    // plain-number parse carries the series' NIST publisher (the #704
+    // shape), so it is == to the spelled "NIST SP 800-90B" form a
+    // lookup compares against.
+    defaultSeries: "SP", seriesDefaultPublisher: "NIST",
+  },
   { kind: "federal-information-processing-standards", seriesCode: "FIPS", defaultPublisher: "", style: "fips" },
   { kind: "interagency-report", seriesCode: "IR", forceShort: true },
   { kind: "handbook", seriesCode: "HB" },

@@ -211,6 +211,19 @@ function locateIdentifierKlass(h: Record<string, unknown>): NistCtor {
   }
   let series = s(h["series"]);
 
+  // The default-series plain-number branch (pubid#711): the grammar's
+  // trailing alternatives accept a bare report number ("800-90B") and
+  // its publisher-led spelling ("NIST 800-90B") with NO series token.
+  // The SP series is the default: the docid-derived citation of
+  // NIST.SP.800-90B is exactly the bare docnumber "800-90B", and the
+  // Builder fills the same SP series the spelled form carries, so the
+  // two spellings are one identity to a lookup. No other branch can
+  // arrive here series-less (dated shapes returned above; every
+  // series-bearing branch captures :series).
+  if (series === undefined) {
+    return classForKind("special-publication");
+  }
+
   if (series?.startsWith("NBS ") === true || series?.startsWith("NBS.") === true || series?.startsWith("NIST.") === true) {
     const separator = series.startsWith("NBS ") ? "NBS " : series.startsWith("NBS.") ? "NBS." : "NIST.";
     let simple = series.slice(separator.length);
@@ -935,6 +948,22 @@ class NistBuilder {
     const policy = seriesPolicy(s(h["series"]));
     const identifier = new klass();
 
+    // The default-series plain-number branch (pubid#711): the grammar's
+    // trailing alternatives carry no series token ("800-90B" /
+    // "NIST 800-90B"), so the identity gains the class's default series
+    // and parses == to the spelled "NIST SP 800-90B" form. The bare
+    // publisher rides the series-default-publisher fill at the tail
+    // (the #704 shape: filled after publisher_was_parsed is recorded,
+    // so the bare face keeps rendering bare). The policy stays the
+    // series-less Base one — Ruby's Series.for reads parsed_hash, not
+    // the filled attribute (SP's own policy is Base anyway).
+    if (h["series"] === undefined) {
+      const defaultSeries = (klass as unknown as { nistDefaultSeries?: string }).nistDefaultSeries;
+      if (defaultSeries !== undefined) {
+        (identifier as unknown as Record<string, unknown>)["series"] = new NistCode({ value: defaultSeries });
+      }
+    }
+
     const attrs: Record<string, unknown> = {};
     const toEdition = (v: unknown): NistEdition | undefined => {
       if (isObj(v)) {
@@ -1186,16 +1215,19 @@ class NistBuilder {
       }
     }
 
-    // Default publisher for series-less renders.
+    // apply_series_default_publisher (the #704 rule): a series that
+    // implies its publisher (bare "FIPS 197" is "NIST FIPS 197"; bare
+    // "800-90B" is "NIST SP 800-90B" — pubid#712) gets it now, after the
+    // publisher_was_parsed: false above, so the two spellings are ==
+    // while the bare face keeps rendering bare (the printed-publisher
+    // views read the flag, not the filled value). Runs only when the
+    // publisher is absent AND unspelled — at this point that is exactly
+    // `publisher === undefined` (the flag was recorded false above iff
+    // no publisher was parsed).
     if (self["publisher"] === undefined) {
       const defaultPublisher = (identifier.constructor as unknown as { nistDefaultPublisher?: string }).nistDefaultPublisher;
       if (defaultPublisher !== undefined && defaultPublisher !== "") {
         self["publisher"] = defaultPublisher;
-        if (self["publisher_was_parsed"] === false) {
-          // Circular/RPT/MP render "NBS <series>" through the default even
-          // when not parsed — keep the flag false (Ruby publisher_was_parsed
-          // stays false but to_short_style uses default only via series).
-        }
       }
     }
 
