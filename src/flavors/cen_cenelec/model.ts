@@ -246,8 +246,11 @@ const ISO_TYPE_SEGMENT: Record<string, string> = {
   guide: "guide",
 };
 
-/** MR string of a nested iso/iec document read from its wire hash. */
-function mrFromHash(hash: Record<string, unknown>): string {
+/** MR string of a nested iso/iec document read from its wire hash.
+ * Exported for the cen_pfs port: the compiled flavor's fused-URN segment
+ * is the adopted document's MR string, the same computation the coded
+ * flavor performs. */
+export function mrFromHash(hash: Record<string, unknown>): string {
   const type = String(hash["_type"] ?? "");
   const segments: string[] = [];
   if (type.startsWith("pubid:iso")) {
