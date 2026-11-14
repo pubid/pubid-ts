@@ -61,10 +61,10 @@ const hashOverrides = existsSync(fixturePath)
  * flavor here, so a stale entry cannot rot.
  */
 const BUILD_PENDING = new Set([
-  "ccsds",
   // The testsuite's SAE corpus round landed identifier hashes for the
   // flavor (testsuite 1ac4ec81); the URN schema table is ported but the
-  // SAE identifier model is not, so the rebuild pends on it like ccsds.
+  // SAE identifier model is not, so the rebuild pends on it. ccsds left
+  // when its model landed (pubid-ts#178).
   "sae",
 ]);
 

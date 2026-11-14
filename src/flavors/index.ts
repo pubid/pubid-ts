@@ -29,6 +29,7 @@ import { cieGrammarImplementation } from "./cie/index.js";
 import { bipmGrammarImplementation } from "./bipm/index.js";
 import { isoGrammarImplementation } from "./iso/index.js";
 import { nistGrammarImplementation } from "./nist/index.js";
+import { ccsdsGrammarImplementation } from "./ccsds/index.js";
 import { ieeeGrammarImplementation } from "./ieee/index.js";
 import { cenCenelecGrammarImplementation } from "./cen_cenelec/index.js";
 import { astmGrammarImplementation } from "./astm/index.js";
@@ -136,6 +137,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return isoGrammarImplementation();
     case "nist":
       return nistGrammarImplementation();
+    case "ccsds":
+      return ccsdsGrammarImplementation();
     case "ieee":
       return ieeeGrammarImplementation();
     case "cen_cenelec":

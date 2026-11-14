@@ -99,15 +99,16 @@ test("the worker entry's import graph is worker-safe", () => {
 // whole fleet: a flavor landing a new identifier class bumps both sides
 // and this number. The declared-but-unregistered remainder is the
 // pre-existing schema/model skew (schema tables declaring types whose
-// class is not ported — ccsds and sae wholesale, one or two generic
-// types elsewhere; the compiled alias flavors re-declare their scheme's
+// class is not ported — sae wholesale and the ccsds abstract-root
+// "identifier" type, one or two generic types elsewhere; the compiled
+// alias flavors re-declare their scheme's
 // types — doi_pfs adds two unresolved ones, calconnect_pfs re-declares
 // the coded calconnect pair of which the standard type resolves, and
 // etsi_pfs re-declares the coded etsi quartet of which three resolve
 // through the coded classes ("identifier" stays unresolved, as under the
-// coded schema)); the barrel resolves them to exactly the same 75 missing
-// types, verified 2026-11-13.
-const REGISTERED_TYPES = 295;
+// coded schema)); the barrel resolves them to exactly the same missing
+// types, verified with the ccsds round on 2026-11-14.
+const REGISTERED_TYPES = 297;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;

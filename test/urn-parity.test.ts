@@ -6,7 +6,8 @@ import { grammarImplementation } from "../src/flavors/index.js";
 
 // Every ported flavor matches the reference on both halves: the rebuilt
 // human on success, and the reference's own parse failures. Flavors without
-// a ts port yet (ccsds, easc, iso) are skipped until implemented.
+// a ts port yet (easc, iso) are skipped until implemented; ccsds
+// joined when its model landed (pubid-ts#178).
 
 type Row = { urn: string; human?: string | undefined; error?: string | undefined };
 const fixture: Record<string, Row[]> = JSON.parse(
