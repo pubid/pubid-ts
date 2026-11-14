@@ -642,9 +642,13 @@ export function iecToUrn(identifier: BaseIdentifier): string {
 
   const ts = (docWithNumber as BaseIdentifier as unknown as { typedStage?: TypedStage }).typedStage;
   const typeToken = ts !== undefined && TYPE_SLOT_CODES.has(ts.typeCode) ? ts.typeCode : "";
+  // The gem's stage_token (urn_generator.rb): nil when the stage is
+  // published OR when the typed stage carries no harmonized code — there
+  // is NO stage-code fallback, so a harmonized-less draft row (BPUB,
+  // the draft-supplement rows) leaves the slot empty (#187).
   const stageToken =
-    ts !== undefined && ts.stageCode !== "published"
-      ? `stage-${ts.harmonized ?? ts.stageCode}`
+    ts !== undefined && ts.stageCode !== "published" && ts.harmonized !== undefined
+      ? `stage-${ts.harmonized}`
       : "";
   const stageOrType = [typeToken, stageToken].filter((t) => t !== "").join("-");
 
