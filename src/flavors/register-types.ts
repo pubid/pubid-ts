@@ -58,6 +58,11 @@ import "./oiml/model.js";
 import "./ansi/index.js";
 import "./bipm/index.js";
 import "./calconnect/index.js";
+// ccsds (pubid-ts#178): the registration classes live on ccsds/model.js
+// (parg-free); the index re-exports them beside the artifact-backed
+// parse entry — but the index itself reaches parg/runtime.js, so the
+// manifest imports the MODEL module like the model-registrant flavors.
+import "./ccsds/model.js";
 import "./doi/index.js";
 import "./easc/index.js";
 import "./ecma/index.js";

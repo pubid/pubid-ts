@@ -58,8 +58,9 @@ const fixture: Fixture = JSON.parse(
  *  scripts/probe-pubid-urn.mjs BUILD_PENDING): emit/decode/parity run,
  *  the canonical rebuild cannot until the model lands. SAE joined when
  *  the testsuite's corpus round recorded identifier hashes for it (the
- *  URN schema table is ported; the model is not). */
-const BUILD_PENDING = new Set(["ccsds", "sae"]);
+ *  URN schema table is ported; the model is not). ccsds left when its
+ *  model landed (pubid-ts#178). */
+const BUILD_PENDING = new Set(["sae"]);
 
 /** Rows pending the rebuild on the port's own pinned quirks (the nist
  *  yaml-float wire quirk; see scripts/probe-pubid-urn.mjs). */
