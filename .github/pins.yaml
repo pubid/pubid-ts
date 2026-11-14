@@ -1,9 +1,11 @@
-# pubid-testsuite main (5dedf7b4a6c3f434956de5b910ed088f34383280): the itu no-sector OB corpus round
-# (pubid#696 - the Operational Bulletin rows freeze without the sector
-# atom) riding the nist default-series plain-number round (#107,
-# pubid#711) - the tree the vendored corpus and the parity fixture
-# were regenerated from.
-testsuite_ref: 5dedf7b4a6c3f434956de5b910ed088f34383280
+# pubid-testsuite main (6ea88712b539c4949c69bf8e55a6d9e441301c1b): the iec
+# draft-face-spacing corpus round (testsuite#109, pubid#724 - the
+# draft-supplement ballot faces freeze SPACED: /FDAM 1, /PDAM 1, /FPDAM 2,
+# /DAM 2.3:2022, /DCOR 1.3, /DISH 1 ...; the published /AMD1//COR1//ISH1
+# faces stay glued; grammar c4b15212 unchanged) riding the itu no-sector OB
+# round (pubid#696) and the nist default-series plain-number round (#107,
+# pubid#711) - the tree the vendored corpus was regenerated from.
+testsuite_ref: 6ea88712b539c4949c69bf8e55a6d9e441301c1b
 # pubid-grammar main (897770b4fa87ef5b46b8b82bacecece3e2bebee2): the cen_pfs
 # full absorption (#121 - the six declared-emission features close the
 # v1-composition gaps: multi-type emission, the prEN/FprEN draft stages,
