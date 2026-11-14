@@ -46,7 +46,6 @@ type Row = { id: string; urn: string };
 type Fixture = {
   generatedFrom: { note: string };
   urns: Record<string, Record<string, string>>;
-  hashOverrides: Record<string, Record<string, unknown>>;
 };
 
 const fixture: Fixture = JSON.parse(
@@ -60,17 +59,6 @@ const fixture: Fixture = JSON.parse(
  *  the testsuite's corpus round recorded identifier hashes for it (the
  *  URN schema table is ported; the model is not). */
 const BUILD_PENDING = new Set(["ccsds", "sae"]);
-
-/** Rows pending the rebuild on the port's own pinned quirks (the nist
- *  yaml-float wire quirk; see scripts/probe-pubid-urn.mjs). */
-const REBUILD_PENDING = new Set([
-  "nist.commercial_standard.2019",
-  "nist.commercial_standard.2100",
-  "nist.commercial_standard.2195",
-  "nist.commercial_standard.2216",
-  "nist.commercial_standard.2228",
-  "nist.commercial_standard.2272",
-]);
 
 const canon = (node: unknown): unknown => {
   if (Array.isArray(node)) return node.map(canon);
@@ -129,7 +117,7 @@ let checked = 0;
 
 for (const flavor of corpusFlavors) {
   for (const row of rowsByFlavor.get(flavor)!) {
-    const hash = (fixture.hashOverrides[row.id] ?? row.identifier) as Record<string, unknown>;
+    const hash = row.identifier as Record<string, unknown>;
     const urn = generate(hash);
     checked += 1;
 
@@ -163,7 +151,7 @@ for (const flavor of corpusFlavors) {
     if (!same(back, hash)) decodeFailures.push(`${row.id}: ${urn} rebuilt a different hash`);
 
     // (c)+(f) CANONICAL + SLUG — pending where noted above.
-    if (BUILD_PENDING.has(flavor) || REBUILD_PENDING.has(row.id)) continue;
+    if (BUILD_PENDING.has(flavor)) continue;
     try {
       const rebuilt = parse(urn);
       const reUrn = generate(rebuilt.toHash());
