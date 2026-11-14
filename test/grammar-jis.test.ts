@@ -5,7 +5,7 @@ import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 
-// jis — 10,555 corpus rows, the second-largest flavor, on the unified model.
+// jis — 10,575 corpus rows, the second-largest flavor, on the unified model.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -50,9 +50,9 @@ test("jis rejects non-identifiers", () => {
 // The WES forms relaton-jis#18 raised on (14 ids out of 104, ported by
 // pubid#716): the (E)/(J) language face before the year, the WES TR and
 // WES TS type tokens, and the AMENDMENT spelling that renders AMD.
-// The testsuite corpus carries no rows for these yet (the WES corpus
-// file holds only the five plain forms), so the parity set here is the
-// one #716's body records.
+// The corpus carries all of them since the testsuite#110 freeze; the
+// parity set stays as the direct parse-side regression for the faces the
+// corpus rows exercise only through their hashes.
 
 const WES_PARITY_FORMS: [string, string, string][] = [
   ["WES 1112(E):2022", "WES 1112(E):2022", "pubid:jis:welding-engineering-standard"],

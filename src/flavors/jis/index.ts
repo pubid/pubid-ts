@@ -8,7 +8,7 @@ import { extendAttributes, keyValue } from "../../model/attribute.js";
 import { BaseUrnGenerator } from "../../model/urn-generator.js";
 
 /**
- * Port of lib/pubid/jis/ on the unified model — 10,555 corpus rows.
+ * Port of lib/pubid/jis/ on the unified model — 10,575 corpus rows.
  * "JIS[ TR|TS] <series> <number>[-parts][:year[R]][(E|J)][（規格群）]
  * [/AMD|EXPL|CORRIGENDUM …] [SYMBOL <value>]". Full-width Japanese
  * separators parse and normalize; year is an INTEGER in the hash; the
