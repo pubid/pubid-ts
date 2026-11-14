@@ -471,12 +471,28 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
       // The attached-supplement renderer prints the typed stage's own
       // abbreviation, upcased (ruby renderer.rb: abbr.first.upcase) —
       // a published Amendment renders "/AMD1", a draft stage its own
-      // token ("/FDAM1", "/DCOR1", "/CDCOR1" from the "CDCor" entry's
-      // spelling-only upcase).
-      result += `/${(this.typedStage?.abbr ?? abbr).toUpperCase()}${this.number ?? ""}`;
+      // token plus the ballot-number separator. Draft-stage supplements
+      // carry the ballot face: stage token, SPACE, number
+      // ("60038-1/FDAM 1", "60038-1/DCOR 1.3") — the spaced citation
+      // form the stored twins carry (ruby renderer.rb
+      // ballot_number_separator, pubid#724: the published stages
+      // stage_code "published" — Amd/Cor/ISH — keep the glued
+      // corpus-dominant face, "/AMD1:2011"; the separator only rides
+      // when there is a number, so a numberless supplement renders the
+      // bare stage token on either side).
+      result += `/${(this.typedStage?.abbr ?? abbr).toUpperCase()}${this.ballotNumberSeparator()}${this.number ?? ""}`;
       if (this.date !== undefined) result += `:${this.date.render()}`;
       if (this.edition !== undefined) result += ` ED${this.edition}`;
       return result;
+    }
+
+    /** Ruby Renderer#ballot_number_separator: "" without a number or on
+     *  a published stage (glued "/AMD1"), " " on a draft stage
+     *  ("/FDAM 1" — the spaced citation form). */
+    ballotNumberSeparator(): string {
+      if (this.number === undefined) return "";
+      if (this.typedStage?.stageCode === "published") return "";
+      return " ";
     }
   }
   registerType(IecSupplementIdentifier as unknown as IdentifierStatic);
