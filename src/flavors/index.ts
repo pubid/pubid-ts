@@ -32,6 +32,7 @@ import { nistGrammarImplementation } from "./nist/index.js";
 import { ccsdsGrammarImplementation } from "./ccsds/index.js";
 import { ieeeGrammarImplementation } from "./ieee/index.js";
 import { cenCenelecGrammarImplementation } from "./cen_cenelec/index.js";
+import { cenPfsGrammarImplementation } from "./cen_pfs/index.js";
 import { astmGrammarImplementation } from "./astm/index.js";
 import { idfGrammarImplementation } from "./idf/index.js";
 import { gostGrammarImplementation } from "./gost/index.js";
@@ -143,6 +144,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return ieeeGrammarImplementation();
     case "cen_cenelec":
       return cenCenelecGrammarImplementation();
+    case "cen_pfs":
+      return cenPfsGrammarImplementation();
     case "astm":
       return astmGrammarImplementation();
     case "idf":

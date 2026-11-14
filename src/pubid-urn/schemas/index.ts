@@ -19,6 +19,7 @@ import { calconnectSchema } from "./calconnect.js";
 import { calconnectPfsSchema } from "./calconnect_pfs.js";
 import { ccsdsSchema } from "./ccsds.js";
 import { cencenelecSchema } from "./cencenelec.js";
+import { cenPfsSchema } from "./cen_pfs.js";
 import { cieSchema } from "./cie.js";
 import { csaSchema } from "./csa.js";
 import { doiSchema } from "./doi.js";
@@ -69,6 +70,7 @@ export const PUBID_URN_SCHEMAS: FlavorSchema[] = [
   calconnectPfsSchema,
   ccsdsSchema,
   cencenelecSchema,
+  cenPfsSchema,
   cieSchema,
   csaSchema,
   doiSchema,
