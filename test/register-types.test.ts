@@ -111,7 +111,10 @@ test("the worker entry's import graph is worker-safe", () => {
 // ("identifier" stays unresolved, as under the coded schema)); the
 // barrel resolves them to exactly the same missing
 // types, verified with the cen_pfs round on 2026-11-14.
-const REGISTERED_TYPES = 311;
+// pubid-ts#195: the three IEC deliverable types (technology-report,
+// white-paper, societal-technology-trend-report) landed their classes,
+// leaving the schema's IEC declarations fully resolved — +3.
+const REGISTERED_TYPES = 314;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;

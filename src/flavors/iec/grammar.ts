@@ -7,7 +7,9 @@ import type { FlavorImplementation, Identifier } from "../../conformance/impleme
 
 /**
  * Port of lib/pubid/iec/ on the unified model — 12,334 corpus rows
- * across 16 identifier types. The distinctive traits, all pinned against
+ * across 19 identifier types (16 corpus-backed, plus the three
+ * standalone deliverable types of #195: Technology Report, Trend
+ * Report, White Paper). The distinctive traits, all pinned against
  * the Ruby reference:
  * - typed stages: an abbreviation table (abbr -> {code, stageCode,
  *   typeCode}); "stage" serializes only the non-published stage CODE;
