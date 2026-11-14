@@ -21,7 +21,7 @@
 import { writeFileSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join, resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
+import { parseCorpusYaml } from "../dist/corpus/loader.js";
 
 const parityPath = resolve(process.env["PARITY_JSON"] ?? "/tmp/urn-ref/parity-pin.json");
 const testsDir = resolve(process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests");
@@ -45,6 +45,9 @@ for (const [flavor, payload] of Object.entries(parity)) {
 // The psych-vs-yaml-package divergence: every row whose ruby-loaded
 // hash differs from the npm-yaml-loaded one carries its ruby hash in
 // the fixture, and the gates use it in place of the artifact's.
+// (Since pubid-ts#177 the loader reads the corpus under psych's float
+// contract, so the walks agree and hashOverrides stays empty for the
+// current corpus — the mechanism remains for any future divergence.)
 const canon = (node) => {
   if (Array.isArray(node)) return node.map(canon);
   if (node !== null && typeof node === "object") {
@@ -60,7 +63,7 @@ for (const entry of readdirSync(testsDir).sort()) {
   if (!statSync(dir).isDirectory()) continue;
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith(".yaml") || file.startsWith("_")) continue;
-    const doc = parseYaml(readFileSync(join(dir, file), "utf8"));
+    const doc = parseCorpusYaml(readFileSync(join(dir, file), "utf8"));
     if (!Array.isArray(doc)) continue;
     for (const row of doc) {
       if (row.identifier !== undefined && row.identifier !== null) {

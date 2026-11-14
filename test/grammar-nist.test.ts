@@ -70,8 +70,9 @@ test("nist parses open-ended beyond the corpus", () => {
   );
   // The spurious v2-migration "U" is stripped and the letter upcased.
   assert.equal(impl.parse("NIST NCSTAR 1-1Ui").toHuman(), "NIST NCSTAR 1-1I");
-  // The Ruby YAML float quirk survives in the wire hash.
-  assert.equal(impl.parse("NBS CS 102E-42").toHash()["number"], 1.02e-40);
+  // The psych wire contract: a dot-less exponent spelling stays the
+  // String ruby keeps (pubid-ts#177), in every face.
+  assert.equal(impl.parse("NBS CS 102E-42").toHash()["number"], "102E-42");
   // The nil-supplement URN quirk.
   assert.equal(impl.parse("NIST TN 2150").toUrn(), "urn:nist:tn:2150.supp");
 });

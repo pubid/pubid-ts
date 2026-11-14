@@ -9,17 +9,6 @@ import { PUBID_URN_SCHEMAS } from "../src/pubid-urn/schemas/index.js";
 import { loadBundledCorpus } from "../src/corpus/artifact.js";
 import type { CorpusCase } from "../src/corpus/types.js";
 
-/** Rows pending the rebuild on the port's own pinned quirks — the same
- *  list the barrel contract skips (test/pubid-urn.test.ts). */
-const REBUILD_PENDING = new Set([
-  "nist.commercial_standard.2019",
-  "nist.commercial_standard.2100",
-  "nist.commercial_standard.2195",
-  "nist.commercial_standard.2216",
-  "nist.commercial_standard.2228",
-  "nist.commercial_standard.2272",
-]);
-
 // Worker-safe registration (pubid-ts#169). The type registry lives in
 // src/model/identifier.js and is populated by importing flavor modules;
 // every pre-existing path to them (the grammar barrel
@@ -157,7 +146,6 @@ test("fromSlug resolves a corpus identifier of every flavor under the worker ent
     // manifest resolves everything the barrel resolves.
     const row: CorpusCase | undefined = payloads.cases.find((c) => {
       if (c.identifier === undefined || c.identifier === null) return false;
-      if (REBUILD_PENDING.has(c.id)) return false;
       const type = (c.identifier as Record<string, unknown>)["_type"];
       return typeof type === "string" && resolveType(type) !== undefined;
     });

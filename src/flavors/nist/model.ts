@@ -405,21 +405,17 @@ export abstract class NistIdentifier extends BaseIdentifier {
     {
       wire: "number",
       to: "number",
-      toWire: (m) => {
-        const v = m["number"];
-        if (
-          typeof v === "string" &&
-          (/^\d+E-\d+$/.test(v) || /^[+-]?\d+(\.\d+)?[eE][+-]?\d+$/.test(v))
-        ) {
-          return Number(v);
-        }
-        return v;
-      },
+      // The wire face is the String ruby keeps (psych never floats a
+      // dot-less exponent spelling, pubid-ts#177): no numeric coercion
+      // here — a hash carrying a Float is non-canonical input and the
+      // URN schema (string-kind) rejects it.
+      toWire: (m) => m["number"],
       fromWire: (h) => {
         const v = h["number"];
         if (v === undefined || v === null) return undefined;
-        // A numeric value came from the exporter's YAML float coercion —
-        // keep it so the round trip stays idempotent.
+        // A numeric value came from a non-psych YAML load — keep it so
+        // the round trip stays idempotent (ruby does the same: the
+        // attribute carries whatever the hash held).
         return typeof v === "number" ? v : String(v);
       },
     },

@@ -20,7 +20,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { gunzipSync } from "node:zlib";
-import { parse as parseYaml } from "yaml";
+import { parseCorpusYaml } from "../dist/corpus/loader.js";
 import {
   PREFIX,
   Decoder,
@@ -43,9 +43,10 @@ const SLOW = process.env["PROBE_SKIP_BUILD"] === "1";
 
 /**
  * The psych-vs-yaml-package wire divergence (YAML 1.1 keeps
- * `102E-42` a String, the 1.2 core schema floats it): the ruby hash is
- * the reference wire form, so rows recorded in the fixture's
- * hashOverrides encode from the ruby hash, not the npm-loaded one.
+ * `102E-42` a String, the 1.2 core schema floats it) closed at the
+ * corpus-load boundary in pubid-ts#177: the loader reads the corpus
+ * under psych's float contract, so the TS hashes match the ruby ones
+ * and no rows pend on it anymore.
  */
 const fixturePath = resolve("test/fixtures/pubid-urn-parity.json.gz");
 const hashOverrides = existsSync(fixturePath)
@@ -69,24 +70,12 @@ const BUILD_PENDING = new Set([
 
 /**
  * Rows where the canonical rebuild (c) is pending on the port's own
- * pinned quirks, not on the codec: the TS nist model keeps the
- * yaml-package float for exponential spellings (test/grammar-nist.test.ts
- * "The Ruby YAML float quirk survives in the wire hash"), so a rebuilt
- * id re-encodes the float and fails the canonical compare. Ruby keeps
- * the String, and the URN itself already carries it byte-exactly —
- * (a),(b),(d),(e) run for these rows too.
+ * pinned quirks, not on the codec.
+ *
+ * Since pubid-ts#177 this list is EMPTY: the nist yaml-float rows
+ * rebuild canonically (the loader reads the corpus under psych's
+ * float contract and the nist model keeps the String wire face).
  */
-const REBUILD_PENDING = new Set([
-  // nist ids renumbered with the testsuite's FIPS render-face round
-  // (corpus/fips-pub-face: the face shift moves the flavor's global
-  // case-id counter; same rows).
-  "nist.commercial_standard.2019",
-  "nist.commercial_standard.2100",
-  "nist.commercial_standard.2195",
-  "nist.commercial_standard.2216",
-  "nist.commercial_standard.2228",
-  "nist.commercial_standard.2272",
-]);
 
 const canon = (node) => {
   if (Array.isArray(node)) return node.map(canon);
@@ -116,7 +105,7 @@ for (const entry of readdirSync(testsDir).sort()) {
   const rows = [];
   for (const file of readdirSync(dir).sort()) {
     if (!file.endsWith(".yaml") || file.startsWith("_")) continue;
-    const doc = parseYaml(readFileSync(join(dir, file), "utf8"));
+    const doc = parseCorpusYaml(readFileSync(join(dir, file), "utf8"));
     if (!Array.isArray(doc)) continue;
     for (const row of doc) {
       if (row.identifier !== undefined && row.identifier !== null) {
@@ -167,7 +156,7 @@ for (const entry of readdirSync(testsDir).sort()) {
         flavorFailures.push(
           `${id}: ${urn} -> ${JSON.stringify(canon(back)).slice(0, 160)}`,
         );
-      } else if (!SLOW && !BUILD_PENDING.has(entry) && !REBUILD_PENDING.has(id)) {
+      } else if (!SLOW && !BUILD_PENDING.has(entry)) {
         // (c)+(f): the canonical rebuild through fromHash, then the slug
         // round-trip. BUILD_PENDING flavors skip both until their model
         // lands; (a),(b),(d),(e) above still ran for them.
