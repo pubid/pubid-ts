@@ -256,9 +256,14 @@ export abstract class IecIdentifier extends BaseIdentifier {
 
   /** Ruby SingleIdentifier#publisher_portion. */
   publisherPortion(): string {
+    // The supplement table does not materialize the empty copublishers
+    // collection (the single table's initializeEmpty does) — ruby
+    // nil-guards the same read (`copublishers&.any?`, pubid#727: the
+    // standalone faces crashed here instead of rendering).
+    const copublishers = this.copublishers ?? [];
     const publishers =
-      this.copublishers.length > 0
-        ? [this.publisher ?? "IEC", ...this.copublishers]
+      copublishers.length > 0
+        ? [this.publisher ?? "IEC", ...copublishers]
         : [this.publisher ?? "IEC"];
     let pub = publishers.join("/");
     const abbr = this.typedStage?.abbr ?? "";
@@ -518,9 +523,33 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
     render(): string {
       const base = this.base;
       if (base === undefined || this.synthetic_base === true) {
-        // Standalone draft supplement (not in the corpus; Ruby parity shape).
-        let result = this.publisherPortion();
-        result += ` ${abbr} ${base?.number ?? this.number ?? ""}`;
+        // Standalone draft supplement (not in the corpus; Ruby parity
+        // shape). Ruby render_supplement_standalone: the publisher join
+        // with NO stage abbreviation (the slash stays the copublisher
+        // separator), then the stage token over the self-base number and
+        // the supplement's own number ("IEC Amd 1-1:2017"). The published
+        // stages print the capitalized abbreviation ("Amd"), the draft
+        // stages their own token ("DCOR") — the ruby typed_stage.abbr
+        // first element. The publisher rides the attribute default ("IEC"
+        // fills it on every parse and from_hash route; ruby renders the
+        // nil-publisher hand-built case with no publisher part, a shape
+        // no parse or deserialization route reaches).
+        const parts: string[] = [];
+        const copublishers = this.copublishers ?? [];
+        const publishers = [this.publisher ?? "IEC", ...copublishers];
+        parts.push(publishers.join("/"));
+        const stageAbbr = this.typedStage?.abbr ?? abbr;
+        const leadAbbr =
+          this.typedStage?.stageCode === "published"
+            ? stageAbbr.charAt(0) + stageAbbr.slice(1).toLowerCase()
+            : stageAbbr;
+        // The self-base holds the supplement's own number (ruby's
+        // synthetic base stores it before the render reads it).
+        let numberStr = String((base as unknown as { number?: unknown } | undefined)?.number ?? this.number ?? "");
+        if (this.number !== undefined) numberStr += `-${this.number}`;
+        if (this.subpart !== undefined) numberStr += `-${this.subpart}`;
+        parts.push(`${leadAbbr} ${numberStr}`);
+        let result = parts.join(" ");
         if (this.date !== undefined) result += `:${this.date.render()}`;
         if (this.edition !== undefined) result += ` ED${this.edition}`;
         return result;

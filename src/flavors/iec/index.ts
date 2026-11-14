@@ -693,6 +693,51 @@ for (const klass of [
   }
 }
 
+// --- the standalone no-part dotted face reject (pubid#727) --------------
+
+// A supplement's OWN dotted sub-number has nowhere to print on the
+// standalone (no-part, self-base) face: the standalone renderer prints
+// the base number and the supplement number only, so the parsed dot was
+// dropped at render and parse(render) != parse. No IEC source prints a
+// no-part standalone face with a dotted number — the facet is attested
+// only on the on-base draft faces ("IEC 60038-2/DAM 2.3:2022") — so the
+// shape is rejected at parse instead of being built unrenderable (the
+// #726 ruling for unattested dotted shapes; the TS mirror of the gem's
+// reject_standalone_dotted_supplement walk over the built base chain).
+// The check is the SHAPE, not a grammar route: one condition covers the
+// standalone branch ("IEC/AMD 1.2:2017"), the publisher-less plain route
+// ("AMD 1.2:2017") and a dotted layer under an undotted second
+// supplement ("IEC/AMD 1.2:2017/COR 1:2018"). The single-document draft
+// faces ("IEC CD 1.2:2017"), the DAM-family decodes ("IEC/DAM 1.2") and
+// the on-base faces (a real base) keep their dot on a printable layer
+// and pass. from_hash deliberately still deserializes the shape (no
+// stored row carries it; residue pinned).
+const STANDALONE_DOTTED_SUPPLEMENT_MESSAGE =
+  'the standalone no-part supplement face carries a dotted sub-number ' +
+  '(e.g. "IEC/AMD 1.2:2017"): no IEC source prints one, and the ' +
+  "standalone face has no layer to print the dot on, so the stored " +
+  "sub-number would be dropped at render — the dotted sub-number is " +
+  "attested only on the on-base draft forms";
+
+const SUPPLEMENT_POLYMORPHIC_NAMES = new Set([
+  "pubid:iec:amendment",
+  "pubid:iec:corrigendum",
+  "pubid:iec:interpretation-sheet",
+]);
+
+function rejectStandaloneDottedSupplement(id: BaseIdentifier): void {
+  let node: BaseIdentifier | undefined = id;
+  while (node !== undefined && SUPPLEMENT_POLYMORPHIC_NAMES.has(node.constructor.polymorphicName)) {
+    const layer = node as unknown as Record<string, unknown>;
+    const iteration = layer["stage_iteration"] as Iteration | undefined;
+    const base = layer["base"] as BaseIdentifier | undefined;
+    if (iteration !== undefined && (base === undefined || layer["synthetic_base"] === true)) {
+      throw new ParseFailed(STANDALONE_DOTTED_SUPPLEMENT_MESSAGE, 0);
+    }
+    node = base;
+  }
+}
+
 export function iecGrammarImplementation(): FlavorImplementation {
   const builder = new IecBuilder();
   return {
@@ -735,7 +780,12 @@ export function iecGrammarImplementation(): FlavorImplementation {
       } catch {
         throw new ParseFailed("IEC: parse failed", 0);
       }
-      return builder.build(tree) as unknown as Identifier;
+      const built = builder.build(tree) as unknown as Identifier;
+      // The shape check runs on the BUILT object (ruby Identifier.parse
+      // walks the base chain after ensure_base) — BSI's delegation and
+      // every parse route raise through this entry; from_hash stays open.
+      rejectStandaloneDottedSupplement(built as BaseIdentifier);
+      return built;
     },
   };
 }
