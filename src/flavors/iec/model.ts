@@ -36,7 +36,15 @@ const TS = (code: string, stageCode: string, typeCode: IecTypeCode, abbr: string
   ({ code, stageCode, typeCode, abbr, harmonized, tokens });
 
 export const TYPED_STAGES: TypedStage[] = [
-  TS("is", "published", "is", ""),
+  // The published IS row lists the publication-lifecycle spellings
+  // (BPUB, PPUB, APUB, WPUB, DELPUB, RR, …): they parse onto the
+  // published stage whose canonical abbr is "" — the abbreviation drops
+  // out of the render ("IEC BPUB 60038" -> "IEC 60038"). The leading ""
+  // keeps the grammar's empty type_with_stage match byte-identical with
+  // the pre-fold alternation (the bare published face's parse tree).
+  TS("is", "published", "is", "", undefined, [
+    "", "BPUB", "PPUB", "APUB", "WPUB", "DELPUB", "RR",
+  ]),
   TS("tr", "published", "tr", "TR"),
   TS("ts", "published", "ts", "TS"),
   TS("pas", "published", "pas", "PAS"),
@@ -54,48 +62,86 @@ export const TYPED_STAGES: TypedStage[] = [
   // ComponentSpecification/ConformityAssessment.
   TS("cs", "published", "cs", "CS"),
   TS("ca", "published", "ca", "CA"),
-  // The `harmonized` column is the gem's harmonized_stages.first (pubid
-  // 2.0.32, verified in-process — issue #187): the official URN stage slot
-  // writes `stage-<lead code>` and the URN parser resolves the slot back
-  // by (type, lead code). The draft supplement rows (dcor/fdcor/cdish/
-  // dish) stay code-less: their stages ride the supplement layer, and the
-  // official URN reads the ROOT's stage — a published base or a
-  // stage-less synthetic one — so the gem never writes these codes into
-  // the slot.
+  // The draft ladders below mirror the gem 2.0.32 per-deliverable
+  // TYPED_STAGES rows (lib/pubid/iec/identifiers/*.rb): one row per
+  // (deliverable, stage), `abbr` the canonical (ruby abbr.first) spelling
+  // the render face prints, `tokens` the spellings the row accepts at
+  // parse. The gem's render normalizes every spelling onto abbr.first
+  // (renderer.rb: `id.typed_stage.abbr.first`) and its wire carries
+  // typed_stage.code — so a folded spelling parses, renders and
+  // serializes AS its row's canonical twin ("IEC PRF 60038" renders
+  // "IEC FDIS 60038" and hashes stage "fdis"). The gem-vs-SSOT
+  // contradictions recorded in #189/#190 (CDPAS 30.00-vs-50.20, the
+  // ADTR-family folding) stay on record; the gem is followed.
+  //
+  // `tokens` carry the spellings the gem's COMPILED grammar accepts
+  // (data/parg/iec.json), which is narrower than the registry's abbr
+  // lists: registry-only spellings (DEL, PRVN, AWI, DIS, ADIS, PCC,
+  // SPLIT, MERGED, CAN, RPUB, TPUB, DECPUB, SPE, and every PROJECT_STAGES
+  // name) are parse-rejected by the gem and stay out of the tokens.
+  // Resolution of a token is registry ORDER (ruby locate_stage scans
+  // TYPED_STAGES in order), so CDPAS resolves to :cdpas (30.00), never
+  // the :dpas row that also lists it, and DTSM — listed on the :dtr row —
+  // decodes onto the TR ladder, not :dts.
+  //
+  // The `harmonized` column is the gem's harmonized_stages.first (issue
+  // #187): the official URN stage slot writes `stage-<lead code>` and the
+  // URN parser resolves the slot back by (type, lead code). Published
+  // rows carry no harmonized: the slot is suppressed for them.
+  TS("pwi", "pwi", "is", "PWI", "00.00", ["PWI", "NWIP", "BWG", "AWIN", "AMW"]),
   // PNW owns harmonized 10.20 (gem: NP stages are 10.00/10.60/… — the
-  // URN "stage-10.20" slot resolves to PNW, not NP).
-  TS("np", "np", "is", "NP", "10.00"),
+  // URN "stage-10.20" slot resolves to PNW, not NP; #187).
+  TS("np", "np", "is", "NP", "10.00", ["NP"]),
   TS("pnw", "pnw", "is", "PNW", "10.20"),
-  TS("pwi", "pwi", "is", "PWI", "00.00"),
-  TS("anw", "anw", "is", "ANW", "10.99"),
+  TS("anw", "anw", "is", "ANW", "10.99", ["ANW"]),
   TS("wd", "wd", "is", "WD", "20.20"),
-  TS("cd", "cd", "is", "CD", "30.00"),
-  TS("cdv", "cdv", "is", "CDV", "40.00"),
-  TS("fdis", "fdis", "is", "FDIS", "50.00"),
-  // The gem registers PRF as an abbreviation of :fdis (lead 50.00) — it
-  // has no typed stage of its own; the row stays for the render face and
-  // takes fdis's lead code (the gem's parse even renders FDIS).
-  TS("prf", "prf", "is", "PRF", "50.00"),
-  // BPUB/PPUB are publication-lifecycle abbreviations of the published
-  // IS in the gem (stage_code published, slot suppressed) — the rows
-  // stay for the render face and carry no harmonized, so the slot
-  // falls through empty.
-  TS("bpub", "bpub", "is", "BPUB"),
-  TS("ppub", "ppub", "is", "PPUB"),
-  // The gem folds the whole draft-spelling family of each typed
-  // deliverable onto ONE typed stage (ADTR/CDTR/NDTR are :dtr
-  // abbreviations, lead 50.00) — every row takes that lead code; the
-  // spellings stay for the render face.
-  TS("dtr", "dtr", "tr", "DTR", "50.00"),
-  TS("adtr", "adtr", "tr", "ADTR", "50.00"),
-  TS("cdtr", "cdtr", "tr", "CDTR", "50.00"),
-  TS("ndtr", "ndtr", "tr", "NDTR", "50.00"),
-  TS("dts", "dts", "ts", "DTS", "50.00"),
-  TS("adts", "adts", "ts", "ADTS", "50.00"),
-  TS("cdts", "cdts", "ts", "CDTS", "50.00"),
-  TS("ndts", "ndts", "ts", "NDTS", "50.00"),
-  TS("dpas", "dpas", "pas", "DPAS", "50.00"),
-  TS("cdpas", "cdpas", "pas", "CDPAS", "30.00"),
+  TS("cd", "cd", "is", "CD", "30.00", [
+    "CD", "2CD", "3CD", "4CD", "5CD", "6CD", "7CD", "8CD", "9CD",
+    "ACD", "A2CD", "A3CD", "A4CD", "A5CD", "A6CD", "A7CD", "A8CD", "A9CD",
+    "CDM",
+  ]),
+  TS("cdv", "cdv", "is", "CDV", "40.00", ["CDV", "ACDV", "CCDV", "CDVM", "NCDV"]),
+  TS("fdis", "fdis", "is", "FDIS", "50.00", [
+    "FDIS", "PRF", "NFDIS", "NADIS", "RDISH", "RFDIS", "CFDIS",
+  ]),
+  // The TR ladder — the two-token faces ("IEC CD TR 62048") are the
+  // per-deliverable rows' spellings, each decoding onto its own typed
+  // stage with the deliverable's type code.
+  TS("pwi_tr", "pwi", "tr", "PWI TR", "00.00"),
+  TS("np_tr", "np", "tr", "NP TR", "10.00"),
+  TS("anw_tr", "anw", "tr", "ANW TR", "10.99"),
+  TS("wd_tr", "wd", "tr", "WD TR", "20.20"),
+  TS("cd_tr", "cd", "tr", "CD TR", "30.00"),
+  // The whole draft-spelling family folds onto :dtr (ruby abbr.first
+  // "DTR"); DTSM rides the :dtr row in the gem's registry even though the
+  // spelling names the TS deliverable's rejected stage — mirrored.
+  TS("dtr", "draft", "tr", "DTR", "50.00", ["DTR", "ADTR", "CDTR", "DTRM", "NDTR", "DTSM"]),
+  // The TS ladder.
+  TS("pwi_ts", "pwi", "ts", "PWI TS", "00.00"),
+  TS("np_ts", "np", "ts", "NP TS", "10.00"),
+  TS("anw_ts", "anw", "ts", "ANW TS", "10.99"),
+  TS("wd_ts", "wd", "ts", "WD TS", "20.20"),
+  TS("cd_ts", "cd", "ts", "CD TS", "30.00"),
+  TS("dts", "draft", "ts", "DTS", "50.00", ["DTS", "ADTS", "CDTS", "NDTS"]),
+  // The PAS ladder.
+  TS("pwi_pas", "pwi", "pas", "PWI PAS", "00.00"),
+  TS("np_pas", "np", "pas", "NP PAS", "10.00"),
+  TS("anw_pas", "anw", "pas", "ANW PAS", "10.99"),
+  TS("wd_pas", "wd", "pas", "WD PAS", "20.20"),
+  // CDPAS is the committee-draft PAS row (lead 30.00) — the gem's
+  // :cdpas registry row wins over :dpas's spelling by order. The
+  // SSOT table (data/iec/stage-codes.md) names CDPAS 50.20: the
+  // recorded gem-vs-SSOT contradiction stands (owner's call).
+  TS("cdpas", "cd", "pas", "CDPAS", "30.00"),
+  TS("dpas", "draft", "pas", "DPAS", "50.00", ["DPAS", "CDPAS"]),
+  // The Guide ladder (the two-token faces and the DGuide/FDGuide drafts).
+  TS("pwi_guide", "pwi", "guide", "PWI Guide", "00.00"),
+  TS("np_guide", "np", "guide", "NP Guide", "10.00"),
+  TS("anw_guide", "anw", "guide", "ANW Guide", "10.99"),
+  TS("wd_guide", "wd", "guide", "WD Guide", "20.20"),
+  TS("cd_guide", "cd", "guide", "CD Guide", "30.00"),
+  TS("dguide", "draft", "guide", "DGuide", "40.00"),
+  TS("fdguide", "final_draft", "guide", "FDGuide", "50.00", ["FDGuide", "PRF Guide"]),
   // The DAM family's ballot stages carry the CIRCULATION slots as the
   // lead harmonized code (30.20/50.20), not ISO's 30.00/50.00 — CDAM/
   // FDAM keep those (type, leading code) URN keys (gem Amendment
