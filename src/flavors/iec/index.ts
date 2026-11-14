@@ -3,7 +3,7 @@ import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import { BaseIdentifier } from "../../model/identifier.js";
 import { TYPED_STAGES } from "./model.js";
-import { Language, PubidDate } from "../../model/component.js";
+import { Language, PubidDate, Iteration } from "../../model/component.js";
 import { iecGrammar, preprocessIec } from "./grammar.js";
 import {
   locateStage,
@@ -150,6 +150,14 @@ class IecBuilder {
       const date = buildDate(dateTree);
       if (date) attrs["date"] = date;
     }
+    // The designation's dotted sub-number ("60038-2.3", "/DAM 2.3:2022" —
+    // pubid#725): the shared second_part token binds it next to the
+    // number, and every layer that carries a designation holds it as the
+    // Iteration facet — the way the ISO flavor does.
+    const stageIteration = s(tree["stage_iteration"]);
+    if (stageIteration !== undefined) {
+      attrs["stage_iteration"] = new Iteration({ string: stageIteration });
+    }
     if (tree["undated_marker"] !== undefined) attrs["date"] = new PubidDate({ undated: true });
     const edition = s(tree["edition"]);
     if (edition !== undefined) attrs["edition"] = edition;
@@ -218,7 +226,13 @@ class IecBuilder {
       attrs["part"] !== undefined
     ) {
       const baseAttrs: Record<string, unknown> = {};
-      for (const key of ["publisher", "copublishers", "number", "part", "subpart", "date"] as const) {
+      // The designation's dotted sub-part moves with it (pubid#725):
+      // "IEC/DCOR 60038-2.3" is base 60038-2 with stage iteration 3 —
+      // the same identity the plain on-base parse holds — not a facet of
+      // the implied supplement. Only the designation-shaped layout (a
+      // part present) carries it; a true standalone's own iteration
+      // ("IEC/AMD 1.2:2017", no part) stays where it is.
+      for (const key of ["publisher", "copublishers", "number", "part", "subpart", "date", "stage_iteration"] as const) {
         if (attrs[key] !== undefined) baseAttrs[key] = attrs[key];
       }
       const base = new (IEC_CLASSES.KIND_CLASSES["is"]! as unknown as new (
@@ -349,6 +363,13 @@ class IecBuilder {
     if (tree["undated_marker"] !== undefined) baseTree["undated_marker"] = tree["undated_marker"];
     if (tree["edition"] !== undefined) baseTree["edition"] = tree["edition"];
     if (tree["languages"] !== undefined) baseTree["languages"] = tree["languages"];
+    // The designation's dotted sub-number is the BASE's ("IEC/FDAM
+    // 60038-2.3" — base 60038-2, stage iteration 3; pubid#725), the same
+    // facet the plain on-base parse carries: the base builds through the
+    // ordinary single-document path, which binds it like any designation.
+    // The supplement layer keeps none — the dot moves with the
+    // designation it rode in on.
+    if (tree["stage_iteration"] !== undefined) baseTree["stage_iteration"] = tree["stage_iteration"];
 
     // The wrap: one amendment/corrigendum layer over the whole base;
     // third_part's fragment notation rides the outermost layer.
@@ -544,10 +565,18 @@ function adjunctFields(id: BaseIdentifier, plus: boolean): string[] {
   const token = ADJUNCT_TOKENS[kind];
   if (token === undefined) return [];
   const date = maybeOf<PubidDate>(id, "date");
+  // The supplement's dotted sub-number rides its number slot
+  // ("amd:2.3:2022"; pubid#725): ISO's official URN keeps the facet
+  // through its version atom, and this scheme has no version slot, so
+  // the number slot carries the designation as printed. The parser
+  // rebuilds "/AMD2.3:2022" from the slot, which re-parses losslessly.
+  const iteration = maybeOf<Iteration>(id, "stage_iteration");
+  const number = String(maybeOf(id, "number") ?? "") +
+    (iteration !== undefined ? `.${iteration.render()}` : "");
   return [
     plus ? "plus" : "",
     token,
-    String(maybeOf(id, "number") ?? ""),
+    number,
     date !== undefined ? (date.render() ?? "") : "",
   ];
 }

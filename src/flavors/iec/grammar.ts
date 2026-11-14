@@ -118,7 +118,7 @@ function buildRules(): Record<string, P> {
         digits.then(str(".").then(digits).maybe()).maybe().as("edition"),
       ),
   );
-  rule("stage_iteration", () => str(".").then(match("[0-9]").as("stage_iteration")));
+  rule("stage_iteration", () => str(".").then(match("[0-9]").repeat(1, Infinity).as("stage_iteration")));
   rule("language", () =>
     str("(").then(
       (match("[a-z]").repeat(1, Infinity).then(str(",").maybe())
@@ -329,6 +329,14 @@ function buildRules(): Record<string, P> {
         space,
         match("[0-9]").repeat(1, Infinity).as("legacy_supplement_number").then(space).maybe(),
         rules["legacy_base_designation"]!,
+        // The ballot face's base designation carries the same dotted
+        // sub-number the plain base does ("IEC/FDAM 60038-2.3" — base
+        // 60038-2, stage iteration 3; pubid#725): without it the dot fell
+        // to the standalone/typed branches' supplement-number token and
+        // the designation did not stay whole on the ballot rule. The run
+        // is unguarded: every segment that may follow starts with a
+        // non-digit.
+        rules["stage_iteration"]!.maybe(),
         (spaceQ.then(rules["date"]!)).maybe(),
         rules["third_part"]!,
       ),
