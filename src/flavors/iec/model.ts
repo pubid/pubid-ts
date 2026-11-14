@@ -1,6 +1,7 @@
 import { BaseIdentifier, registerType } from "../../model/identifier.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { extendAttributes, keyValue } from "../../model/attribute.js";
+import type { FieldMapping } from "../../model/attribute.js";
 import { Language, PubidDate, Iteration } from "../../model/component.js";
 
 /**
@@ -94,6 +95,32 @@ export function stageTokens(): string[] {
   return TYPED_STAGES.flatMap((t) => t.tokens ?? [t.abbr]);
 }
 
+/**
+ * from_hash restores the runtime typed stage from the wire "stage" code
+ * (ruby from_hash): the render face rides the typed stage ("/DAM 2.3" vs
+ * "/AMD 2.3", "IEC FDIS 60038" vs "IEC 60038"), and the round-trip pins
+ * the rebuilt render. The wire carries the stage CODE (construct writes
+ * the typed stage's code for non-published stages), so the lookup is by
+ * code — the abbreviation does not round-trip it ("damd" vs "DAM").
+ * Published stages serialize no stage code; the fallback resolves the
+ * type's own published stage (ruby restores Amendment → Amd, TR → TR),
+ * so the glued published faces round-trip too.
+ */
+function restoreTypedStage(id: BaseIdentifier, fallback?: () => TypedStage | undefined): BaseIdentifier {
+  const stage = (id as unknown as { stage?: unknown }).stage;
+  const typedStage =
+    typeof stage === "string" && stage !== ""
+      ? TYPED_STAGES.find((t) => t.code === stage)
+      : fallback?.();
+  (id as unknown as { typedStage?: TypedStage | undefined }).typedStage = typedStage;
+  return id;
+}
+
+/** The published typed stage of a type code ("tr" -> TR, "amd" -> AMD). */
+function publishedStageOfType(typeCode: IecTypeCode): TypedStage | undefined {
+  return TYPED_STAGES.find((t) => t.typeCode === typeCode && t.stageCode === "published");
+}
+
 export function locateStage(token: string): TypedStage | undefined {
   const needle = token.trim();
   return (
@@ -139,10 +166,25 @@ const SINGLE_ATTRS = {
   database: { type: "boolean", default: false },
 } as const;
 
+// The dotted sub-number facet (pubid#725): the wire carries the flat
+// scalar ("stage_iteration: '3'") while the runtime holds the Iteration
+// component — the converter pair the ISO flavor declares for the same
+// facet. Shared by the single-document table and the supplement table
+// (the facet rides whichever layer's designation carries the dot).
+const STAGE_ITERATION_MAPPING: FieldMapping = {
+  wire: "stage_iteration",
+  to: "stage_iteration",
+  toWire: (m) => (m["stage_iteration"] as Iteration | undefined)?.string,
+  fromWire: (h) =>
+    h["stage_iteration"] === undefined || h["stage_iteration"] === null
+      ? undefined
+      : new Iteration({ string: String(h["stage_iteration"]) }),
+};
+
 // The Identifier-level whitelist: date flat, publisher only when it is
 // not the IEC default, copublishers as a body list, stage only for drafts.
 const BASE_MAPPINGS = keyValue(
-  { wire: "stage_iteration", to: "stage_iteration" },
+  STAGE_ITERATION_MAPPING,
   {
     wire: "year",
     to: "date",
@@ -266,6 +308,12 @@ function iecSingleClass(kind: IecTypeCode): IdentifierStatic {
       if (this.all_parts === true) result += " (all parts)";
       result += this.languagePortion();
       return result;
+    }
+
+    static fromHash(hash: Record<string, unknown>): BaseIdentifier {
+      // The single restores its type's published stage when no stage code
+      // rode the hash ("IEC TR 61095" stays "IEC TR 61095").
+      return restoreTypedStage(super.fromHash(hash), () => publishedStageOfType(kind));
     }
   }
   registerType(IecSingleIdentifier as unknown as IdentifierStatic);
@@ -407,6 +455,12 @@ function iecTrfClass(): IdentifierStatic {
       if (this.trf_info !== undefined && this.trf_info !== "") result += ` ${this.trf_info}`;
       return result;
     }
+
+    static fromHash(hash: Record<string, unknown>): BaseIdentifier {
+      // The form restores its published stage ("IECEE TRF 60950" keeps
+      // the TRF abbreviation on the rebuilt render).
+      return restoreTypedStage(super.fromHash(hash), () => publishedStageOfType("trf"));
+    }
   }
   registerType(IecTestReportForm as unknown as IdentifierStatic);
   return IecTestReportForm as unknown as IdentifierStatic;
@@ -429,6 +483,10 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
+      // The supplement's own dotted sub-number ("/DAM 2.3:2022" — number
+      // 2, stage iteration 3; pubid#725): the supplement holds the same
+      // facet the ISO supplement does, and the wire carries it flat.
+      STAGE_ITERATION_MAPPING,
       { wire: "year", to: "date", toWire: (m) => (m["date"] as PubidDate | undefined)?.year, fromWire: yearFromWire },
       { wire: "month", to: "date", toWire: (m) => (m["date"] as PubidDate | undefined)?.month, fromWire: () => undefined },
       { wire: "day", to: "date", toWire: (m) => (m["date"] as PubidDate | undefined)?.day, fromWire: () => undefined },
@@ -481,6 +539,11 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
       // when there is a number, so a numberless supplement renders the
       // bare stage token on either side).
       result += `/${(this.typedStage?.abbr ?? abbr).toUpperCase()}${this.ballotNumberSeparator()}${this.number ?? ""}`;
+      // The dotted sub-number rides the supplement's own designation,
+      // before the date ("/DAM 2.3:2022"; pubid#725) — dropping it here
+      // would silently renumber the supplement ("/DAM 2.3" printing as
+      // "/DAM 2") the way the gem's renderer used to.
+      if (this.stageIterationValue() !== undefined) result += `.${this.stageIterationValue()}`;
       if (this.date !== undefined) result += `:${this.date.render()}`;
       if (this.edition !== undefined) result += ` ED${this.edition}`;
       return result;
@@ -493,6 +556,14 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
       if (this.number === undefined) return "";
       if (this.typedStage?.stageCode === "published") return "";
       return " ";
+    }
+
+    static fromHash(hash: Record<string, unknown>): BaseIdentifier {
+      // The supplement restores its type's published stage when no stage
+      // code rode the hash (ruby restores Amendment -> Amd — the glued
+      // "/AMD1" face round-trips; the draft codes restore their own
+      // stage, "/FDAM 1").
+      return restoreTypedStage(super.fromHash(hash), () => locateStage(abbr));
     }
   }
   registerType(IecSupplementIdentifier as unknown as IdentifierStatic);
