@@ -62,6 +62,20 @@ export const TYPED_STAGES: TypedStage[] = [
   // ComponentSpecification/ConformityAssessment.
   TS("cs", "published", "cs", "CS"),
   TS("ca", "published", "ca", "CA"),
+  // The three standalone deliverable types (gem TechnologyReport /
+  // SocietalTechnologyTrendReport / WhitePaper, pubid-ts#195): one
+  // published row each, the full phrase the ONLY spelling the gem's
+  // grammar accepts ("IEC TECHNOLOGY REPORT", "IEC STTR", "IEC WP AAL"
+  // and every draft token (DTEC, CD Technology Report) reject — probed
+  // at 2.0.32). The abbreviation renders whole ("IEC Technology Report
+  // 62674:2019"); `harmonized` is the gem rows' lead code (60.00, the
+  // publication ladder) — inert on emission (published rows suppress
+  // the stage slot) and carried for the official-URN parser's
+  // `tec-stage-60.00`-style slot resolution, which the gem answers by
+  // (type, lead code).
+  TS("tec", "published", "tec", "Technology Report", "60.00"),
+  TS("sttr", "published", "sttr", "Trend Report", "60.00"),
+  TS("wp", "published", "wp", "White Paper", "60.00"),
   // The draft ladders below mirror the gem 2.0.32 per-deliverable
   // TYPED_STAGES rows (lib/pubid/iec/identifiers/*.rb): one row per
   // (deliverable, stage), `abbr` the canonical (ruby abbr.first) spelling
@@ -215,9 +229,11 @@ const TYPE_NAMES: Record<IecTypeCode, string | undefined> = {
   trf: "test-report-form",
   amd: "amendment",
   cor: "corrigendum",
-  tec: undefined,
-  wp: undefined,
-  sttr: undefined,
+  // The three standalone deliverable types (gem TechnologyReport /
+  // SocietalTechnologyTrendReport / WhitePaper, pubid-ts#195).
+  tec: "technology-report",
+  wp: "white-paper",
+  sttr: "societal-technology-trend-report",
 };
 
 // The shared single-document attribute table (SingleIdentifier seam).
@@ -781,13 +797,30 @@ function iecFragmentClass(): IdentifierStatic {
   return IecFragmentIdentifier as unknown as IdentifierStatic;
 }
 
-const SINGLE_KINDS: IecTypeCode[] = ["is", "tr", "ts", "pas", "srd", "od", "guide", "cs", "ca"];
+// The three standalone deliverable types (pubid-ts#195) are plain
+// single-document classes: the gem's TechnologyReport /
+// SocietalTechnologyTrendReport / WhitePaper all sit on the
+// SingleIdentifier chain and take the full designation (number, part,
+// subpart, date, edition, languages, database) — probed at 2.0.32
+// ("IEC Technology Report 62674-1-2:2019", "IEC White Paper AAL-1",
+// "IEC Trend Report 63090 DB").
+const SINGLE_KINDS: IecTypeCode[] = [
+  "is", "tr", "ts", "pas", "srd", "od", "guide", "cs", "ca",
+  "tec", "sttr", "wp",
+];
+
+// The working-document class (the PNW/PWI work-programme forms and the
+// committee documents "1/2457/FDIS") is keyed by the working-document
+// _type, NOT by the "wp" type code — "wp" is the WhitePaper deliverable's
+// type code in the gem, and the type-code dispatch (IecBuilder#buildSingle)
+// routes it to the white-paper class. The working-document builders
+// construct through this handle directly.
+const WORKING_DOCUMENT_CLASS = iecWorkingDocumentClass();
 
 const KIND_CLASSES: Partial<Record<IecTypeCode, IdentifierStatic>> = {};
 for (const kind of SINGLE_KINDS) {
   KIND_CLASSES[kind] = iecSingleClass(kind);
 }
-KIND_CLASSES["wp"] = iecWorkingDocumentClass();
 KIND_CLASSES["trf"] = iecTrfClass();
 KIND_CLASSES["amd"] = iecSupplementClass("amendment");
 KIND_CLASSES["cor"] = iecSupplementClass("corrigendum");
@@ -799,6 +832,7 @@ const FRAGMENT_CLASS = iecFragmentClass();
 
 export const IEC_CLASSES = {
   KIND_CLASSES,
+  WORKING_DOCUMENT_CLASS,
   SHEET_CLASS,
   VAP_CLASS,
   CONSOLIDATED_CLASS,

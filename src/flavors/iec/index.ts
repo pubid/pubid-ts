@@ -181,7 +181,12 @@ class IecBuilder {
   private buildSingle(tree: TreeObject): BaseIdentifier {
     const stageAbbr = s(tree["type_with_stage"]) ?? s(tree["type_with_stage_fr"]) ?? "";
     const typedStage = locateStage(stageAbbr) ?? locateStage("IS")!;
-    const kind = typedStage.typeCode === "wp" ? "is" : typedStage.typeCode;
+    // The kind IS the type code: every IecTypeCode slot carries its own
+    // class now, including "wp" — the White Paper deliverable
+    // (pubid-ts#195), not the working document (which the work-programme
+    // and working-document builders construct through
+    // WORKING_DOCUMENT_CLASS directly).
+    const kind = typedStage.typeCode;
 
     const attrs: Record<string, unknown> = {};
     this.commonAttrs(tree, attrs);
@@ -489,7 +494,7 @@ class IecBuilder {
     Object.assign(attrs, numberComponents(tree["number_with_part"]));
     const edition = s(tree["edition"]);
     if (edition !== undefined) attrs["edition"] = edition;
-    const identifier = new (IEC_CLASSES.KIND_CLASSES["wp"]! as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
+    const identifier = new (IEC_CLASSES.WORKING_DOCUMENT_CLASS as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
     const ts = locateStage(s(tree["wp_stage"]) === "PNW" ? "PNW" : "PWI")!;
     (identifier as unknown as { typedStage: TypedStage | undefined }).typedStage = ts;
     if (ts !== undefined && ts.stageCode !== "published") {
@@ -507,7 +512,7 @@ class IecBuilder {
       wd_language: s(tree["wd_language"]),
       wd_stage: s(tree["wd_stage"]),
     };
-    return new (IEC_CLASSES.KIND_CLASSES["wp"]! as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
+    return new (IEC_CLASSES.WORKING_DOCUMENT_CLASS as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
   }
 }
 
@@ -687,6 +692,7 @@ class IecUrnGenerator {
 }
 for (const klass of [
   ...Object.values(IEC_CLASSES.KIND_CLASSES),
+  IEC_CLASSES.WORKING_DOCUMENT_CLASS,
   IEC_CLASSES.SHEET_CLASS,
   IEC_CLASSES.VAP_CLASS,
   IEC_CLASSES.CONSOLIDATED_CLASS,

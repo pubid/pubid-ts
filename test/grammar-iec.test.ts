@@ -8,7 +8,7 @@ import { BaseIdentifier } from "../src/model/identifier.js";
 import type { IecIdentifier } from "../src/flavors/iec/model.js";
 import { parse as parsePubidUrn } from "../src/pubid-urn/index.js";
 
-// iec — the deepest flavor (12,334 rows, 16 identifier types, typed
+// iec — the deepest flavor (12,334 rows, 19 identifier types, typed
 // stages, positional-slot URNs), on the unified model.
 
 const TESTSUITE_DIR =
@@ -742,24 +742,189 @@ test("iec #191: the spellings the gem's grammar rejects stay rejected (gem parit
   }
 });
 
-test("iec #191: the frag-ladder spellings and the unported deliverable types stay raising (recorded gem divergence)", () => {
+test("iec #191: the frag-ladder spellings stay raising (recorded gem divergence)", () => {
   const impl = grammarImplementation("iec")!;
-  // Two RECORDED gaps, deliberately not closed by this round:
-  // - The frag-ladder spellings (CDFRAG, DFRAG, FDFRAG, PRF Frag, PWI
-  //   Frag): the gem parses them into a render-broken shape — the
-  //   fragment carries no base, renders "/FRAG", its official URN is
-  //   empty and from_hash(to_hash) != parse. There is nothing to mirror:
-  //   the gem cannot round-trip its own answer.
-  // - Technology Report, Trend Report, White Paper: deliverable TYPES
-  //   the pubid-ts flavor does not port (no classes; like Technical
-  //   Group). The gem parses them; the TS rejects.
+  // The frag-ladder spellings (CDFRAG, DFRAG, FDFRAG, PRF Frag, PWI
+  // Frag): the gem parses them into a render-broken shape — the
+  // fragment carries no base, renders "/FRAG", its official URN is
+  // empty and from_hash(to_hash) != parse. There is nothing to mirror:
+  //   the gem cannot round-trip its own answer. (The three unported
+  // deliverable types this list used to carry — Technology Report,
+  // Trend Report, White Paper — are ported by #195 below.)
   const raising = [
     "IEC CDFRAG 60050-191", "IEC DFRAG 60050-191", "IEC FDFRAG 60050-191",
     "IEC PRF Frag 60050-191", "IEC PWI Frag 60050-191",
-    "IEC Technology Report 2024", "IEC Trend Report 2024",
-    "IEC White Paper 2024",
   ];
   for (const input of raising) {
     assert.throws(() => impl.parse(input), input);
   }
+});
+
+// --- #195: the standalone deliverable types (Technology Report, Trend
+// Report, White Paper) ---------------------------------------------
+//
+// The gem's TechnologyReport / SocietalTechnologyTrendReport /
+// WhitePaper (lib/pubid/iec/identifiers/*.rb at 2.0.32): plain
+// single-document types, one published typed stage each, the full
+// phrase the ONLY spelling the grammar accepts. This table is the
+// record: every row verified byte-for-byte against gem 2.0.32
+// in-process (source checkout at the 2.0.32 tag, VERSION-checked:
+// class, to_s, canonical wire hash, official URN, pubid URN, pubid-URN
+// round trip + re-render). Corpus-absent (the testsuite carries no
+// attested row for any of the three — only parse-error message text in
+// the debt notes) — these pins ARE the record.
+//
+// Official-URN asymmetries mirrored from the gem (probed, not judged):
+// - the type slot writes `tec`/`wp` for the published TechnologyReport
+//   / WhitePaper (TYPE_SLOT_CODES) but NOTHING for the sttr — its
+//   type code is not in the legacy slot list, so the slot stays empty;
+// - the gem's own UrnParser cannot read those slots back (`IEC TEC
+//   62674` has no grammar token): parseUrn of the emitted tec/wp URN
+//   raises, and the slot-less sttr URN re-parses as the plain
+//   International Standard `IEC 63090`. The pubid-scheme URN
+//   (urn:pubid:iec:tr2 / :sttr / :wp) round-trips exactly, as the gem's
+//   does.
+const deliverableRows: [string, string, string, string, string][] = [
+  // Technology Report (tec): designation, parts, date, edition,
+  // language, undated, dotted sub-number, copublishers.
+  ["IEC Technology Report 62674:2019", "IEC Technology Report 62674:2019", "urn:iec:std:iec:62674:2019:tec::", "urn:pubid:iec:tr2:62674:year-2019", "technology-report"],
+  ["IEC Technology Report 62674", "IEC Technology Report 62674", "urn:iec:std:iec:62674::tec::", "urn:pubid:iec:tr2:62674", "technology-report"],
+  ["IEC Technology Report 62674-1:2019", "IEC Technology Report 62674-1:2019", "urn:iec:std:iec:62674-1:2019:tec::", "urn:pubid:iec:tr2:62674:part-1:year-2019", "technology-report"],
+  ["IEC Technology Report 62674-1-2:2019", "IEC Technology Report 62674-1-2:2019", "urn:iec:std:iec:62674-1-2:2019:tec::", "urn:pubid:iec:tr2:62674:part-1:subpart-2:year-2019", "technology-report"],
+  ["IEC Technology Report 62674:2019 ED1", "IEC Technology Report 62674:2019 ED1", "urn:iec:std:iec:62674:2019:tec:ed-1:", "urn:pubid:iec:tr2:62674:year-2019:ed-1", "technology-report"],
+  ["IEC Technology Report 62674 Edition 2", "IEC Technology Report 62674 ED2", "urn:iec:std:iec:62674::tec:ed-2:", "urn:pubid:iec:tr2:62674:ed-2", "technology-report"],
+  ["IEC Technology Report 62674 Ed. 1", "IEC Technology Report 62674 ED1", "urn:iec:std:iec:62674::tec:ed-1:", "urn:pubid:iec:tr2:62674:ed-1", "technology-report"],
+  ["IEC Technology Report 62674:2019(en)", "IEC Technology Report 62674:2019(en)", "urn:iec:std:iec:62674:2019:tec::en", "urn:pubid:iec:tr2:62674:year-2019:lang-en:f:0.langsrc-en", "technology-report"],
+  ["IEC Technology Report 62674:--", "IEC Technology Report 62674:--", "urn:iec:std:iec:62674:--:tec::", "urn:pubid:iec:tr2:62674:undated-true", "technology-report"],
+  ["IEC Technology Report 62674-1.2", "IEC Technology Report 62674-1.2", "urn:iec:std:iec:62674-1::tec::", "urn:pubid:iec:tr2:62674:part-1:iter-2", "technology-report"],
+  ["ISO/IEC Technology Report 62674:2019", "ISO/IEC Technology Report 62674:2019", "urn:iec:std:iso-iec:62674:2019:tec::", "urn:pubid:iec:tr2:62674:pub-ISO:co-IEC:year-2019", "technology-report"],
+  // Trend Report (sttr): the official-URN type slot stays EMPTY (the
+  // sttr code is not in the gem's legacy slot list).
+  ["IEC Trend Report 63090:2023", "IEC Trend Report 63090:2023", "urn:iec:std:iec:63090:2023:::", "urn:pubid:iec:sttr:63090:year-2023", "societal-technology-trend-report"],
+  ["IEC Trend Report 63090", "IEC Trend Report 63090", "urn:iec:std:iec:63090::::", "urn:pubid:iec:sttr:63090", "societal-technology-trend-report"],
+  ["IEC Trend Report 63090-1", "IEC Trend Report 63090-1", "urn:iec:std:iec:63090-1::::", "urn:pubid:iec:sttr:63090:part-1", "societal-technology-trend-report"],
+  ["IEC Trend Report 63090:2023 ED1", "IEC Trend Report 63090:2023 ED1", "urn:iec:std:iec:63090:2023::ed-1:", "urn:pubid:iec:sttr:63090:year-2023:ed-1", "societal-technology-trend-report"],
+  ["IEC Trend Report 63090 DB", "IEC Trend Report 63090 DB", "urn:iec:std:iec:63090::::", "urn:pubid:iec:sttr:63090:database-true", "societal-technology-trend-report"],
+  ["ISO/IEC Trend Report 63090", "ISO/IEC Trend Report 63090", "urn:iec:std:iso-iec:63090::::", "urn:pubid:iec:sttr:63090:pub-ISO:co-IEC", "societal-technology-trend-report"],
+  // White Paper (wp): the letter numbers ride the shared number rule
+  // (the AAL / RE site examples).
+  ["IEC White Paper AAL", "IEC White Paper AAL", "urn:iec:std:iec:aal::wp::", "urn:pubid:iec:wp:AAL", "white-paper"],
+  ["IEC White Paper RE", "IEC White Paper RE", "urn:iec:std:iec:re::wp::", "urn:pubid:iec:wp:RE", "white-paper"],
+  ["IEC White Paper AAL:2018", "IEC White Paper AAL:2018", "urn:iec:std:iec:aal:2018:wp::", "urn:pubid:iec:wp:AAL:year-2018", "white-paper"],
+  ["IEC White Paper 62674:2019", "IEC White Paper 62674:2019", "urn:iec:std:iec:62674:2019:wp::", "urn:pubid:iec:wp:62674:year-2019", "white-paper"],
+  ["IEC White Paper AAL-1", "IEC White Paper AAL-1", "urn:iec:std:iec:aal-1::wp::", "urn:pubid:iec:wp:AAL:part-1", "white-paper"],
+  ["IEC White Paper AAL Edition 1", "IEC White Paper AAL ED1", "urn:iec:std:iec:aal::wp:ed-1:", "urn:pubid:iec:wp:AAL:ed-1", "white-paper"],
+  // The exact rows the #191 reject pin used to carry — the flip itself.
+  ["IEC Technology Report 2024", "IEC Technology Report 2024", "urn:iec:std:iec:2024::tec::", "urn:pubid:iec:tr2:2024", "technology-report"],
+  ["IEC Trend Report 2024", "IEC Trend Report 2024", "urn:iec:std:iec:2024::::", "urn:pubid:iec:sttr:2024", "societal-technology-trend-report"],
+  ["IEC White Paper 2024", "IEC White Paper 2024", "urn:iec:std:iec:2024::wp::", "urn:pubid:iec:wp:2024", "white-paper"],
+];
+
+for (const [input, render, urn, purn, type] of deliverableRows) {
+  test(`iec #195 parses the deliverable face: ${input}`, () => {
+    const impl = grammarImplementation("iec")!;
+    const id = impl.parse(input) as unknown as IecIdentifier;
+
+    assert.equal(id.constructor.polymorphicName, `pubid:iec:${type}`, input);
+    assert.equal(id.toHuman(), render, input);
+    assert.equal(id.toUrn(), urn, input);
+    assert.equal(id.toPubidUrn(), purn, input);
+    // Published stages serialize no stage code.
+    assert.equal((id.toHash() as Record<string, unknown>)["stage"] ?? "", "", input);
+    // == its from_hash(to_hash) round trip.
+    const back = id.fromHash(id.toHash());
+    assert.ok(back.equals!(id), `from_hash(to_hash) == parse: ${input}`);
+    assert.equal(back.toHuman(), render, input);
+    // Re-parses its own render to the same identifier.
+    assert.ok(impl.parse(id.toHuman()).equals!(id), `parse(render) == parse: ${input}`);
+    // The pubid-scheme URN round-trips (the gem's Pubid.parse_pubid_urn).
+    const fromUrn = parsePubidUrn(purn) as unknown as IecIdentifier;
+    assert.ok(fromUrn.equals!(id), `pubid URN round trip: ${purn}`);
+    assert.equal(fromUrn.toHuman(), render, purn);
+  });
+}
+
+test("iec #195: the deliverable types take the shared wrapper path (gem parity)", () => {
+  const impl = grammarImplementation("iec")!;
+  const rows: [string, string, string, string, string][] = [
+    // VAP deliverable suffix over a Technology Report.
+    ["IEC Technology Report 62674:2019 CSV", "IEC Technology Report 62674:2019 CSV", "urn:iec:std:iec:62674:2019:tec:csv:", "urn:pubid:iec:tr2:62674:year-2019:vi:vap-CSV", "vap-identifier"],
+    // A consolidated amendment over a Trend Report.
+    ["IEC Trend Report 63090:2023+AMD1:2024", "IEC Trend Report 63090:2023+AMD1:2024", "urn:iec:std:iec:63090:2023::::plus:amd:1:2024", "urn:pubid:iec:consol:ids-(iec:sttr:63090:year-2023),(iec:amd:1:year-2024)", "consolidated-identifier"],
+    // An on-base amendment over a White Paper.
+    ["IEC White Paper AAL:2018/AMD1:2019", "IEC White Paper AAL:2018/AMD1:2019", "urn:iec:std:iec:aal:2018:wp::::amd:1:2019", "urn:pubid:iec:wp:AAL:year-2018:amd:1:year-2019", "amendment"],
+  ];
+  for (const [input, render, urn, purn, type] of rows) {
+    const id = impl.parse(input) as unknown as IecIdentifier;
+    assert.equal(id.constructor.polymorphicName, `pubid:iec:${type}`, input);
+    assert.equal(id.toHuman(), render, input);
+    assert.equal(id.toUrn(), urn, input);
+    assert.equal(id.toPubidUrn(), purn, input);
+    const back = id.fromHash(id.toHash());
+    assert.ok(back.equals!(id), `from_hash(to_hash) == parse: ${input}`);
+  }
+});
+
+test("iec #195: the spellings the gem rejects stay rejected (gem parity)", () => {
+  const impl = grammarImplementation("iec")!;
+  // The gem's grammar carries no short token, no case variant and no
+  // draft stage for the three deliverables — the full phrase, exact
+  // case, published only (probed at 2.0.32). "IEC TR2 62674" is the
+  // pre-existing TR-with-iteration-2 face, not a Technology Report.
+  const rejects = [
+    "IEC technology report 62674", "IEC TECHNOLOGY REPORT 62674",
+    "IEC trend report 63090", "IEC TREND REPORT 63090",
+    "IEC white paper AAL", "IEC WHITE PAPER AAL",
+    "IEC STTR 63090", "IEC WP AAL", "IEC TEC 62674",
+    "IEC DTEC 62674", "IEC CD Technology Report 62674",
+    "IEC Technology Report Cyber security:2019",
+    "IEC Trend Report IoT 2023",
+  ];
+  for (const input of rejects) {
+    assert.throws(() => impl.parse(input), input);
+  }
+});
+
+test("iec #195: the official-URN slots and their parse asymmetry (gem parity)", () => {
+  const impl = grammarImplementation("iec")!;
+  // The stage-slot form resolves by (type, lead harmonized code) — the
+  // gem's UrnParser answers these (probed): tec-stage-60.00 and
+  // wp-stage-60.00 rebuild the deliverable face; the emitted bare
+  // `tec`/`wp` type tokens have no grammar token, so the gem cannot
+  // parse its own emission back — recorded, mirrored.
+  const slotRows: [string, string, string][] = [
+    ["urn:iec:std:iec:62674::tec-stage-60.00::", "IEC Technology Report 62674", "pubid:iec:technology-report"],
+    ["urn:iec:std:iec:aal::wp-stage-60.00::", "IEC White Paper AAL", "pubid:iec:white-paper"],
+    // (The gem answers `tr-stage-60.00` the same way — the published TR
+    // row's lead code — but the pre-existing TS tr/ts/pas published rows
+    // carry no harmonized and predate this port; that residue is
+    // deliberately untouched here.)
+  ];
+  for (const [urn, human, type] of slotRows) {
+    const rebuilt = impl.parseUrn!(urn) as unknown as IecIdentifier;
+    assert.equal(rebuilt.toHuman(), human, urn);
+    assert.equal(rebuilt.constructor.polymorphicName, type, urn);
+  }
+  // The emitted tec/wp official URNs do NOT re-parse (the gem's own
+  // UrnParser raises on them — `IEC TEC`/`IEC WP` are no grammar
+  // tokens), and the slot-LESS sttr URN re-parses as the plain IS.
+  assert.throws(() => impl.parseUrn!("urn:iec:std:iec:62674:2019:tec::"), "tec emission");
+  assert.throws(() => impl.parseUrn!("urn:iec:std:iec:aal::wp::"), "wp emission");
+  const sttr = impl.parseUrn!("urn:iec:std:iec:63090::::") as unknown as IecIdentifier;
+  assert.equal(sttr.constructor.polymorphicName, "pubid:iec:international-standard");
+  assert.equal(sttr.toHuman(), "IEC 63090");
+});
+
+test("iec #195: the working document keeps its own class (the wp slot split)", () => {
+  const impl = grammarImplementation("iec")!;
+  // "wp" is now the White Paper type code; the work-programme and
+  // working-document forms construct the working-document class
+  // directly (they did through the "wp" KIND_CLASSES slot before the
+  // split).
+  const wp = impl.parse("PWI 65-915 ED1") as unknown as IecIdentifier;
+  assert.equal(wp.constructor.polymorphicName, "pubid:iec:working-document");
+  assert.equal(wp.toHuman(), "PWI 65-915 ED1");
+  const wd = impl.parse("1/2457/FDIS") as unknown as IecIdentifier;
+  assert.equal(wd.constructor.polymorphicName, "pubid:iec:working-document");
+  assert.equal(wd.toHuman(), "1/2457/FDIS");
 });
