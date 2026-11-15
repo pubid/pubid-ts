@@ -34,6 +34,31 @@ jobs:
         run: |
           echo "TESTSUITE_REF=$(awk '/^testsuite_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
           echo "PARG_GRAMMAR_REF=$(awk '/^grammar_ref:/{print $2}' .github/pins.yaml)" >> "$GITHUB_ENV"
+      # Same dangling-pin guard as ci.yml, before the checkouts: a release
+      # must never gate on (or publish against) a GC-vulnerable pin.
+      - name: Pins resolve to branch-reachable refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          check_pin() {
+            pin_name="$1"; repo="$2"; ref="$3"
+            tip=$(gh api "repos/$repo" --jq .default_branch) || { echo "::error::$repo: cannot read default branch"; return 1; }
+            if ! status=$(gh api "repos/$repo/compare/$tip...$ref" --jq .status 2>/dev/null); then
+              status="unresolvable (HTTP error — the commit is dangling or garbage-collected)"
+            fi
+            case "$status" in
+              behind|identical)
+                echo "$pin_name=$ref is reachable from $repo@$tip (compare: $status)" ;;
+              *)
+                tip_sha=$(gh api "repos/$repo/branches/$tip" --jq .commit.sha 2>/dev/null || echo "?")
+                echo "::error::$pin_name points at $ref, which is NOT reachable from $repo's default branch tip ($tip @ $tip_sha) — compare status: $status. The pin is GC-vulnerable (e.g. a rebase-superseded PR-merge ref). Move it to the current tip: $tip_sha"
+                return 1 ;;
+            esac
+          }
+          fail=""
+          check_pin TESTSUITE_REF pubid/pubid-testsuite "$TESTSUITE_REF" || fail=1
+          check_pin PARG_GRAMMAR_REF pubid/pubid-grammar "$PARG_GRAMMAR_REF" || fail=1
+          [ -z "$fail" ] || { echo "At least one pin is dangling — see the ::error:: lines above"; exit 1; }
       - uses: actions/checkout@v7
         with:
           repository: pubid/pubid-testsuite
