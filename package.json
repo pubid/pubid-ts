@@ -19,7 +19,7 @@
     "doc:api": "node scripts/api-reference.mjs"
   },
   "dependencies": {
-    "parsanol": "1.5.0",
+    "parsanol": "1.5.1",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
