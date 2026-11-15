@@ -289,13 +289,17 @@ test("iec #727: a pre-#727 stored hash still deserializes (deliberate residue)",
 // record.
 //
 // Rows whose RENDER the gem normalizes onto the canonical abbreviation
-// (PRF→FDIS, ADTR/CDTR/NDTR→DTR, ADTS/CDTS/NDTS→DTS, BPUB/PPUB→dropped)
-// aligned their URN slot here and their RENDER face in #190: the slot is
-// the lead harmonized code of the typed stage every spelling decodes
-// onto, the render face is the row's canonical abbreviation, and the
-// pubid URN's stage atom is the folded row's CODE — so "IEC PRF 60038"
-// carries stage-50.00 in the official slot and stage-fdis in the pubid
-// URN, exactly the gem's answers (verified in-process at 2.0.32).
+// (PRF→FDIS, BPUB/PPUB→dropped) aligned their URN slot here and their
+// RENDER face in #190: the slot is the lead harmonized code of the typed
+// stage every spelling decodes onto, the render face is the row's
+// canonical abbreviation, and the pubid URN's stage atom is the folded
+// row's CODE — so "IEC PRF 60038" carries stage-50.00 in the official
+// slot and stage-fdis in the pubid URN, exactly the gem's answers
+// (verified in-process at 2.0.32). The TR/TS/PAS point spellings
+// (ADTR/CDTR/NDTR, ADTS/CDTS/NDTS, CDPAS) were folded ladder spellings
+// then; gem 2.0.35 split them into rows of their own carrying the
+// correspondence table's codes (pubid#733) — their rows here record the
+// corrected answers, re-verified in-process at 2.0.35.
 const stageSlotRows: [string, string, string][] = [
   // The IS ladder's draft faces — CD was the headline divergence (the
   // TS row claimed 30.20, the circulation slot, where the gem's :cd
@@ -322,31 +326,32 @@ const stageSlotRows: [string, string, string][] = [
     "urn:pubid:iec:is:60038"],
   ["IEC PPUB 60038", "urn:iec:std:iec:60038::::",
     "urn:pubid:iec:is:60038"],
-  // A draft of a typed deliverable keeps both tokens, type first; every
-  // draft spelling of one deliverable decodes onto the typed stage with
-  // lead 50.00.
+  // A draft of a typed deliverable keeps both tokens, type first. Plain
+  // DTR/DTS keep the folded 50.00 registration ladder; the point
+  // spellings are rows of their own carrying the correspondence table's
+  // codes (gem 2.0.35, pubid#733).
   ["IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::",
     "urn:pubid:iec:tr:60038:stage-dtr"],
-  ["IEC ADTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::",
-    "urn:pubid:iec:tr:60038:stage-dtr"],
-  ["IEC CDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::",
-    "urn:pubid:iec:tr:60038:stage-dtr"],
-  ["IEC NDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::",
-    "urn:pubid:iec:tr:60038:stage-dtr"],
+  ["IEC ADTR 60038", "urn:iec:std:iec:60038::tr-stage-40.99::",
+    "urn:pubid:iec:tr:60038:stage-adtr"],
+  ["IEC CDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.20::",
+    "urn:pubid:iec:tr:60038:stage-cdtr"],
+  ["IEC NDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.92::",
+    "urn:pubid:iec:tr:60038:stage-ndtr"],
   ["IEC DTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.00::",
     "urn:pubid:iec:ts:62271:part-1:stage-dts"],
-  ["IEC ADTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.00::",
-    "urn:pubid:iec:ts:62271:part-1:stage-dts"],
-  ["IEC CDTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.00::",
-    "urn:pubid:iec:ts:62271:part-1:stage-dts"],
-  ["IEC NDTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.00::",
-    "urn:pubid:iec:ts:62271:part-1:stage-dts"],
+  ["IEC ADTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-40.99::",
+    "urn:pubid:iec:ts:62271:part-1:stage-adts"],
+  ["IEC CDTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.20::",
+    "urn:pubid:iec:ts:62271:part-1:stage-cdts"],
+  ["IEC NDTS 62271-1", "urn:iec:std:iec:62271-1::ts-stage-50.92::",
+    "urn:pubid:iec:ts:62271:part-1:stage-ndts"],
   ["IEC DPAS 62975", "urn:iec:std:iec:62975::pas-stage-50.00::",
     "urn:pubid:iec:pas:62975:stage-dpas"],
-  // CDPAS decodes onto the committee-draft PAS row (lead 30.00) — the
-  // gem's :cdpas registry row, not the 50.20 circulation slot the SSOT
-  // table names (recorded as a gem-side contradiction below).
-  ["IEC CDPAS 62975", "urn:iec:std:iec:62975::pas-stage-30.00::",
+  // CDPAS is PAS's 50.20 row ("Draft circulated as DPAS") of the SSOT
+  // table — gem 2.0.35 aligned the registry to it (pubid#733); the wire
+  // still carries the row's own code.
+  ["IEC CDPAS 62975", "urn:iec:std:iec:62975::pas-stage-50.20::",
     "urn:pubid:iec:pas:62975:stage-cdpas"],
 ];
 
@@ -379,9 +384,20 @@ test("iec #187: the aligned slots resolve back through parseUrn (gem parity)", (
     ["urn:iec:std:iec:60038::stage-40.00::", "IEC CDV 60038"],
     ["urn:iec:std:iec:60038::stage-50.00::", "IEC FDIS 60038"],
     ["urn:iec:std:iec:60038::tr-stage-50.00::", "IEC DTR 60038"],
+    // The pubid#733 point slots: each spelling's own row answers.
+    ["urn:iec:std:iec:60038::tr-stage-40.99::", "IEC ADTR 60038"],
+    ["urn:iec:std:iec:60038::tr-stage-50.20::", "IEC CDTR 60038"],
+    ["urn:iec:std:iec:60038::ts-stage-40.99::", "IEC ADTS 60038"],
+    ["urn:iec:std:iec:60038::ts-stage-50.20::", "IEC CDTS 60038"],
     ["urn:iec:std:iec:62271-1::ts-stage-50.00::", "IEC DTS 62271-1"],
     ["urn:iec:std:iec:62975::pas-stage-50.00::", "IEC DPAS 62975"],
-    ["urn:iec:std:iec:62975::pas-stage-30.00::", "IEC CDPAS 62975"],
+    ["urn:iec:std:iec:62975::pas-stage-50.20::", "IEC CDPAS 62975"],
+    // The shared 50.92 slots (gem pnw_stage_spec ALLOWED_COLLISIONS):
+    // the correspondence table gives both spellings of each deliverable
+    // the same rejection code, so the slot is one row's — the reverse
+    // lookup resolves the pair's FIRST row (DTRM / DTSM).
+    ["urn:iec:std:iec:60038::tr-stage-50.92::", "IEC DTRM 60038"],
+    ["urn:iec:std:iec:60038::ts-stage-50.92::", "IEC DTSM 60038"],
   ];
   for (const [urn, human] of resolutionRows) {
     const rebuilt = impl.parseUrn!(urn) as unknown as IecIdentifier;
@@ -390,18 +406,60 @@ test("iec #187: the aligned slots resolve back through parseUrn (gem parity)", (
   }
   // The spellings whose render the gem normalizes round-trip through the
   // slot to the CANONICAL face, exactly as the gem's do (PRF's slot is
-  // fdis's lead code; BPUB's slot is the published IS's empty one).
+  // fdis's lead code; BPUB's slot is the published IS's empty one). The
+  // point spellings are rows of their own now (pubid#733): their slot
+  // resolves back to their own face, pinned in the rows above.
   const normalizedRows: [string, string][] = [
     ["IEC PRF 60038", "IEC FDIS 60038"],
     ["IEC BPUB 60038", "IEC 60038"],
     ["IEC PPUB 60038", "IEC 60038"],
-    ["IEC ADTR 60038", "IEC DTR 60038"],
-    ["IEC ADTS 62271-1", "IEC DTS 62271-1"],
   ];
   for (const [input, canonical] of normalizedRows) {
     const id = impl.parse(input) as unknown as IecIdentifier;
     const rebuilt = impl.parseUrn!(id.toUrn()!) as unknown as IecIdentifier;
     assert.equal(rebuilt.toHuman(), canonical, input);
+  }
+});
+
+// --- pubid#733: the shared 50.92 slots (the ALLOWED-COLLISIONS pair) ----
+//
+// IEC's stage-code correspondence table gives two spellings of each
+// deliverable the SAME rejection code: DTRM and NDTR share 50.92 (TR),
+// DTSM and NDTS share 50.92 (TS). The gem's pnw_stage_spec allow-lists
+// exactly those two pairs — the shared code is IEC's data, not a
+// registry accident. The official-URN slot (harmonized_stages.first) is
+// therefore the same for both spellings of a pair, the pubid-scheme URN
+// keeps them distinct (each row's own code), and the slot's reverse
+// lookup resolves the pair's FIRST row (row order follows the
+// correspondence table) — verified in-process at gem 2.0.35.
+test("iec #733: the shared 50.92 slots resolve the pair's first row (gem parity)", () => {
+  const impl = grammarImplementation("iec")!;
+  const pairs: [string, string, string, string][] = [
+    // [first spelling, second spelling, type slot, first spelling's render]
+    ["IEC DTRM 60038", "IEC NDTR 60038", "tr-stage-50.92", "IEC DTRM 60038"],
+    ["IEC DTSM 60038", "IEC NDTS 60038", "ts-stage-50.92", "IEC DTSM 60038"],
+  ];
+  for (const [first, second, slot, firstRender] of pairs) {
+    const firstId = impl.parse(first) as unknown as IecIdentifier;
+    const secondId = impl.parse(second) as unknown as IecIdentifier;
+    // The shared slot: both spellings emit the same official URN…
+    assert.equal(secondId.toUrn(), firstId.toUrn(), second);
+    assert.equal(firstId.toUrn(), `urn:iec:std:iec:60038::${slot}::`, first);
+    // …the pubid-scheme URN keeps the pair distinct (own codes)…
+    assert.notEqual(secondId.toPubidUrn(), firstId.toPubidUrn(), second);
+    assert.equal(firstId.toPubidUrn(), `urn:pubid:iec:${slot.startsWith("tr") ? "tr" : "ts"}:60038:stage-${slot.startsWith("tr") ? "dtrm" : "dtsm"}`, first);
+    // …the wire keeps the pair distinct, so from_hash(to_hash) restores
+    // each spelling's own row (the round trip is lossless where the
+    // official-URN slot is not).
+    const secondBack = secondId.fromHash(secondId.toHash());
+    assert.ok(secondBack.equals!(secondId), `from_hash round trip: ${second}`);
+    assert.equal(secondBack.toHuman(), second, second);
+    // …and the reverse lookup resolves the FIRST row of the pair, so the
+    // slot decode is one-way for the second spelling (documented
+    // gem-side).
+    const rebuilt = impl.parseUrn!(secondId.toUrn()!) as unknown as IecIdentifier;
+    assert.equal(rebuilt.toHuman(), firstRender, second);
+    assert.equal(rebuilt.toUrn(), secondId.toUrn(), second);
   }
 });
 
@@ -485,19 +543,22 @@ test("iec #187: the published faces keep their empty slots (gem parity)", () => 
 //
 // The gem renders every typed-stage spelling onto its row's canonical
 // abbreviation (renderer.rb: `id.typed_stage.abbr.first`) and serializes
-// typed_stage.code on the wire. The TS mirrors the gem 2.0.32 rows one
-// for one (one row per deliverable stage; the spellings are tokens on
-// the row): PRF folds onto :fdis, the publication-lifecycle spellings
-// (BPUB, PPUB) onto the published IS whose abbr is "" — the
-// abbreviation drops from the render — and the ADTR/CDTR/NDTR family
-// onto :dtr, the ADTS/CDTS/NDTS family onto :dts.
+// typed_stage.code on the wire. The TS mirrors the gem rows one for one
+// (one row per deliverable stage; the spellings are tokens on the row):
+// PRF folds onto :fdis and the publication-lifecycle spellings (BPUB,
+// PPUB) onto the published IS whose abbr is "" — the abbreviation drops
+// from the render. The point spellings rode those folds at 2.0.32;
+// gem 2.0.35 split them into rows of their own carrying the
+// correspondence table's codes (pubid#733), so each renders its OWN
+// spelling and carries its own code.
 //
 // This table is the record: the full probe matrix (every #190 stage
 // standalone, with a part, dated, with an edition), each row verified
-// byte-for-byte against gem 2.0.32 in-process (source checkout,
+// byte-for-byte against the gem in-process (source checkout,
 // Pubid::VERSION-checked: to_s, class, typed stage code/stage_code/
 // abbr.first/lead harmonized code, official URN, pubid URN, hash
-// round-trip, render re-parse).
+// round-trip, render re-parse) — the point-spelling rows at 2.0.35
+// (pubid#733), the rest at 2.0.32.
 const renderFaceRows: [string, string, string, string, string | null, string][] = [
   // PRF -> FDIS.
   ["IEC PRF 60038", "IEC FDIS 60038", "urn:iec:std:iec:60038::stage-50.00::", "urn:pubid:iec:is:60038:stage-fdis", "fdis", "international-standard"],
@@ -513,34 +574,37 @@ const renderFaceRows: [string, string, string, string, string | null, string][] 
   ["IEC PPUB 60038-1", "IEC 60038-1", "urn:iec:std:iec:60038-1::::", "urn:pubid:iec:is:60038:part-1", null, "international-standard"],
   ["IEC PPUB 60038:2024", "IEC 60038:2024", "urn:iec:std:iec:60038:2024:::", "urn:pubid:iec:is:60038:year-2024", null, "international-standard"],
   ["IEC PPUB 60038 ED2", "IEC 60038 ED2", "urn:iec:std:iec:60038:::ed-2:", "urn:pubid:iec:is:60038:ed-2", null, "international-standard"],
-  // ADTR/CDTR/NDTR -> DTR.
-  ["IEC ADTR 60038", "IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::", "urn:pubid:iec:tr:60038:stage-dtr", "dtr", "technical-report"],
-  ["IEC ADTR 60038-1", "IEC DTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-50.00::", "urn:pubid:iec:tr:60038:part-1:stage-dtr", "dtr", "technical-report"],
-  ["IEC ADTR 60038:2024", "IEC DTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-50.00::", "urn:pubid:iec:tr:60038:year-2024:stage-dtr", "dtr", "technical-report"],
-  ["IEC ADTR 60038 ED2", "IEC DTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-50.00:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-dtr", "dtr", "technical-report"],
-  ["IEC CDTR 60038", "IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::", "urn:pubid:iec:tr:60038:stage-dtr", "dtr", "technical-report"],
-  ["IEC CDTR 60038-1", "IEC DTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-50.00::", "urn:pubid:iec:tr:60038:part-1:stage-dtr", "dtr", "technical-report"],
-  ["IEC CDTR 60038:2024", "IEC DTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-50.00::", "urn:pubid:iec:tr:60038:year-2024:stage-dtr", "dtr", "technical-report"],
-  ["IEC CDTR 60038 ED2", "IEC DTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-50.00:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-dtr", "dtr", "technical-report"],
-  ["IEC NDTR 60038", "IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::", "urn:pubid:iec:tr:60038:stage-dtr", "dtr", "technical-report"],
-  ["IEC NDTR 60038-1", "IEC DTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-50.00::", "urn:pubid:iec:tr:60038:part-1:stage-dtr", "dtr", "technical-report"],
-  ["IEC NDTR 60038:2024", "IEC DTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-50.00::", "urn:pubid:iec:tr:60038:year-2024:stage-dtr", "dtr", "technical-report"],
-  ["IEC NDTR 60038 ED2", "IEC DTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-50.00:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-dtr", "dtr", "technical-report"],
-  // ADTS/CDTS/NDTS -> DTS.
-  ["IEC ADTS 60038", "IEC DTS 60038", "urn:iec:std:iec:60038::ts-stage-50.00::", "urn:pubid:iec:ts:60038:stage-dts", "dts", "technical-specification"],
-  ["IEC ADTS 60038-1", "IEC DTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-50.00::", "urn:pubid:iec:ts:60038:part-1:stage-dts", "dts", "technical-specification"],
-  ["IEC ADTS 60038:2024", "IEC DTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-50.00::", "urn:pubid:iec:ts:60038:year-2024:stage-dts", "dts", "technical-specification"],
-  ["IEC ADTS 60038 ED2", "IEC DTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-50.00:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-dts", "dts", "technical-specification"],
-  ["IEC CDTS 60038", "IEC DTS 60038", "urn:iec:std:iec:60038::ts-stage-50.00::", "urn:pubid:iec:ts:60038:stage-dts", "dts", "technical-specification"],
-  ["IEC CDTS 60038-1", "IEC DTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-50.00::", "urn:pubid:iec:ts:60038:part-1:stage-dts", "dts", "technical-specification"],
-  ["IEC CDTS 60038:2024", "IEC DTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-50.00::", "urn:pubid:iec:ts:60038:year-2024:stage-dts", "dts", "technical-specification"],
-  ["IEC CDTS 60038 ED2", "IEC DTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-50.00:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-dts", "dts", "technical-specification"],
-  ["IEC NDTS 60038", "IEC DTS 60038", "urn:iec:std:iec:60038::ts-stage-50.00::", "urn:pubid:iec:ts:60038:stage-dts", "dts", "technical-specification"],
-  ["IEC NDTS 60038-1", "IEC DTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-50.00::", "urn:pubid:iec:ts:60038:part-1:stage-dts", "dts", "technical-specification"],
-  ["IEC NDTS 60038:2024", "IEC DTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-50.00::", "urn:pubid:iec:ts:60038:year-2024:stage-dts", "dts", "technical-specification"],
-  ["IEC NDTS 60038 ED2", "IEC DTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-50.00:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-dts", "dts", "technical-specification"],
+  // ADTR/CDTR/NDTR: rows of their own (gem 2.0.35, pubid#733) — the
+  // render keeps the parsed spelling and the slots carry the table's
+  // codes (40.99 / 50.20 / 50.92).
+  ["IEC ADTR 60038", "IEC ADTR 60038", "urn:iec:std:iec:60038::tr-stage-40.99::", "urn:pubid:iec:tr:60038:stage-adtr", "adtr", "technical-report"],
+  ["IEC ADTR 60038-1", "IEC ADTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-40.99::", "urn:pubid:iec:tr:60038:part-1:stage-adtr", "adtr", "technical-report"],
+  ["IEC ADTR 60038:2024", "IEC ADTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-40.99::", "urn:pubid:iec:tr:60038:year-2024:stage-adtr", "adtr", "technical-report"],
+  ["IEC ADTR 60038 ED2", "IEC ADTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-40.99:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-adtr", "adtr", "technical-report"],
+  ["IEC CDTR 60038", "IEC CDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.20::", "urn:pubid:iec:tr:60038:stage-cdtr", "cdtr", "technical-report"],
+  ["IEC CDTR 60038-1", "IEC CDTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-50.20::", "urn:pubid:iec:tr:60038:part-1:stage-cdtr", "cdtr", "technical-report"],
+  ["IEC CDTR 60038:2024", "IEC CDTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-50.20::", "urn:pubid:iec:tr:60038:year-2024:stage-cdtr", "cdtr", "technical-report"],
+  ["IEC CDTR 60038 ED2", "IEC CDTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-50.20:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-cdtr", "cdtr", "technical-report"],
+  ["IEC NDTR 60038", "IEC NDTR 60038", "urn:iec:std:iec:60038::tr-stage-50.92::", "urn:pubid:iec:tr:60038:stage-ndtr", "ndtr", "technical-report"],
+  ["IEC NDTR 60038-1", "IEC NDTR 60038-1", "urn:iec:std:iec:60038-1::tr-stage-50.92::", "urn:pubid:iec:tr:60038:part-1:stage-ndtr", "ndtr", "technical-report"],
+  ["IEC NDTR 60038:2024", "IEC NDTR 60038:2024", "urn:iec:std:iec:60038:2024:tr-stage-50.92::", "urn:pubid:iec:tr:60038:year-2024:stage-ndtr", "ndtr", "technical-report"],
+  ["IEC NDTR 60038 ED2", "IEC NDTR 60038 ED2", "urn:iec:std:iec:60038::tr-stage-50.92:ed-2:", "urn:pubid:iec:tr:60038:ed-2:stage-ndtr", "ndtr", "technical-report"],
+  // ADTS/CDTS/NDTS: the TS twin rows (40.99 / 50.20 / 50.92).
+  ["IEC ADTS 60038", "IEC ADTS 60038", "urn:iec:std:iec:60038::ts-stage-40.99::", "urn:pubid:iec:ts:60038:stage-adts", "adts", "technical-specification"],
+  ["IEC ADTS 60038-1", "IEC ADTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-40.99::", "urn:pubid:iec:ts:60038:part-1:stage-adts", "adts", "technical-specification"],
+  ["IEC ADTS 60038:2024", "IEC ADTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-40.99::", "urn:pubid:iec:ts:60038:year-2024:stage-adts", "adts", "technical-specification"],
+  ["IEC ADTS 60038 ED2", "IEC ADTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-40.99:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-adts", "adts", "technical-specification"],
+  ["IEC CDTS 60038", "IEC CDTS 60038", "urn:iec:std:iec:60038::ts-stage-50.20::", "urn:pubid:iec:ts:60038:stage-cdts", "cdts", "technical-specification"],
+  ["IEC CDTS 60038-1", "IEC CDTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-50.20::", "urn:pubid:iec:ts:60038:part-1:stage-cdts", "cdts", "technical-specification"],
+  ["IEC CDTS 60038:2024", "IEC CDTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-50.20::", "urn:pubid:iec:ts:60038:year-2024:stage-cdts", "cdts", "technical-specification"],
+  ["IEC CDTS 60038 ED2", "IEC CDTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-50.20:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-cdts", "cdts", "technical-specification"],
+  ["IEC NDTS 60038", "IEC NDTS 60038", "urn:iec:std:iec:60038::ts-stage-50.92::", "urn:pubid:iec:ts:60038:stage-ndts", "ndts", "technical-specification"],
+  ["IEC NDTS 60038-1", "IEC NDTS 60038-1", "urn:iec:std:iec:60038-1::ts-stage-50.92::", "urn:pubid:iec:ts:60038:part-1:stage-ndts", "ndts", "technical-specification"],
+  ["IEC NDTS 60038:2024", "IEC NDTS 60038:2024", "urn:iec:std:iec:60038:2024:ts-stage-50.92::", "urn:pubid:iec:ts:60038:year-2024:stage-ndts", "ndts", "technical-specification"],
+  ["IEC NDTS 60038 ED2", "IEC NDTS 60038 ED2", "urn:iec:std:iec:60038::ts-stage-50.92:ed-2:", "urn:pubid:iec:ts:60038:ed-2:stage-ndts", "ndts", "technical-specification"],
   // The canonical twins are the normalization's no-op guard: the folded
-  // spellings parse, render, hash and URN IDENTICALLY to these.
+  // spellings (PRF, BPUB/PPUB) parse, render, hash and URN IDENTICALLY
+  // to these, and the plain ladder rows are their own fixed point.
   ["IEC FDIS 60038", "IEC FDIS 60038", "urn:iec:std:iec:60038::stage-50.00::", "urn:pubid:iec:is:60038:stage-fdis", "fdis", "international-standard"],
   ["IEC FDIS 60038-1", "IEC FDIS 60038-1", "urn:iec:std:iec:60038-1::stage-50.00::", "urn:pubid:iec:is:60038:part-1:stage-fdis", "fdis", "international-standard"],
   ["IEC FDIS 60038:2024", "IEC FDIS 60038:2024", "urn:iec:std:iec:60038:2024:stage-50.00::", "urn:pubid:iec:is:60038:year-2024:stage-fdis", "fdis", "international-standard"],
@@ -598,17 +662,18 @@ for (const [input, render, urn, purn, stage, type] of renderFaceRows) {
 // the CDV-family spellings (ACDV, CCDV, CDVM, NCDV), the fdis-family
 // spellings (NFDIS, NADIS, RDISH, RFDIS, CFDIS), the
 // publication-lifecycle spellings (APUB, WPUB, DELPUB, RR), the PWI
-// family (NWIP, BWG, AWIN, AMW), the DTR-family spellings (DTRM, and
-// DTSM — which the gem's :dtr row lists even though the name belongs to
-// the TS deliverable), and the two-token type faces ("IEC CD TR 62048"
-// -> the combined cd_tr typed stage; the whole PWI/NP/ANW/WD/CD ladder
-// of TR, TS, PAS and Guide). The TS mirror accepts exactly the gem's
-// grammar token set, decoded onto the same folded rows (model.ts).
+// family (NWIP, BWG, AWIN, AMW), the rejection spellings (DTRM on the TR
+// ladder, DTSM on the TS ladder — rows of their own since gem 2.0.35,
+// pubid#733), and the two-token type faces ("IEC CD TR 62048" -> the
+// combined cd_tr typed stage; the whole PWI/NP/ANW/WD/CD ladder of TR,
+// TS, PAS and Guide). The TS mirror accepts exactly the gem's grammar
+// token set, decoded onto the same rows (model.ts).
 //
 // This table is the record: every newly-parsing row verified
-// byte-for-byte against gem 2.0.32 in-process (to_s, class, typed stage
+// byte-for-byte against the gem in-process (to_s, class, typed stage
 // code/abbreviation/lead harmonized code, official URN, pubid URN, hash
-// round-trip, render re-parse).
+// round-trip, render re-parse) — the DTRM/DTSM rows at 2.0.35
+// (pubid#733), the rest at 2.0.32.
 const parseParityRows: [string, string, string, string, string, string][] = [
   // The 2CD family decodes onto :cd.
   ["IEC 2CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
@@ -641,11 +706,12 @@ const parseParityRows: [string, string, string, string, string, string][] = [
   ["IEC BWG 60038", "IEC PWI 60038", "urn:iec:std:iec:60038::stage-00.00::", "urn:pubid:iec:is:60038:stage-pwi", "pwi", "international-standard"],
   ["IEC AWIN 60038", "IEC PWI 60038", "urn:iec:std:iec:60038::stage-00.00::", "urn:pubid:iec:is:60038:stage-pwi", "pwi", "international-standard"],
   ["IEC AMW 60038", "IEC PWI 60038", "urn:iec:std:iec:60038::stage-00.00::", "urn:pubid:iec:is:60038:stage-pwi", "pwi", "international-standard"],
-  // The DTR family — DTSM rides the :dtr row in the gem's registry (the
-  // TS row is never scanned), so it decodes onto the TR ladder, the
-  // gem-side wobble mirrored.
-  ["IEC DTRM 60038", "IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::", "urn:pubid:iec:tr:60038:stage-dtr", "dtr", "technical-report"],
-  ["IEC DTSM 60038", "IEC DTR 60038", "urn:iec:std:iec:60038::tr-stage-50.00::", "urn:pubid:iec:tr:60038:stage-dtr", "dtr", "technical-report"],
+  // The rejection spellings are rows of their own (gem 2.0.35,
+  // pubid#733): DTRM decodes onto the TR ladder's :dtrm, DTSM onto the
+  // TS ladder's :dtsm — each rendering its own spelling and carrying the
+  // shared 50.92 slot (the pair's FIRST row on the URN decode side).
+  ["IEC DTRM 60038", "IEC DTRM 60038", "urn:iec:std:iec:60038::tr-stage-50.92::", "urn:pubid:iec:tr:60038:stage-dtrm", "dtrm", "technical-report"],
+  ["IEC DTSM 60038", "IEC DTSM 60038", "urn:iec:std:iec:60038::ts-stage-50.92::", "urn:pubid:iec:ts:60038:stage-dtsm", "dtsm", "technical-specification"],
   // The two-token type faces: the per-deliverable TR ladder.
   ["IEC CD TR 62048", "IEC CD TR 62048", "urn:iec:std:iec:62048::tr-stage-30.00::", "urn:pubid:iec:tr:62048:stage-cd_tr", "cd_tr", "technical-report"],
   ["IEC CD TR 62048-1", "IEC CD TR 62048-1", "urn:iec:std:iec:62048-1::tr-stage-30.00::", "urn:pubid:iec:tr:62048:part-1:stage-cd_tr", "cd_tr", "technical-report"],
