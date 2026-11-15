@@ -1,12 +1,15 @@
-# pubid-testsuite (791d21325a15f9247ca36912591683a6501e9659, testsuite#110
-# on the rebased #111 tree): the jis WES corpus round (pubid#716 - the 14
-# WES forms of relaton-jis#18 join the mirror: the 10 welding_engineering_
-# standard (E) editions, WES TR 2032:2024, WES TS 2816(E):2015 +
-# WES TS 2816:2015, and WES 3003(E):1995/AMENDMENT 1:2025 onto the
-# amendment payload with its AMENDMENT->AMD normalization rule;
-# jis 10,561 -> 10,575 cases, 99,779 -> 99,793) - the tree the vendored
-# corpus was regenerated from.
-testsuite_ref: 791d21325a15f9247ca36912591683a6501e9659
+# pubid-testsuite (adecf10cef5c62b99222e459c4ccccdaedb13774, testsuite#112
+# + its regeneration round): the IALA legacy A-session corpus round
+# (pubid#734 - the 11 A-shaped rows (A12-01, A13-01 through A13-04)
+# reclassify from pubid:iala:advice onto pubid:iala:general-assembly as
+# the GA's legacy session letter - relaton-data-iala holds no Advice
+# document and the covers read "GA Resolution A12-01"; human/URN
+# representations unchanged (IALA A12-01 / urn:mrn:iala:pub:a12-01),
+# advice.yaml retired and the A rows join general_assembly.yaml as
+# iala.general_assembly.0001-0011 (the 26 dotted GA rows keep their
+# 0448-0473 ids); iala stays 702 cases, 99,793 total) - the tree the
+# vendored corpus was regenerated from.
+testsuite_ref: adecf10cef5c62b99222e459c4ccccdaedb13774
 # pubid-grammar main (94f1a12fee1c2eba202a896fddd25dc8921cda81): the IEC
 # dotted supplement sub-number parses (#725 - the three dot-sites admit
 # 1*digit and the legacy ballot rule gains [ dot 1*digit as

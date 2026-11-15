@@ -114,7 +114,10 @@ test("the worker entry's import graph is worker-safe", () => {
 // pubid-ts#195: the three IEC deliverable types (technology-report,
 // white-paper, societal-technology-trend-report) landed their classes,
 // leaving the schema's IEC declarations fully resolved — +3.
-const REGISTERED_TYPES = 314;
+// pubid#734: the zero-instance Advice type retired — pubid:iala:advice
+// leaves both the schema table and the class map (the A letter routes
+// to general-assembly), -1.
+const REGISTERED_TYPES = 313;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;
