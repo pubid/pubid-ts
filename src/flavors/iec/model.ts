@@ -76,32 +76,33 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("tec", "published", "tec", "Technology Report", "60.00"),
   TS("sttr", "published", "sttr", "Trend Report", "60.00"),
   TS("wp", "published", "wp", "White Paper", "60.00"),
-  // The draft ladders below mirror the gem 2.0.32 per-deliverable
-  // TYPED_STAGES rows (lib/pubid/iec/identifiers/*.rb): one row per
-  // (deliverable, stage), `abbr` the canonical (ruby abbr.first) spelling
-  // the render face prints, `tokens` the spellings the row accepts at
-  // parse. The gem's render normalizes every spelling onto abbr.first
-  // (renderer.rb: `id.typed_stage.abbr.first`) and its wire carries
-  // typed_stage.code — so a folded spelling parses, renders and
-  // serializes AS its row's canonical twin ("IEC PRF 60038" renders
-  // "IEC FDIS 60038" and hashes stage "fdis"). The gem-vs-SSOT
-  // contradictions recorded in #189/#190 (CDPAS 30.00-vs-50.20, the
-  // ADTR-family folding) stay on record; the gem is followed.
+  // The draft ladders below mirror the gem's per-deliverable
+  // TYPED_STAGES rows (lib/pubid/iec/identifiers/*.rb, at 2.0.35 —
+  // pubid#733): one row per (deliverable, stage), `abbr` the canonical
+  // (ruby abbr.first) spelling the render face prints, `tokens` the
+  // spellings the row accepts at parse. Each row renders its OWN
+  // spelling (renderer.rb: `id.typed_stage.abbr.first` — the #191/#193
+  // pattern) and the wire carries typed_stage.code, so "IEC ADTR 60038"
+  // renders "IEC ADTR 60038" and hashes stage "adtr"; only rows that
+  // genuinely fold several spellings onto one face normalize the render
+  // ("IEC PRF 60038" renders "IEC FDIS 60038" and hashes stage "fdis").
   //
   // `tokens` carry the spellings the gem's COMPILED grammar accepts
   // (data/parg/iec.json), which is narrower than the registry's abbr
   // lists: registry-only spellings (DEL, PRVN, AWI, DIS, ADIS, PCC,
   // SPLIT, MERGED, CAN, RPUB, TPUB, DECPUB, SPE, and every PROJECT_STAGES
   // name) are parse-rejected by the gem and stay out of the tokens.
-  // Resolution of a token is registry ORDER (ruby locate_stage scans
-  // TYPED_STAGES in order), so CDPAS resolves to :cdpas (30.00), never
-  // the :dpas row that also lists it, and DTSM — listed on the :dtr row —
-  // decodes onto the TR ladder, not :dts.
   //
   // The `harmonized` column is the gem's harmonized_stages.first (issue
   // #187): the official URN stage slot writes `stage-<lead code>` and the
   // URN parser resolves the slot back by (type, lead code). Published
-  // rows carry no harmonized: the slot is suppressed for them.
+  // rows carry no harmonized: the slot is suppressed for them. Row order
+  // follows the correspondence table, so the TR/TS shared 50.92 slots
+  // (NDTR/DTRM, NDTS/DTSM — IEC's table gives both spellings of each
+  // deliverable the same rejection code; the gem's pnw_stage_spec
+  // ALLOWED_COLLISIONS) reverse-resolve to the pair's FIRST row —
+  // tr-stage-50.92 decodes DTRM, ts-stage-50.92 decodes DTSM — while the
+  // pubid-scheme URN keeps the pair distinct (stage-ndtr vs stage-dtrm).
   TS("pwi", "pwi", "is", "PWI", "00.00", ["PWI", "NWIP", "BWG", "AWIN", "AMW"]),
   // PNW owns harmonized 10.20 (gem: NP stages are 10.00/10.60/… — the
   // URN "stage-10.20" slot resolves to PNW, not NP; #187).
@@ -126,28 +127,42 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("anw_tr", "anw", "tr", "ANW TR", "10.99"),
   TS("wd_tr", "wd", "tr", "WD TR", "20.20"),
   TS("cd_tr", "cd", "tr", "CD TR", "30.00"),
-  // The whole draft-spelling family folds onto :dtr (ruby abbr.first
-  // "DTR"); DTSM rides the :dtr row in the gem's registry even though the
-  // spelling names the TS deliverable's rejected stage — mirrored.
-  TS("dtr", "draft", "tr", "DTR", "50.00", ["DTR", "ADTR", "CDTR", "DTRM", "NDTR", "DTSM"]),
+  // Plain DTR keeps the folded 50.00 ladder (the registration step); the
+  // point spellings below are rows of their own, each with the exact
+  // code IEC's stage-code correspondence table gives it (pubid#733, gem
+  // 2.0.35 — probed in-process: render/URN/pubid-URN/hash round-trip).
+  TS("dtr", "draft", "tr", "DTR", "50.00"),
+  TS("adtr", "draft", "tr", "ADTR", "40.99"),
+  TS("cdtr", "draft", "tr", "CDTR", "50.20"),
+  // NDTR and DTRM share the table's 50.92 rejection code: their
+  // official-URN slot is the same and the reverse lookup resolves the
+  // FIRST row (DTRM); the pubid-scheme URN keeps both codes.
+  TS("dtrm", "draft", "tr", "DTRM", "50.92"),
+  TS("ndtr", "draft", "tr", "NDTR", "50.92"),
   // The TS ladder.
   TS("pwi_ts", "pwi", "ts", "PWI TS", "00.00"),
   TS("np_ts", "np", "ts", "NP TS", "10.00"),
   TS("anw_ts", "anw", "ts", "ANW TS", "10.99"),
   TS("wd_ts", "wd", "ts", "WD TS", "20.20"),
   TS("cd_ts", "cd", "ts", "CD TS", "30.00"),
-  TS("dts", "draft", "ts", "DTS", "50.00", ["DTS", "ADTS", "CDTS", "NDTS"]),
+  TS("dts", "draft", "ts", "DTS", "50.00"),
+  TS("adts", "draft", "ts", "ADTS", "40.99"),
+  TS("cdts", "draft", "ts", "CDTS", "50.20"),
+  // The TS twin of the TR shared slot: NDTS and DTSM both carry 50.92,
+  // the reverse lookup resolves DTSM (the first row).
+  TS("dtsm", "draft", "ts", "DTSM", "50.92"),
+  TS("ndts", "draft", "ts", "NDTS", "50.92"),
   // The PAS ladder.
   TS("pwi_pas", "pwi", "pas", "PWI PAS", "00.00"),
   TS("np_pas", "np", "pas", "NP PAS", "10.00"),
   TS("anw_pas", "anw", "pas", "ANW PAS", "10.99"),
   TS("wd_pas", "wd", "pas", "WD PAS", "20.20"),
-  // CDPAS is the committee-draft PAS row (lead 30.00) — the gem's
-  // :cdpas registry row wins over :dpas's spelling by order. The
-  // SSOT table (data/iec/stage-codes.md) names CDPAS 50.20: the
-  // recorded gem-vs-SSOT contradiction stands (owner's call).
-  TS("cdpas", "cd", "pas", "CDPAS", "30.00"),
-  TS("dpas", "draft", "pas", "DPAS", "50.00", ["DPAS", "CDPAS"]),
+  // CDPAS is PAS's 50.20 row of IEC's stage-code correspondence table
+  // ("Draft circulated as DPAS") — not a committee-draft state and
+  // claiming no 30.xx code: the fabricated 30.00 row and the CDPAS fold
+  // on the DPAS row's spellings are gone (pubid#733, gem 2.0.35).
+  TS("cdpas", "draft", "pas", "CDPAS", "50.20"),
+  TS("dpas", "draft", "pas", "DPAS", "50.00"),
   // The Guide ladder (the two-token faces and the DGuide/FDGuide drafts).
   TS("pwi_guide", "pwi", "guide", "PWI Guide", "00.00"),
   TS("np_guide", "np", "guide", "NP Guide", "10.00"),
