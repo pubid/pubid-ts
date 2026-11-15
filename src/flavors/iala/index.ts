@@ -8,11 +8,13 @@ import { BaseUrnGenerator } from "../../model/urn-generator.js";
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 
 /**
- * 1:1 port of lib/pubid/iala/ — 706 corpus rows. Typed prefixes
- * (S/R/G/M/C/A/GA/L/X/P), class-driven zero-padding (4 for S/R/G/M/C,
- * 2+2 dotted for GA, verbatim for the rest), "Ed 2.0" and ":ed2.0"
- * edition forms, (F) languages, and Annex wrappers. URN is the MRN
- * form: urn:mrn:iala:pub:<lower-code>[:ed<n>][:<lang>].
+ * 1:1 port of lib/pubid/iala/ — 702 corpus rows. Typed prefixes
+ * (S/R/G/M/C/GA/L/X/P plus the legacy A session letter, which routes to
+ * GeneralAssembly — there is no Advice type, pubid#734), class-driven
+ * zero-padding (4 for S/R/G/M/C, 2+2 dotted for GA, verbatim for the
+ * rest), "Ed 2.0" and ":ed2.0" edition forms, (F) languages, and Annex
+ * wrappers. URN is the MRN form:
+ * urn:mrn:iala:pub:<lower-code>[:ed<n>][:<lang>].
  */
 
 function buildRules(): Record<string, P> {
@@ -159,6 +161,12 @@ interface IalaTypeSpec {
   letter: string;
   numberWidth?: number;
   dottedSegmentWidth?: number;
+  /**
+   * Additional type letters that route to this class — the Ruby
+   * `type_letter_aliases` DSL (GeneralAssembly aliases the legacy "A"
+   * session letter; there is no Advice type, pubid#734).
+   */
+  typeLetterAliases?: string[];
 }
 
 const IALA_TYPES: IalaTypeSpec[] = [
@@ -167,27 +175,50 @@ const IALA_TYPES: IalaTypeSpec[] = [
   { kind: "guideline", letter: "G", numberWidth: 4 },
   { kind: "manual", letter: "M", numberWidth: 4 },
   { kind: "model-course", letter: "C", numberWidth: 4 },
-  { kind: "advice", letter: "A" },
-  { kind: "general-assembly", letter: "GA", numberWidth: 2, dottedSegmentWidth: 2 },
+  // The A letter is GeneralAssembly's legacy session form, not a
+  // separate series: all 11 A-shaped primary docidentifiers in
+  // relaton-data-iala (A12-01, A13-01 through A13-04) are GA
+  // resolutions, the covers read "GA Resolution A12-01", and no
+  // Advice-series document exists in the catalogue (pubid#734).
+  { kind: "general-assembly", letter: "GA", numberWidth: 2, dottedSegmentWidth: 2, typeLetterAliases: ["A"] },
   { kind: "letter", letter: "L" },
   { kind: "report", letter: "X" },
   { kind: "resolution", letter: "P" },
 ];
 
-const TYPE_SPECS = new Map<string, IalaTypeSpec>(IALA_TYPES.map((t) => [t.letter, t]));
+const TYPE_SPECS = new Map<string, IalaTypeSpec>(
+  IALA_TYPES.flatMap((t) => [[t.letter, t] as [string, IalaTypeSpec]]
+    .concat((t.typeLetterAliases ?? []).map((a) => [a, t] as [string, IalaTypeSpec]))),
+);
 
 function ialaClass(spec: IalaTypeSpec): IdentifierStatic {
   class IalaTypeIdentifier extends IalaIdentifier {
     static polymorphicName = `pubid:iala:${spec.kind}`;
     static urnGenerator = IalaUrnGenerator;
     static typeLetter = spec.letter;
+    static typeLetterAliases: string[] = spec.typeLetterAliases ?? [];
+  }
+  if (spec.typeLetterAliases !== undefined) {
+    // The legacy A-session letter renders for dashed numbers (A12-01);
+    // dotted numbers carry the canonical GA letter. Derived from the
+    // number shape, no extra attribute is stored — mirrors the Ruby
+    // GeneralAssembly#type_letter override (pubid#734).
+    IalaTypeIdentifier.prototype.typeLetter = function (this: IalaIdentifier) {
+      return (this.number ?? "").includes("-")
+        ? spec.typeLetterAliases![0]
+        : (this.constructor as unknown as { typeLetter: string }).typeLetter;
+    };
   }
   registerType(IalaTypeIdentifier as unknown as IdentifierStatic);
   return IalaTypeIdentifier as unknown as IdentifierStatic;
 }
 
 const KIND_CLASSES = new Map<string, IdentifierStatic>(
-  IALA_TYPES.map((spec) => [spec.letter, ialaClass(spec)]),
+  IALA_TYPES.flatMap((spec) => {
+    const klass = ialaClass(spec);
+    return [[spec.letter, klass] as [string, IdentifierStatic]]
+      .concat((spec.typeLetterAliases ?? []).map((a) => [a, klass] as [string, IdentifierStatic]));
+  }),
 );
 
 export class IalaAnnex extends IalaIdentifier {

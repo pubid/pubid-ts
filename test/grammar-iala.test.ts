@@ -4,8 +4,11 @@ import { loadCorpus } from "../src/corpus/loader.js";
 import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
+import type { Identifier } from "../src/conformance/implementation.js";
 
-// iala — 702 corpus rows across 11 types, including the MRN URN aliases.
+// iala — 702 corpus rows across the S/R/G/M/C/GA/L series plus Annex
+// wrappers (the legacy A session rows are GA rows, pubid#734),
+// including the MRN URN aliases.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -56,6 +59,64 @@ test("iala parses open-ended beyond the corpus", () => {
     impl.parse("urn:mrn:iala:pub:r1026:ed.1.0").toHuman(),
     "IALA R1026 Ed 1.0",
   );
+});
+
+// pubid#734: the legacy A session letter is GeneralAssembly's form, not
+// Advice — the A letter routes to the GA class, and the letter form is
+// derived from the number shape (dashed A-session numbers vs dotted GA
+// numbers), so no extra attribute is stored and the canonical hash is
+// the GA one. The input letter round-trips verbatim through toHuman and
+// the MRN URN; the pubid-scheme URN carries the type token "ga" for
+// both letter forms.
+test("iala routes the legacy A session letter to GeneralAssembly", () => {
+  const impl = grammarImplementation("iala")!;
+  // The 11 legacy corpus rows: dashed A-session numbers are GA rows.
+  assert.deepEqual(impl.parse("IALA A12-01").toHash(), {
+    _type: "pubid:iala:general-assembly",
+    number: "12-01",
+  });
+  assert.equal(impl.parse("IALA A12-01").toHuman(), "IALA A12-01");
+  assert.equal(impl.parse("IALA A12-01").toUrn(), "urn:mrn:iala:pub:a12-01");
+  assert.equal(impl.parse("IALA A13-04 (E)").toHuman(), "IALA A13-04 (E)");
+  assert.deepEqual(impl.parse("IALA A13-04 (E)").toHash(), {
+    _type: "pubid:iala:general-assembly",
+    number: "13-04",
+    language: "E",
+  });
+  assert.equal(impl.parse("IALA A13-04 (E)").toUrn(), "urn:mrn:iala:pub:a13-04:e");
+  // The A letter inside an Annex wrapper routes its base to GA too.
+  assert.equal(impl.parse("IALA A12-01 Annex").toUrn(), "urn:mrn:iala:pub:a12-01:annex");
+  // The MRN URN round-trips back through the same A form.
+  assert.equal(impl.parse("urn:mrn:iala:pub:a12-01").toHuman(), "IALA A12-01");
+  // Dotted numbers carry the canonical GA letter — unchanged behavior.
+  assert.equal(impl.parse("IALA GA01.01").toHuman(), "IALA GA01.01");
+  assert.deepEqual(impl.parse("IALA GA01.01").toHash(), {
+    _type: "pubid:iala:general-assembly",
+    number: "01.01",
+  });
+  // The pubid-scheme URN keeps the type token "ga" for both letter
+  // forms (the schema has no letter_form placement; the retired
+  // pubid:iala:advice type no longer resolves).
+  assert.equal(
+    (impl.parse("IALA A12-01") as unknown as { toPubidUrn(): string }).toPubidUrn(),
+    "urn:pubid:iala:ga:12-01",
+  );
+  assert.equal(
+    (impl.parse("IALA GA01.01") as unknown as { toPubidUrn(): string }).toPubidUrn(),
+    "urn:pubid:iala:ga:01.01",
+  );
+  // Polymorphic round-trip: the A form survives fromHash (derived from
+  // the dashed number, and an e82b5a9-shaped letter_form key is
+  // ignored — the wire form carries no letter_form).
+  const id = impl.parse("IALA A12-01");
+  const rt = (id.constructor as unknown as { fromHash(h: Record<string, unknown>): Identifier })
+    .fromHash(id.toHash());
+  assert.equal(rt.toHuman(), "IALA A12-01");
+  assert.deepEqual(rt.toHash(), id.toHash());
+  const keyed = (id.constructor as unknown as { fromHash(h: Record<string, unknown>): Identifier })
+    .fromHash({ _type: "pubid:iala:general-assembly", number: "12-01", letter_form: "A" });
+  assert.deepEqual(keyed.toHash(), id.toHash());
+  assert.equal(keyed.toHuman(), "IALA A12-01");
 });
 
 test("iala rejects non-identifiers", () => {

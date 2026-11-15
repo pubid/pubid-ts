@@ -15,7 +15,6 @@ export const ialaSchema = define("iala", (s) => {
   s.atom("annex_form", "annexform");
   s.atom("letter", "letter");
 
-  s.type("pubid:iala:advice", "advice");
   s.type("pubid:iala:annex", "annex");
   s.type("pubid:iala:general-assembly", "ga");
   s.type("pubid:iala:guideline", "g");
