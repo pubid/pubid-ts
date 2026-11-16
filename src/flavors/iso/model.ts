@@ -827,7 +827,10 @@ export class IsoTcDocument extends IsoIdentifier {
     { wire: "wg_number", to: "wg_number" },
     { wire: "number", to: "number" },
     ...dateTrio(),
-    { wire: "publisher", to: "publisher" },
+    // The gem's inherited mapping + default-drop semantics: the ISO
+    // publisher stays off the wire, a non-ISO publisher emits ("IEC/TC
+    // 10 N 5" keeps publisher: "IEC").
+    ...publisherMappings(),
   );
   static urnGenerator = IsoUrnGenerator;
 
@@ -838,6 +841,18 @@ export class IsoTcDocument extends IsoIdentifier {
   declare readonly sc_number: string | undefined;
   declare readonly wg_type: string | undefined;
   declare readonly wg_number: string | undefined;
+
+  constructor(attrs: Record<string, unknown> = {}) {
+    super(attrs);
+    // The gem materializes the publisher default on every construction
+    // path (parse, from_hash, the bare-TC route): a TC document always
+    // carries a publisher (ISO unless the face names another), so
+    // from_hash of a default-published row renders the full face.
+    const self = this as unknown as Record<string, unknown>;
+    if (self["publisher"] === undefined) {
+      self["publisher"] = new IsoPublisher({});
+    }
+  }
 
   render(): string {
     let result = this.publisher === undefined ? "" : this.publisher.render();

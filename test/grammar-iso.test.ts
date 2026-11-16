@@ -75,6 +75,31 @@ test("iso parses open-ended beyond the corpus", () => {
   );
 });
 
+test("tc documents keep the publisher default off the wire (pubid#749)", () => {
+  const impl = grammarImplementation("iso")!;
+  // The ruby canonical hash omits the defaulted ISO publisher.
+  assert.deepEqual(impl.parse("ISO/TC 184 N 100").toHash(), {
+    _type: "pubid:iso:tc-document",
+    number: "100",
+    tc_type: "TC",
+    tc_number: "184",
+  });
+  // The space-joined face renders the canonical slash join (the #118
+  // tc_join capture stays a decode, never a spelling).
+  assert.equal(impl.parse("ISO TC 46 N 3064").toHuman(), "ISO/TC 46 N 3064");
+  // A non-ISO publisher emits.
+  assert.deepEqual(impl.parse("IEC/TC 10 N 5").toHash(), {
+    _type: "pubid:iso:tc-document",
+    number: "5",
+    publisher: "IEC",
+    tc_type: "TC",
+    tc_number: "10",
+  });
+  // from_hash of a default-published row renders the full face.
+  const id = impl.parse("ISO/JTC 1 N 456");
+  assert.equal(id.fromHash(id.toHash()).toHuman(), "ISO/JTC 1 N 456");
+});
+
 test("iso rejects non-identifiers", () => {
   const impl = grammarImplementation("iso")!;
   assert.throws(() => impl.parse("ISO"));
