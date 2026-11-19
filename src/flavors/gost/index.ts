@@ -41,10 +41,10 @@ const NUMBER_YEAR_SPLIT = /^(.+?)\s*[-—–]\s*(\d{2}|\d{4})$/;
 // flavor's identifier — that is what routes the joint "ISO/IEC …"
 // adoptions to the ISO flavor ahead of IEC.
 const FOREIGN_FALLBACK_ORDER = [
-  "tgpp", "ansi", "astm", "bipm",
+  "tgpp", "ansi", "arxiv", "astm", "bipm",
   "bsi",
   "calconnect", "ccsds", "cen_cenelec", "cie", "doi", "easc", "ecma",
-  "etsi", "gb", "iala", "iana", "idf", "iec", "ieee", "ietf", "iho",
+  "etsi", "eu", "gb", "iala", "iana", "idf", "iec", "ieee", "ietf", "iho",
   "isbn", "iso", "itu", "jcgm", "jis", "nist", "oasis", "ogc", "oiml",
   "omg", "plateau", "un", "w3c", "xsf",
 ];

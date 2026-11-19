@@ -117,7 +117,10 @@ test("the worker entry's import graph is worker-safe", () => {
 // pubid#734: the zero-instance Advice type retired — pubid:iala:advice
 // leaves both the schema table and the class map (the A letter routes
 // to general-assembly), -1.
-const REGISTERED_TYPES = 313;
+// pubid#752/#753: the eu leaves (regulation/directive/decision) and the
+// arxiv pair (eprint + the base identifier) landed their classes, so
+// their schema declarations fully resolve — +5.
+const REGISTERED_TYPES = 318;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;

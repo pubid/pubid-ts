@@ -7,6 +7,7 @@
 
 import type { FlavorSchema } from "../schema.js";
 import { adobeSchema } from "./adobe.js";
+import { arxivSchema } from "./arxiv.js";
 import { amcaSchema } from "./amca.js";
 import { ansiSchema } from "./ansi.js";
 import { apiSchema } from "./api.js";
@@ -28,6 +29,7 @@ import { eascSchema } from "./easc.js";
 import { ecmaSchema } from "./ecma.js";
 import { etsiSchema } from "./etsi.js";
 import { etsiPfsSchema } from "./etsi_pfs.js";
+import { euSchema } from "./eu.js";
 import { evsSchema } from "./evs.js";
 import { gbSchema } from "./gb.js";
 import { gostSchema } from "./gost.js";
@@ -58,6 +60,7 @@ import { xsfSchema } from "./xsf.js";
 /** All flavor schemas, in the ruby registry order (alphabetical by module). */
 export const PUBID_URN_SCHEMAS: FlavorSchema[] = [
   adobeSchema,
+  arxivSchema,
   amcaSchema,
   ansiSchema,
   apiSchema,
@@ -79,6 +82,7 @@ export const PUBID_URN_SCHEMAS: FlavorSchema[] = [
   ecmaSchema,
   etsiSchema,
   etsiPfsSchema,
+  euSchema,
   evsSchema,
   gbSchema,
   gostSchema,

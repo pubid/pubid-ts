@@ -129,6 +129,15 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
   const strict = new Set(ctor.subsetStrict ?? []);
   const ignored = new Set([
     ...(ctor.subsetIgnoredAttributes ?? []),
+    // Ruby SubsetMatch#subset_skipped_attributes also skips every
+    // `equality_ignored` attribute ("skipped, as == and hash skip it") —
+    // jis's language_before_year, eu's number_first (the print ORDER of
+    // the two numbers is spelling, so "EU Decision 1082/2013" ===
+    // 32013D1082).
+    ...Object.entries(ctor.attributes)
+      .filter(([, spec]) =>
+        (spec as { equalityIgnored?: boolean } | undefined)?.equalityIgnored === true)
+      .map(([name]) => name),
     ...((reference as unknown as { subsetAllPartsWildcard?: () => boolean }).subsetAllPartsWildcard?.()
       ? ALL_PARTS_ATTRIBUTES
       : []),
