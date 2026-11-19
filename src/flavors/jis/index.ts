@@ -158,6 +158,15 @@ const KIND_PREFIXES: Record<string, string | undefined> = {
 };
 
 abstract class JisIdentifier extends BaseIdentifier {
+  // The bare SYMBOL face (`symbol: ""`, rendered "…SYMBOL") and the
+  // no-symbol face (`symbol` undefined) are distinct states of a
+  // two-valued attribute — the match is absolute equality, blank-vs-blank
+  // included (the gem's subset_attribute_match? override, pubid main
+  // ef8f041c / 2.0.45). Declared exact-blank rather than strict: the
+  // strict nil≈empty shortcut is exactly the tolerance this law rejects,
+  // and the gem likewise routes :symbol before both strict and value
+  // matching.
+  static subsetExactBlanks = ["symbol"];
   declare readonly series: string | undefined;
   declare readonly number: number | string | undefined;
   declare readonly parts: string[] | undefined;
