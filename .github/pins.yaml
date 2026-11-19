@@ -10,15 +10,16 @@
 # 0448-0473 ids); iala stays 702 cases, 99,793 total) - the tree the
 # vendored corpus was regenerated from.
 testsuite_ref: adecf10cef5c62b99222e459c4ccccdaedb13774
-# pubid-grammar main (445c9985731053ffd35724daf40e4dc67f0f4b51): the
-# fleet re-sealed at parsanol 1.5.1.0 (#129 - every artifact re-baked at
-# the CI-pinned compiler; checksum/compiler_version/validated stamps
-# move, zero behavior deltas per the #129 probe) with the csv and ini
-# flavors joining (#128 - RFC 4180 and the classic INI denominator).
-# The pin range also rides the jis supplement year-optional grammar
-# change (pubid#745 - jis re-baked, +2 example corpus rows) and the
-# bsi_pfs (pubid#706 section 4) and json (RFC 8259) flavors; the other
-# 51 flavors' trees are byte-identical - the artifacts vendor/parg was
-# mirrored from, byte-checked by the "Vendored artifacts match the
-# pinned grammar ref" gate.
-grammar_ref: 445c9985731053ffd35724daf40e4dc67f0f4b51
+# pubid-grammar main (a7e2363f29dfcb6867b92c3736138ed95e6c9aa8): the eu
+# and arxiv flavors join (pubid#752/#753 - the EU legal-act grammar,
+# four input forms, and the arXiv e-print grammar, new and old forms -
+# the two corpora the cross-engine gate grew by, 731 agree / 0 differ
+# over 60 fresh artifacts). The pin range also carries
+# the bsi absorption features (the adopted slot, the typed trio and the
+# glued edition face), the lua-subset and toml flavors (rs#531), the
+# json resync declaration (rs#539 layer 1) and the csv/ini re-seal at
+# the CI toolchain (ruby 3.4.8 + parsanol 1.5.1.0); the other flavors'
+# trees are byte-identical - the artifacts vendor/parg was mirrored
+# from, byte-checked by the "Vendored artifacts match the pinned
+# grammar ref" gate.
+grammar_ref: a7e2363f29dfcb6867b92c3736138ed95e6c9aa8

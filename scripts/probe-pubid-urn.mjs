@@ -98,6 +98,31 @@ const failureLines = [];
 const table = [];
 const seen = new Map(); // urn -> canonical hash key (injectivity, global)
 
+/**
+ * The eu + arxiv flavor rows (pubid#752/#753): the flavors carry no
+ * testsuite corpus yet, so the probe covers them from the ruby parity
+ * fixture their flavor tests read
+ * (test/fixtures/eu-arxiv-parity.json.gz — scripts/eu-arxiv-parity-ruby-probe.rb
+ * against the gem at 2.0.44). Each row runs the same (a)-(f) checks, and
+ * (a) doubles as the byte-parity gate: the fixture records the ruby
+ * to_pubid_urn, so generate(hash) must equal it row for row.
+ */
+const flavorParityPath = resolve("test/fixtures/eu-arxiv-parity.json.gz");
+const flavorParity = existsSync(flavorParityPath)
+  ? JSON.parse(gunzipSync(readFileSync(flavorParityPath)).toString("utf8"))
+  : undefined;
+
+function flavorParityRows(flavor) {
+  if (flavorParity === undefined) return [];
+  return (flavorParity[flavor]?.pass ?? [])
+    .filter((row) => row.rejects !== true && row.hash !== undefined)
+    .map((row) => ({
+      id: `${flavor}:${row.input}`,
+      identifier: row.hash,
+      rubyUrn: row.pubid_urn,
+    }));
+}
+
 for (const entry of readdirSync(testsDir).sort()) {
   const dir = join(testsDir, entry);
   if (!statSync(dir).isDirectory()) continue;
@@ -205,6 +230,73 @@ for (const entry of readdirSync(testsDir).sort()) {
         ? `  /  ${flavorFailures.length} FAIL`
         : "") +
       (parityRows !== undefined ? `  (parity ${parityChecked})` : "") +
+      (rows.length === 0 ? "  (no identifier rows)" : ""),
+  );
+}
+
+// The pre-testsuite flavors (see flavorParityRows above): the same
+// checks, plus the fixture's recorded ruby urn as the (a) expectation.
+for (const flavor of ["eu", "arxiv"]) {
+  const rows = flavorParityRows(flavor);
+  let ok = 0;
+  const flavorFailures = [];
+  let parityChecked = 0;
+  for (const row of rows) {
+    const { id } = row;
+    const hash = row.identifier;
+    try {
+      const urn = generate(hash);
+      if (!pathSafe(urn)) {
+        flavorFailures.push(`${id}: not path-safe: ${urn}`);
+      } else {
+        const key = JSON.stringify(canon(hash));
+        const prior = seen.get(urn);
+        if (prior !== undefined && prior !== key) {
+          flavorFailures.push(`${id}: collision on ${urn}`);
+        } else {
+          seen.set(urn, key);
+        }
+      }
+      if (row.rubyUrn !== undefined && urn !== row.rubyUrn) {
+        flavorFailures.push(`${id}: parity ${urn} != ruby ${row.rubyUrn}`);
+      } else {
+        parityChecked += 1;
+      }
+      const back = new Decoder(urn.slice(PREFIX.length)).toIdentifierHash();
+      if (!same(back, hash)) {
+        flavorFailures.push(
+          `${id}: ${urn} -> ${JSON.stringify(canon(back)).slice(0, 160)}`,
+        );
+      } else if (!SLOW) {
+        const rebuilt = parse(urn);
+        const reUrn = generate(rebuilt.toHash());
+        if (reUrn !== urn) {
+          flavorFailures.push(`${id}: non-canonical rebuild ${reUrn}`);
+        } else {
+          const slug = toSlug(urn);
+          const slugId = fromSlug(slug);
+          if (generate(slugId.toHash()) !== urn) {
+            flavorFailures.push(`${id}: slug round-trip broke on ${slug}`);
+          } else {
+            ok += 1;
+          }
+        }
+      } else {
+        ok += 1;
+      }
+    } catch (e) {
+      flavorFailures.push(`${id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  grandOk += ok;
+  grandFail += flavorFailures.length;
+  failureLines.push(
+    ...flavorFailures.slice(0, 12).map((line) => `${flavor}: ${line}`),
+  );
+  table.push(
+    `${flavor.padEnd(12)} ${String(ok).padStart(6)} green` +
+      (flavorFailures.length > 0 ? `  /  ${flavorFailures.length} FAIL` : "") +
+      `  (parity ${parityChecked})` +
       (rows.length === 0 ? "  (no identifier rows)" : ""),
   );
 }

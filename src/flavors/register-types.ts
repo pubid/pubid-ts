@@ -37,6 +37,7 @@
 // Model-registrant flavors: registration lives in <flavor>/model.js.
 import "./amca/model.js";
 import "./api/model.js";
+import "./arxiv/model.js";
 import "./ashrae/model.js";
 import "./asme/model.js";
 import "./astm/model.js";
@@ -44,6 +45,7 @@ import "./bsi/model.js";
 import "./cen_cenelec/model.js";
 import "./cie/model.js";
 import "./csa/model.js";
+import "./eu/model.js";
 import "./evs/model.js";
 import "./gost/model.js";
 import "./idf/model.js";
