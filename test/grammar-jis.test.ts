@@ -4,6 +4,7 @@ import { loadCorpus } from "../src/corpus/loader.js";
 import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
+import { subsetMatch } from "../src/index.js";
 
 // jis — 10,575 corpus rows, the second-largest flavor, on the unified model.
 
@@ -139,3 +140,27 @@ test("WES TR and WES TS are types of their own", () => {
   assert.throws(() => impl.parse("TR WES 2032"));
 });
 
+
+test("the bare SYMBOL face and no symbol match exactly, not by subset", () => {
+  const impl = grammarImplementation("jis")!;
+  const plain = impl.parse("JIS Z 8211-3:2025");
+  const bare = plain.fromHash({ ...plain.toHash(), symbol: "" });
+
+  // Distinct renders.
+  assert.equal(plain.toHuman(), "JIS Z 8211-3:2025");
+  assert.equal(bare.toHuman(), "JIS Z 8211-3:2025 SYMBOL");
+
+  // The hashes COINCIDE — a from_hash-dropped empty serializes neither
+  // face differently (render_empty semantics); the distinction is the
+  // render and the match, exactly like the gem's equality spec.
+  assert.deepEqual(plain.toHash(), bare.toHash());
+
+  // The subset law is exact on the symbol attribute, both directions
+  // (the gem's subset_attribute_match? override, pubid main ef8f041c).
+  const m = (a: unknown, b: unknown) =>
+    subsetMatch(a as Parameters<typeof subsetMatch>[0], b);
+  assert.equal(m(bare, plain), false, "bare SYMBOL does not subset-match the plain face");
+  assert.equal(m(plain, bare), false, "the plain face does not subset-match bare SYMBOL");
+  assert.equal(m(bare, bare), true);
+  assert.equal(m(plain, plain), true);
+});

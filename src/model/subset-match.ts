@@ -18,7 +18,16 @@
  * - A STRICT attribute (class `subsetStrict` declaration) is exempt from the
  *   wildcards: the reference always states it, a stated collection must match
  *   in full, and nested matches run in BOTH directions with the class's own
- *   rule.
+ *   rule. A blank strict attribute still matches a blank candidate (nil≈empty,
+ *   the from_hash-dropped-empty tolerance).
+ * - An EXACT-BLANK attribute (class `subsetExactBlanks` declaration) goes
+ *   further: it compares by ABSOLUTE equality, so even blank-vs-blank must
+ *   hold the same value. The bare SYMBOL face (`symbol: ""`, rendered
+ *   "…SYMBOL") and the no-symbol face (`symbol` undefined) do not match
+ *   either way. This is the mirror of the Ruby per-flavor
+ *   `subset_attribute_match?` overrides (lib/pubid/jis/identifier.rb, pubid
+ *   main ef8f041c); strict attributes of flavors that do not opt in keep the
+ *   blank-blank shortcut.
  * - A reference with `allParts` set skips part/parts/subpart/allParts.
  * - Nested identifiers and components recurse with their own match; every
  *   other value compares with deep scalar equality.
@@ -33,6 +42,7 @@ interface SubsetMatchable {
   readonly constructor: {
     attributes: Record<string, unknown>;
     subsetStrict?: readonly string[];
+    subsetExactBlanks?: readonly string[];
     subsetIgnoredAttributes?: readonly string[];
   };
 }
@@ -103,6 +113,19 @@ export function exactMatch(mine: unknown, theirs: unknown): boolean {
 }
 
 /**
+ * An EXACT-BLANK attribute is stated even when blank: the two faces are
+ * compared by absolute equality, blank-vs-blank included. This is the
+ * per-class mirror of the Ruby flavor's `subset_attribute_match?` override
+ * (the JIS symbol law: the bare SYMBOL face and no symbol are distinct
+ * states of a two-valued attribute — pubid main ef8f041c). `exactMatch`
+ * keeps its blank-blank shortcut for the strict attributes that rely on
+ * the from_hash-dropped-empty tolerance.
+ */
+function exactBlankMatch(mine: unknown, theirs: unknown): boolean {
+  return scalarEqual(mine, theirs);
+}
+
+/**
  * True when `candidate` holds every part that `reference` states. Both must
  * be identifiers or components of the same concrete class.
  */
@@ -113,6 +136,10 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
   const ctor = reference.constructor as unknown as {
     attributes: Record<string, unknown>;
     subsetStrict?: readonly string[];
+    /** Names compared by absolute equality, blank-vs-blank included
+     * (the per-flavor mirror of Ruby's `subset_attribute_match?`
+     * overrides). */
+    subsetExactBlanks?: readonly string[];
     subsetIgnoredAttributes?: readonly string[];
     /** Names compared by the match but kept out of the attribute table
      * (state that toHash must not emit — the typed-stage default). */
@@ -127,6 +154,7 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
     return JSON.stringify(a) === JSON.stringify(b);
   }
   const strict = new Set(ctor.subsetStrict ?? []);
+  const exactBlanks = new Set(ctor.subsetExactBlanks ?? []);
   const ignored = new Set([
     ...(ctor.subsetIgnoredAttributes ?? []),
     // Ruby SubsetMatch#subset_skipped_attributes also skips every
@@ -148,6 +176,9 @@ export function subsetMatch(reference: BaseIdentifier | Component, candidate: un
     if (ignored.has(name)) return true;
     const mine = (reference as unknown as Record<string, unknown>)[name];
     const theirs = (candidate as unknown as Record<string, unknown>)[name];
+    // Exact-blank names route before the strict rule: their blanks are
+    // distinct values, not the nil≈empty tolerance.
+    if (exactBlanks.has(name)) return exactBlankMatch(mine, theirs);
     if (strict.has(name)) return exactMatch(mine, theirs);
     return valueMatch(mine, theirs);
   });
