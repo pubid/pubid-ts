@@ -1,5 +1,65 @@
 ---
-- id: wmo.publication.0008
+- id: wmo.publication.0001
+  identifier:
+    _type: pubid:wmo:publication
+    number: '285'
+    series: GAW
+  representations:
+    human: GAW Report No. 285
+    urn: urn:mrn:wmo:pub:gaw-285
+  style: v3
+- id: wmo.publication.0002
+  identifier:
+    _type: pubid:wmo:publication
+    number: '312'
+    series: GAW
+  representations:
+    human: GAW Report No. 312
+    urn: urn:mrn:wmo:pub:gaw-312
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:gaw-312
+    style: v3
+- id: wmo.publication.0003
+  identifier:
+    _type: pubid:wmo:publication
+    number: '14'
+    series: JCOMM
+  representations:
+    human: JCOMM Technical Report No. 14
+    urn: urn:mrn:wmo:pub:jcomm-tr-14
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:jcomm-tr-14
+    style: v3
+- id: wmo.publication.0004
+  identifier:
+    _type: pubid:wmo:publication
+    number: '24'
+    series: JCOMM
+  representations:
+    human: JCOMM Technical Report No. 24
+    urn: urn:mrn:wmo:pub:jcomm-tr-24
+  style: v3
+- id: wmo.publication.0005
+  identifier:
+    _type: pubid:wmo:publication
+    number: '47'
+    series: JCOMM
+  representations:
+    human: JCOMM Technical Report No. 47
+    urn: urn:mrn:wmo:pub:jcomm-tr-47
+  style: v3
+- id: wmo.publication.0014
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1160'
+    edition: '2023'
+  representations:
+    human: WMO-No. 1160, 2023 edition
+    urn: urn:mrn:wmo:pub:wmo-1160:ed2023
+  style: v3
+- id: wmo.publication.0015
   identifier:
     _type: pubid:wmo:publication
     number: '1364'
@@ -10,7 +70,29 @@
   non_normalized_aliases:
   - spelling: urn:mrn:wmo:pub:wmo-1364
     style: v3
-- id: wmo.publication.0009
+- id: wmo.publication.0016
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1364'
+    edition: '2023'
+  representations:
+    human: WMO-No. 1364, 2023 edition
+    urn: urn:mrn:wmo:pub:wmo-1364:ed2023
+  style: v3
+- id: wmo.publication.0017
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1364'
+    edition: '2023'
+    updated_in: '2025'
+  representations:
+    human: WMO-No. 1364, 2023 edition, updated in 2025
+    urn: urn:mrn:wmo:pub:wmo-1364:ed2023:updated-2025
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-1364:ed2023:updated-2025
+    style: v3
+- id: wmo.publication.0018
   identifier:
     _type: pubid:wmo:publication
     number: '1364'
@@ -26,7 +108,49 @@
     style: v3
   - spelling: urn:mrn:wmo:pub:wmo-1364:ed2025
     style: v3
-- id: wmo.publication.0010
+- id: wmo.publication.0019
+  identifier:
+    _type: pubid:wmo:publication
+    number: '306'
+  representations:
+    human: WMO-No. 306
+    urn: urn:mrn:wmo:pub:wmo-306
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-306
+    style: v3
+- id: wmo.publication.0020
+  identifier:
+    _type: pubid:wmo:publication
+    number: '306'
+    volume: I.1
+  representations:
+    human: WMO-No. 306, Volume I.1
+    urn: urn:mrn:wmo:pub:wmo-306:vol-i.1
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-306:vol-i.1
+    style: v3
+- id: wmo.publication.0021
+  identifier:
+    _type: pubid:wmo:publication
+    number: '306'
+    edition: '2020'
+    volume: I.1
+  representations:
+    human: WMO-No. 306, Volume I.1, 2020 edition
+    urn: urn:mrn:wmo:pub:wmo-306:vol-i.1:ed2020
+  style: v3
+- id: wmo.publication.0022
+  identifier:
+    _type: pubid:wmo:publication
+    number: '386'
+    edition: '2020'
+  representations:
+    human: WMO-No. 386, 2020 edition
+    urn: urn:mrn:wmo:pub:wmo-386:ed2020
+  style: v3
+- id: wmo.publication.0023
   identifier:
     _type: pubid:wmo:publication
     number: '49'
@@ -34,7 +158,45 @@
     human: WMO-No. 49
     urn: urn:mrn:wmo:pub:wmo-49
   style: v3
-- id: wmo.publication.0011
+- id: wmo.publication.0024
+  identifier:
+    _type: pubid:wmo:publication
+    number: '49'
+    edition: '2019'
+  representations:
+    human: WMO-No. 49, 2019 edition
+    urn: urn:mrn:wmo:pub:wmo-49:ed2019
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-49:ed2019
+    style: v3
+- id: wmo.publication.0025
+  identifier:
+    _type: pubid:wmo:publication
+    number: '49'
+    volume: III
+  representations:
+    human: WMO-No. 49, Volume III
+    urn: urn:mrn:wmo:pub:wmo-49:vol-iii
+  style: v3
+- id: wmo.publication.0026
+  identifier:
+    _type: pubid:wmo:publication
+    number: '574'
+  representations:
+    human: WMO-No. 574
+    urn: urn:mrn:wmo:pub:wmo-574
+  style: v3
+- id: wmo.publication.0027
+  identifier:
+    _type: pubid:wmo:publication
+    number: '574'
+    edition: '2024'
+  representations:
+    human: WMO-No. 574, 2024 edition
+    urn: urn:mrn:wmo:pub:wmo-574:ed2024
+  style: v3
+- id: wmo.publication.0028
   identifier:
     _type: pubid:wmo:publication
     number: '8'
@@ -42,3 +204,121 @@
     human: WMO-No. 8
     urn: urn:mrn:wmo:pub:wmo-8
   style: v3
+- id: wmo.publication.0029
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    edition: 2021/2018
+  representations:
+    human: WMO-No. 8, 2021/2018 edition
+    urn: urn:mrn:wmo:pub:wmo-8:ed2021-2018
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-8:ed2021-2018
+    style: v3
+- id: wmo.publication.0030
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    edition: '2026'
+    edition_status: Provisional
+  representations:
+    human: WMO-No. 8, Provisional 2026 edition
+    urn: urn:mrn:wmo:pub:wmo-8:status-provisional:ed2026
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-8:status-provisional:ed2026
+    style: v3
+- id: wmo.publication.0031
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    volume: I
+  representations:
+    human: WMO-No. 8, Volume I
+    urn: urn:mrn:wmo:pub:wmo-8:vol-i
+  style: v3
+- id: wmo.publication.0032
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    volume: II
+  representations:
+    human: WMO-No. 8, Volume II
+    urn: urn:mrn:wmo:pub:wmo-8:vol-ii
+  style: v3
+- id: wmo.publication.0033
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    volume: III
+  representations:
+    human: WMO-No. 8, Volume III
+    urn: urn:mrn:wmo:pub:wmo-8:vol-iii
+  style: v3
+- id: wmo.publication.0034
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    volume: IV
+  representations:
+    human: WMO-No. 8, Volume IV
+    urn: urn:mrn:wmo:pub:wmo-8:vol-iv
+  style: v3
+- id: wmo.publication.0035
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+    volume: V
+  representations:
+    human: WMO-No. 8, Volume V
+    urn: urn:mrn:wmo:pub:wmo-8:vol-v
+  style: v3
+- id: wmo.publication.0036
+  identifier:
+    _type: pubid:wmo:publication
+    number: '9'
+    volume: D
+  representations:
+    human: WMO-No. 9, Volume D
+    urn: urn:mrn:wmo:pub:wmo-9:vol-d
+  style: v3
+- id: wmo.publication.0037
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1086'
+    series: TD
+  representations:
+    human: WMO/TD-No. 1086
+    urn: urn:mrn:wmo:pub:wmo-td-1086
+  style: v3
+- id: wmo.publication.0038
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1215'
+    series: TD
+  representations:
+    human: WMO/TD-No. 1215
+    urn: urn:mrn:wmo:pub:wmo-td-1215
+  style: v3
+- id: wmo.publication.0039
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1466'
+    series: TD
+  representations:
+    human: WMO/TD-No. 1466
+    urn: urn:mrn:wmo:pub:wmo-td-1466
+  style: v3
+- id: wmo.publication.0040
+  identifier:
+    _type: pubid:wmo:publication
+    number: '196'
+    series: TD
+  representations:
+    human: WMO/TD-No. 196
+    urn: urn:mrn:wmo:pub:wmo-td-196
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-td-196
+    style: v3

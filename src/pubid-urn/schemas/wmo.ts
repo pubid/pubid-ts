@@ -10,7 +10,11 @@
 import { define } from "../index.js";
 
 export const wmoSchema = define("wmo", (s) => {
+  s.atom("series", "series");
+  s.atom("volume", "vol");
   s.atom("edition", "ed");
+  s.atom("edition_status", "status");
+  s.atom("updated_in", "updated");
   s.atom("annex_form", "annexform");
   s.atom("letter", "letter");
 

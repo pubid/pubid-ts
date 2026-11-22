@@ -5,6 +5,24 @@
   to: WMO-No. 1364, 2025 edition
 - from: WMO-No. 1364:ed2025
   to: WMO-No. 1364, 2025 edition
+- from: urn:mrn:wmo:pub:wmo-306
+  to: WMO-No. 306
+- from: urn:mrn:wmo:pub:wmo-49:ed2019
+  to: WMO-No. 49, 2019 edition
+- from: urn:mrn:wmo:pub:wmo-td-196
+  to: WMO/TD-No. 196
+- from: urn:mrn:wmo:pub:jcomm-tr-14
+  to: JCOMM Technical Report No. 14
+- from: urn:mrn:wmo:pub:gaw-312
+  to: GAW Report No. 312
+- from: urn:mrn:wmo:pub:wmo-306:vol-i.1
+  to: WMO-No. 306, Volume I.1
+- from: urn:mrn:wmo:pub:wmo-8:ed2021-2018
+  to: WMO-No. 8, 2021/2018 edition
+- from: urn:mrn:wmo:pub:wmo-1364:ed2023:updated-2025
+  to: WMO-No. 1364, 2023 edition, updated in 2025
+- from: urn:mrn:wmo:pub:wmo-8:status-provisional:ed2026
+  to: WMO-No. 8, Provisional 2026 edition
 - from: urn:mrn:wmo:pub:wmo-1364
   to: WMO-No. 1364
 - from: urn:mrn:wmo:pub:wmo-1364:ed2025

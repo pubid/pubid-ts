@@ -12,7 +12,7 @@
     error:
       code: unclassified
   notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
-    expected one of [[\x30-\x39]] at line 1 char 15.'
+    expected one of [''Volume'', [\x30-\x39], ''Provisional''] at line 1 char 15.'
 - id: wmo.debt.432222a0348b
   input: WMO-No. 1364:ed25
   expect:
@@ -26,14 +26,16 @@
     error:
       code: unclassified
   notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
-    expected one of [''S-'', ''WMO-No.''] at line 1 char 1.'
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
 - id: wmo.debt.fb1a1a9f3519
   input: S411
   expect:
     error:
       code: unclassified
   notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
-    expected one of [''S-'', ''WMO-No.''] at line 1 char 1.'
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
 - id: wmo.debt.9ffb34829aef
   input: S-411 1234
   expect:
@@ -48,3 +50,43 @@
       code: unclassified
   notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
     expected one of [[\x30-\x39]] at line 1 char 9.'
+- id: wmo.debt.2dee6713a159
+  input: TD-No. 1265
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
+- id: wmo.debt.160ed5bc2a45
+  input: IMO/TD-No. 259
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
+- id: wmo.debt.eecc4780b54e
+  input: TD No. 196
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
+- id: wmo.debt.ef7fa8fb6dd0
+  input: WMO/GAW Report No. 285
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'
+- id: wmo.debt.642ff717d1b6
+  input: WMO/TD - No. 1469
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.'', ''WMO/TD-No.'', ''JCOMM Technical Report
+    No.'', ''GAW Report No.''] at line 1 char 1.'

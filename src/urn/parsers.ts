@@ -703,13 +703,18 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/wmo/urn_parser.rb — the MRN segments: a "wmo-<digits>" code
-  // rebuilds the compact year edition (the text parser normalizes to the
-  // comma face); an "s-<digits>" code takes a caseless annex segment (at
-  // most one, rebuilt as the attested "Annex" face) then the dotted
-  // edition. Every non-annex segment must be "ed" + the shape the code
-  // declares (a year for a publication, dotted for a standard) — per the
-  // ISO urn_parser strictness.
+  // lib/pubid/wmo/urn_parser.rb — the MRN segments of the widening: the
+  // code resolves the series slug ("wmo-td-"/"wmo-"/"jcomm-tr-"/"gaw-"
+  // publications, longest slug first; "s-" the S-100 specs). A
+  // publication takes the caseless volume ("vol-i.1"), status
+  // ("status-provisional"), updated-in ("updated-2025") and one
+  // "ed<year>" (the year pair hyphenated, "ed2021-2018") segments; an
+  // "s-" code takes a caseless annex segment (at most one, rebuilt as
+  // the attested "Annex" face) then the dotted edition. Every other
+  // segment must be "ed" + the shape the code declares (a year for a
+  // publication, dotted for a standard) — per the ISO urn_parser
+  // strictness. The rebuild walks the comma-optional faces and the text
+  // parser normalizes (one construction path).
   wmo: {
     prefix: "urn:mrn:wmo:pub:",
     reconstruct(body, parse) {
@@ -729,17 +734,67 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
         }
         return edition;
       };
-      const publication = /^wmo-(\d+)$/i.exec(code);
-      if (publication !== null) {
+      // Longest slug first: "wmo-td-" also starts with "wmo-". The face
+      // is the series key's citation face (the gem reads
+      // Identifier.series_config(series)[:face]).
+      const SERIES_CODES: [slug: string, series: string | undefined, face: string][] = [
+        ["wmo-td-", "TD", "WMO/TD-No."],
+        ["wmo-", undefined, "WMO-No."],
+        ["jcomm-tr-", "JCOMM", "JCOMM Technical Report No."],
+        ["gaw-", "GAW", "GAW Report No."],
+      ];
+      const publicationCode = SERIES_CODES
+        .map(([slug, series, face]) => ({
+          series,
+          face,
+          match: new RegExp(`^${slug}(\\d+)$`, "i").exec(code),
+        }))
+        .find(({ match }) => match !== null);
+      if (publicationCode !== undefined) {
+        let volume: string | undefined;
+        let status: string | undefined;
         let edition: string | undefined;
+        let updatedIn: string | undefined;
         for (const seg of segments) {
+          const vol = /^vol-([a-z]+(?:\.\d+)*)$/i.exec(seg);
+          if (vol !== null) {
+            if (volume !== undefined) {
+              throw new Error(`Invalid WMO URN segment (duplicate volume): ${JSON.stringify(seg)}`);
+            }
+            volume = vol[1]!.toUpperCase();
+            continue;
+          }
+          const stat = /^status-([a-z]+)$/i.exec(seg);
+          if (stat !== null) {
+            if (status !== undefined) {
+              throw new Error(`Invalid WMO URN segment (duplicate status): ${JSON.stringify(seg)}`);
+            }
+            status = stat[1]!.charAt(0).toUpperCase() + stat[1]!.slice(1);
+            continue;
+          }
+          const updated = /^updated-(\d{4})$/i.exec(seg);
+          if (updated !== null) {
+            if (updatedIn !== undefined) {
+              throw new Error(`Invalid WMO URN segment (duplicate updated): ${JSON.stringify(seg)}`);
+            }
+            updatedIn = updated[1];
+            continue;
+          }
           if (edition !== undefined) {
             throw new Error(`Invalid WMO URN segment (duplicate edition): ${JSON.stringify(seg)}`);
           }
-          edition = editionValue(seg, /^\d{4}$/);
+          // The year pair keeps its slash out of the NSS as a hyphen;
+          // the rebuild restores it ("ed2021-2018" -> "2021/2018").
+          edition = editionValue(seg, /^\d{4}(?:-\d{4})?$/).replaceAll("-", "/");
         }
-        let text = `WMO-No. ${publication[1]}`;
-        if (edition !== undefined) text += `:ed${edition}`;
+        let text = `${publicationCode.face} ${publicationCode.match![1]}`;
+        if (volume !== undefined) text += ` Volume ${volume}`;
+        if (edition !== undefined) {
+          text += status !== undefined
+            ? `, ${status} ${edition} edition`
+            : `, ${edition} edition`;
+        }
+        if (updatedIn !== undefined) text += `, updated in ${updatedIn}`;
         return parse(text);
       }
       const standard = /^s-(\d+)$/i.exec(code);

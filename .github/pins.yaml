@@ -1,35 +1,36 @@
-# pubid-testsuite (0c9ddd7, the corpus rounds #115/#117/#118/#119 cut by
-# the one-command round:freeze tooling of #114): the iso #749 consumption
-# round at pubid iso/118-consumption (the 7 new tc_document rows plus the
-# rawCopy twin mirror leg re-keying the IS/IWA/PAS rows); the eu, itu and
-# arxiv rounds at pubid 2.0.46 (5d5fc470) - eu grows the ELI
-# implemented/delegated-act alias rows (dec_impl/dir_del/reg_impl/reg_del
-# spelling the same act as its plain ELI; the TS port strips the subtype
-# before the grammar, as the gem does), itu gains the ITU-R Resolution
-# rows (relaton#402's R-Resolution form: number + revision, optional
-# year) and arxiv rides the brand-new-flavor round support with its debt
-# ledger; the ansi re-encode (#118, at pubid 0f7ba38b) re-keys the 170
-# trailing -YYYY rows from the part to year + date_separator - the TS
-# engine already passes them strictly, so the 170 pending markers unmark
-# with this move (mirroring the Ruby unmark, pubid#767); and the wmo
-# flavor joins at #119 (the 11 WMO-No. publication / S-100 rows frozen at
-# pubid 0f7ba38b) - 46 flavors, 99,832 cases - the tree the vendored
+# pubid-testsuite (af9068b, the wmo round:freeze cut by the one-command
+# round:freeze tooling of #114): the wmo widening round at pubid
+# 7ac315d2 (2.0.49) - the WMO-No. publication series grows the volume
+# face ("WMO-No. 8, Volume I" through V, the dotted-roman sub-volume
+# "WMO-No. 306, Volume I.1", the letter volume "WMO-No. 9, Volume D"),
+# the compound editions (the year pair "WMO-No. 8, 2021/2018 edition"
+# riding one edition string, the status-qualified "WMO-No. 8,
+# Provisional 2026 edition", the updated-in tail "WMO-No. 1364, 2023
+# edition, updated in 2025") and the new series heads (WMO/TD-No.,
+# JCOMM Technical Report No., GAW Report No. - the prefix law: every
+# head names its publisher, so the bare "TD-No.", the spaced cover
+# "WMO/TD - No.", the misattributed "IMO/TD-No." and the third-party
+# "WMO/GAW Report No." spellings all reject); the wmo round 11 -> 40
+# cases, 9 -> 18 aliases (the MRN slug discriminators: wmo-td-196,
+# jcomm-tr-14, gaw-312, the caseless vol-i/status-provisional/updated
+# segments, the hyphenated ed2021-2018 pair), 7 -> 12 negatives,
+# 7 -> 12 debt - 46 flavors, 99,896 cases - the tree the vendored
 # corpus was regenerated from.
-testsuite_ref: 0c9ddd7fab0dc1386f77ca121150998a3ca28320
-# pubid-grammar main (6b606937e7eb32ccdd1356653c8d33759781907b): the ansi
-# dash-form artifact carry (relaton#45 - the in-number dash year, the
-# revision capture and the number_separator capture mirrored verbatim
-# from the gem's data/parg/ansi.json, the artifact re-baked at the fleet
-# pin and the contracts regenerated; grammar#141) - the artifact the ansi
-# port parses through. The pin range also carries the wmo flavor (the
-# WMO-No. publications and the WMO-published S-100 specs, pubid#763 -
-# the artifact the wmo port joins on), the itu Resolution rules
-# (relaton#402 - the itu port stays hand-grammar, so its artifact change
-# is inert here), the eu and arxiv flavors (pubid#752/#753), the bsi
-# absorption features, the lua-subset and toml flavors (rs#531), the
-# json resync declaration (rs#539 layer 1) and the csv/ini re-seal at
-# the CI toolchain (ruby 3.4.8 + parsanol 1.5.1.0); the other flavors'
-# trees are byte-identical - the artifacts vendor/parg was mirrored
-# from, byte-checked by the "Vendored artifacts match the pinned
-# grammar ref" gate.
-grammar_ref: 6b606937e7eb32ccdd1356653c8d33759781907b
+testsuite_ref: af9068bccb5a740240c6e56289949a0604576833
+# pubid-grammar main (588687ee76b6d3f6b2ca82e8811ac9e7016b0d16): the
+# wmo widening artifact carry (gem#768, grammar#142 - the four new
+# captures volume/edition_status/updated_in/series_head, the compound
+# year-pair and status-qualified edition faces, the TD/JCOMM/GAW
+# series heads, the prefix-law rejects baked into the artifact's own
+# test set; the artifact re-baked at the fleet pin and the contracts
+# regenerated; grammar version 0.1.0 -> 0.2.0) - the artifact the wmo
+# port parses through. The pin range also carries the ansi dash-form
+# artifact (relaton#45), the wmo flavor (pubid#763), the itu
+# Resolution rules (relaton#402), the eu and arxiv flavors
+# (pubid#752/#753), the bsi absorption features, the lua-subset and
+# toml flavors (rs#531), the json resync declaration (rs#539 layer 1)
+# and the csv/ini re-seal at the CI toolchain (ruby 3.4.8 + parsanol
+# 1.5.1.0); the other flavors' trees are byte-identical - the
+# artifacts vendor/parg was mirrored from, byte-checked by the
+# "Vendored artifacts match the pinned grammar ref" gate.
+grammar_ref: 588687ec7de76ed1e9e679b81b200d5c5ca72baf
