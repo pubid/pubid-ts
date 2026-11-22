@@ -120,7 +120,11 @@ test("the worker entry's import graph is worker-safe", () => {
 // pubid#752/#753: the eu leaves (regulation/directive/decision) and the
 // arxiv pair (eprint + the base identifier) landed their classes, so
 // their schema declarations fully resolve — +5.
-const REGISTERED_TYPES = 318;
+// relaton#45: the ansi wave moves registration onto the model module
+// and registers the whole ANSI trio (identifier, standard,
+// american-national-standard), so the schema's ansi declarations fully
+// resolve — +2.
+const REGISTERED_TYPES = 320;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;

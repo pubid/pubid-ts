@@ -74,3 +74,119 @@
 #     the reference's capture (".uppl" -> the canonical "..uppl" face).
 # The remaining six ieee rows are `render_unreparseable` quarantines (the
 # reference's own canonical does not re-parse); they are not pends.
+
+# ansi dash-form wave (relaton#45, pubid 0f7ba38b): the 35 ieee
+# adopted_standard rows whose nested ANSI id carries a trailing dash
+# year. The round re-classifies the "-YYYY" tail as the date
+# (date_separator "-", the "ANSI C37.24-1971" spelling); these rows
+# predate the wave (the testsuite ieee round last re-froze at pubid main
+# 2026-11-15) and still record the old part-keyed hash. The REFERENCE
+# fails the same rows the same way (its conformance run over the same
+# tree prints FAIL ieee.adopted_standard.* canonical hash), so this is
+# the corpus waiting for its re-freeze, not a port gap. Unmark when the
+# ieee round re-freezes at a post-wave pubid ref.
+"ieee.adopted_standard.5516":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.5607":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.5931":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6007":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6033":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6038":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6048":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6056":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6216":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6259":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6272":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6279":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6364":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6406":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6459":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6484":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6488":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6496":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6497":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6498":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6503":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6505":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6506":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6525":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6526":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6527":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6528":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6529":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6534":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6536":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6546":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6554":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6573":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.6835":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+"ieee.adopted_standard.7464":
+  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
+  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)

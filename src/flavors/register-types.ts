@@ -36,6 +36,7 @@
 
 // Model-registrant flavors: registration lives in <flavor>/model.js.
 import "./amca/model.js";
+import "./ansi/model.js";
 import "./api/model.js";
 import "./arxiv/model.js";
 import "./ashrae/model.js";
@@ -57,7 +58,6 @@ import "./nist/model.js";
 import "./oiml/model.js";
 
 // Index-registrant flavors: registration lives in <flavor>/index.js.
-import "./ansi/index.js";
 import "./bipm/index.js";
 import "./calconnect/index.js";
 // ccsds (pubid-ts#178): the registration classes live on ccsds/model.js
