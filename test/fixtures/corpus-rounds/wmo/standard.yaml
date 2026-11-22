@@ -1,5 +1,5 @@
 ---
-- id: wmo.standard.0001
+- id: wmo.standard.0006
   identifier:
     _type: pubid:wmo:standard
     number: '411'
@@ -10,7 +10,7 @@
   non_normalized_aliases:
   - spelling: urn:mrn:wmo:pub:s-411
     style: v3
-- id: wmo.standard.0002
+- id: wmo.standard.0007
   identifier:
     _type: pubid:wmo:standard
     number: '411'
@@ -19,7 +19,7 @@
     human: S-411 1.1.0
     urn: urn:mrn:wmo:pub:s-411:ed1.1.0
   style: v3
-- id: wmo.standard.0003
+- id: wmo.standard.0008
   identifier:
     _type: pubid:wmo:standard
     number: '411'
@@ -28,7 +28,7 @@
     human: S-411 1.2
     urn: urn:mrn:wmo:pub:s-411:ed1.2
   style: v3
-- id: wmo.standard.0004
+- id: wmo.standard.0009
   identifier:
     _type: pubid:wmo:standard
     number: '411'
@@ -40,7 +40,7 @@
   non_normalized_aliases:
   - spelling: urn:mrn:wmo:pub:s-411:ed1.2.0
     style: v3
-- id: wmo.standard.0005
+- id: wmo.standard.0010
   identifier:
     _type: pubid:wmo:standard
     number: '411'
@@ -54,11 +54,20 @@
     style: v3
   - spelling: urn:mrn:wmo:pub:s-411:ed1.2.1
     style: v3
-- id: wmo.standard.0007
+- id: wmo.standard.0012
   identifier:
     _type: pubid:wmo:standard
     number: '412'
   representations:
     human: S-412
     urn: urn:mrn:wmo:pub:s-412
+  style: v3
+- id: wmo.standard.0013
+  identifier:
+    _type: pubid:wmo:standard
+    number: '412'
+    edition: 1.2.0
+  representations:
+    human: S-412 1.2.0
+    urn: urn:mrn:wmo:pub:s-412:ed1.2.0
   style: v3

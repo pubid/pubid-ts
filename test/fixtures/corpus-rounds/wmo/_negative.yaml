@@ -34,3 +34,28 @@
   expect:
     error:
       code: unclassified
+- id: wmo.neg.unknown.0008
+  input: TD-No. 1265
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0009
+  input: IMO/TD-No. 259
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0010
+  input: TD No. 196
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0011
+  input: WMO/GAW Report No. 285
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0012
+  input: WMO/TD - No. 1469
+  expect:
+    error:
+      code: unclassified
