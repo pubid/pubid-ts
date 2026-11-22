@@ -95,6 +95,7 @@ jobs:
       # sharded in ci.yml in ~4 min per shard) - run the four proven
       # shards sequentially in this job instead.
       - run: |
+          npx tsc -p tsconfig.test.json
           for s in 1 2 3 4; do
             node --test --test-shard=$s/4 dist-test/test/*.test.js
           done
