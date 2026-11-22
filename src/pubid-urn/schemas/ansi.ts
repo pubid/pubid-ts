@@ -15,6 +15,7 @@ export const ansiSchema = define("ansi", (s) => {
   s.atom("type.abbr", "type");
   s.atom("part", "part");
   s.atom("subpart", "subpart");
+  s.atom("revision", "rev");
   s.atom("year", "year");
   s.atom("date.year", "dateyear");
   s.atom("date.month", "datemonth");
@@ -28,6 +29,8 @@ export const ansiSchema = define("ansi", (s) => {
 
   s.facet("languages.*.original_code", "langsrc");
   s.facet("edition.original_text", "edsrc");
+  s.facet("date_separator", "datesep");
+  s.facet("number_separator", "numsep");
 
   s.type("pubid:ansi:standard", "std");
   s.type("pubid:ansi:american-national-standard", "ans");

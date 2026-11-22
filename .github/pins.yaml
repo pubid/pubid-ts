@@ -10,16 +10,20 @@
 # 0448-0473 ids); iala stays 702 cases, 99,793 total) - the tree the
 # vendored corpus was regenerated from.
 testsuite_ref: adecf10cef5c62b99222e459c4ccccdaedb13774
-# pubid-grammar main (a7e2363f29dfcb6867b92c3736138ed95e6c9aa8): the eu
-# and arxiv flavors join (pubid#752/#753 - the EU legal-act grammar,
-# four input forms, and the arXiv e-print grammar, new and old forms -
-# the two corpora the cross-engine gate grew by, 731 agree / 0 differ
-# over 60 fresh artifacts). The pin range also carries
-# the bsi absorption features (the adopted slot, the typed trio and the
-# glued edition face), the lua-subset and toml flavors (rs#531), the
+# pubid-grammar main (6b606937e7eb32ccdd1356653c8d33759781907b): the ansi
+# dash-form artifact carry (relaton#45 - the in-number dash year, the
+# revision capture and the number_separator capture mirrored verbatim
+# from the gem's data/parg/ansi.json, the artifact re-baked at the fleet
+# pin and the contracts regenerated; grammar#141) - the artifact the ansi
+# port parses through. The pin range also carries the wmo flavor (the
+# WMO-No. publications and the WMO-published S-100 specs, pubid#763 -
+# the artifact the wmo port joins on), the itu Resolution rules
+# (relaton#402 - the itu port stays hand-grammar, so its artifact change
+# is inert here), the eu and arxiv flavors (pubid#752/#753), the bsi
+# absorption features, the lua-subset and toml flavors (rs#531), the
 # json resync declaration (rs#539 layer 1) and the csv/ini re-seal at
 # the CI toolchain (ruby 3.4.8 + parsanol 1.5.1.0); the other flavors'
 # trees are byte-identical - the artifacts vendor/parg was mirrored
 # from, byte-checked by the "Vendored artifacts match the pinned
 # grammar ref" gate.
-grammar_ref: a7e2363f29dfcb6867b92c3736138ed95e6c9aa8
+grammar_ref: 6b606937e7eb32ccdd1356653c8d33759781907b

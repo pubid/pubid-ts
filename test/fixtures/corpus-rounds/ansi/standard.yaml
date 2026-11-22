@@ -1,0 +1,2467 @@
+---
+- id: ansi.standard.0001
+  identifier:
+    _type: pubid:ansi:standard
+    number: '802.3'
+    year: '2012'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI 802.3-2012
+    urn: urn:ansi:802.3:2012
+  style: v3
+- id: ansi.standard.0002
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.14
+    year: '1979'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.14-1979
+    urn: urn:ansi:C135.14:1979
+  style: v3
+- id: ansi.standard.0003
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.22
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.22-1988
+    urn: urn:ansi:C135.22:1988
+  style: v3
+- id: ansi.standard.0004
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.30
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.30-1988
+    urn: urn:ansi:C135.30:1988
+  style: v3
+- id: ansi.standard.0005
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.31
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.31-1988
+    urn: urn:ansi:C135.31:1988
+  style: v3
+- id: ansi.standard.0006
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.35
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.35-1988
+    urn: urn:ansi:C135.35:1988
+  style: v3
+- id: ansi.standard.0007
+  identifier:
+    _type: pubid:ansi:standard
+    number: C135.38
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C135.38-1987
+    urn: urn:ansi:C135.38:1987
+  style: v3
+- id: ansi.standard.0008
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.06
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.06-2000
+    urn: urn:ansi:C37.06:2000
+  style: v3
+- id: ansi.standard.0009
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.06.1
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.06.1-2000
+    urn: urn:ansi:C37.06.1:2000
+  style: v3
+- id: ansi.standard.0010
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.0781
+    year: '1972'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.0781-1972
+    urn: urn:ansi:C37.0781:1972
+  style: v3
+- id: ansi.standard.0011
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.12
+    year: '1981'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.12-1981
+    urn: urn:ansi:C37.12:1981
+  style: v3
+- id: ansi.standard.0012
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.121
+    year: '1989'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.121-1989
+    urn: urn:ansi:C37.121:1989
+  style: v3
+- id: ansi.standard.0013
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.16
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.16-2000
+    urn: urn:ansi:C37.16:2000
+  style: v3
+- id: ansi.standard.0014
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.17
+    year: '1972'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.17-1972
+    urn: urn:ansi:C37.17:1972
+  style: v3
+- id: ansi.standard.0015
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.17
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.17-1997
+    urn: urn:ansi:C37.17:1997
+  style: v3
+- id: ansi.standard.0016
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.22
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.22-1997
+    urn: urn:ansi:C37.22:1997
+  style: v3
+- id: ansi.standard.0017
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.32
+    year: '1996'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.32-1996
+    urn: urn:ansi:C37.32:1996
+  style: v3
+- id: ansi.standard.0018
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.42
+    year: '1996'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C37.42-1996
+    urn: urn:ansi:C37.42:1996
+  style: v3
+- id: ansi.standard.0019
+  identifier:
+    _type: pubid:ansi:standard
+    number: C50.10
+    year: '1977'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C50.10-1977
+    urn: urn:ansi:C50.10:1977
+  style: v3
+- id: ansi.standard.0020
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.10
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.10-1988
+    urn: urn:ansi:C57.12.10:1988
+  style: v3
+- id: ansi.standard.0021
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.10
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.10-1997
+    urn: urn:ansi:C57.12.10:1997
+  style: v3
+- id: ansi.standard.0022
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.20
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.20-1997
+    urn: urn:ansi:C57.12.20:1997
+  style: v3
+- id: ansi.standard.0023
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.21
+    year: '1992'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.21-1992
+    urn: urn:ansi:C57.12.21:1992
+  style: v3
+- id: ansi.standard.0024
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.24
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.24-2000
+    urn: urn:ansi:C57.12.24:2000
+  style: v3
+- id: ansi.standard.0025
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.25
+    year: '1990'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.25-1990
+    urn: urn:ansi:C57.12.25:1990
+  style: v3
+- id: ansi.standard.0026
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.26
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.26-1987
+    urn: urn:ansi:C57.12.26:1987
+  style: v3
+- id: ansi.standard.0027
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.29
+    year: '1991'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.29-1991
+    urn: urn:ansi:C57.12.29:1991
+  style: v3
+- id: ansi.standard.0028
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.40
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.40-2000
+    urn: urn:ansi:C57.12.40:2000
+  style: v3
+- id: ansi.standard.0029
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.52
+    year: '1981'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.52-1981
+    urn: urn:ansi:C57.12.52:1981
+  style: v3
+- id: ansi.standard.0030
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.57
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.12.57-1987
+    urn: urn:ansi:C57.12.57:1987
+  style: v3
+- id: ansi.standard.0031
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.13.2
+    year: '1986'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C57.13.2-1986
+    urn: urn:ansi:C57.13.2:1986
+  style: v3
+- id: ansi.standard.0032
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.011
+    year: '2000'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.011-2000
+    urn: urn:ansi:C63.011:2000
+  style: v3
+- id: ansi.standard.0033
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.10
+    year: '2009'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.10-2009
+    urn: urn:ansi:C63.10:2009
+  style: v3
+- id: ansi.standard.0034
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.10
+    year: '2013'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.10-2013
+    urn: urn:ansi:C63.10:2013
+  style: v3
+- id: ansi.standard.0035
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.10
+    year: '2020'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.10-2020
+    urn: urn:ansi:C63.10:2020
+  style: v3
+- id: ansi.standard.0036
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.12
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.12-1987
+    urn: urn:ansi:C63.12:1987
+  style: v3
+- id: ansi.standard.0037
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.12
+    year: '1999'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.12-1999
+    urn: urn:ansi:C63.12:1999
+  style: v3
+- id: ansi.standard.0038
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.13
+    year: '1991'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.13-1991
+    urn: urn:ansi:C63.13:1991
+  style: v3
+- id: ansi.standard.0039
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.14
+    year: '1992'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.14-1992
+    urn: urn:ansi:C63.14:1992
+  style: v3
+- id: ansi.standard.0040
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.14
+    year: '1998'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.14-1998
+    urn: urn:ansi:C63.14:1998
+  style: v3
+- id: ansi.standard.0041
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.14
+    year: '2009'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.14-2009
+    urn: urn:ansi:C63.14:2009
+  style: v3
+- id: ansi.standard.0042
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.15
+    year: '2010'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.15-2010
+    urn: urn:ansi:C63.15:2010
+  style: v3
+- id: ansi.standard.0043
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.15
+    year: '2017'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.15-2017
+    urn: urn:ansi:C63.15:2017
+  style: v3
+- id: ansi.standard.0044
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.17
+    year: '1998'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.17-1998
+    urn: urn:ansi:C63.17:1998
+  style: v3
+- id: ansi.standard.0045
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.17
+    year: '2013'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.17-2013
+    urn: urn:ansi:C63.17:2013
+  style: v3
+- id: ansi.standard.0046
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.18
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.18-1997
+    urn: urn:ansi:C63.18:1997
+  style: v3
+- id: ansi.standard.0047
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.19
+    year: '2001'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.19-2001
+    urn: urn:ansi:C63.19:2001
+  style: v3
+- id: ansi.standard.0048
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.19
+    year: '2007'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.19-2007
+    urn: urn:ansi:C63.19:2007
+  style: v3
+- id: ansi.standard.0049
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.2
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.2-1980
+    urn: urn:ansi:C63.2:1980
+  style: v3
+- id: ansi.standard.0050
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.2
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.2-1987
+    urn: urn:ansi:C63.2:1987
+  style: v3
+- id: ansi.standard.0051
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.2
+    year: '1996'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.2-1996
+    urn: urn:ansi:C63.2:1996
+  style: v3
+- id: ansi.standard.0052
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.22
+    year: '2004'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.22-2004
+    urn: urn:ansi:C63.22:2004
+  style: v3
+- id: ansi.standard.0053
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.23
+    year: '2012'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.23-2012
+    urn: urn:ansi:C63.23:2012
+  style: v3
+- id: ansi.standard.0054
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.24
+    year: '2021'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.24-2021
+    urn: urn:ansi:C63.24:2021
+  style: v3
+- id: ansi.standard.0055
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.25.1
+    year: '2018'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.25.1-2018
+    urn: urn:ansi:C63.25.1:2018
+  style: v3
+- id: ansi.standard.0056
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.26
+    year: '2015'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.26-2015
+    urn: urn:ansi:C63.26:2015
+  style: v3
+- id: ansi.standard.0057
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.27
+    year: '2017'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.27-2017
+    urn: urn:ansi:C63.27:2017
+  style: v3
+- id: ansi.standard.0058
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.30
+    year: '2021'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.30-2021
+    urn: urn:ansi:C63.30:2021
+  style: v3
+- id: ansi.standard.0059
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.4
+    year: '1991'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.4-1991
+    urn: urn:ansi:C63.4:1991
+  style: v3
+- id: ansi.standard.0060
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.4
+    year: '1992'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.4-1992
+    urn: urn:ansi:C63.4:1992
+  style: v3
+- id: ansi.standard.0061
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.4
+    year: '2001'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.4-2001
+    urn: urn:ansi:C63.4:2001
+  style: v3
+- id: ansi.standard.0062
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.4
+    year: '2009'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.4-2009
+    urn: urn:ansi:C63.4:2009
+  style: v3
+- id: ansi.standard.0063
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.4
+    year: '2014'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.4-2014
+    urn: urn:ansi:C63.4:2014
+  style: v3
+- id: ansi.standard.0064
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.5
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.5-1988
+    urn: urn:ansi:C63.5:1988
+  style: v3
+- id: ansi.standard.0065
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.5
+    year: '1998'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.5-1998
+    urn: urn:ansi:C63.5:1998
+  style: v3
+- id: ansi.standard.0066
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.6
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.6-1988
+    urn: urn:ansi:C63.6:1988
+  style: v3
+- id: ansi.standard.0067
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.6
+    year: '1996'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.6-1996
+    urn: urn:ansi:C63.6:1996
+  style: v3
+- id: ansi.standard.0068
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.7
+    year: '1988'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.7-1988
+    urn: urn:ansi:C63.7:1988
+  style: v3
+- id: ansi.standard.0069
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.7
+    year: '1992'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.7-1992
+    urn: urn:ansi:C63.7:1992
+  style: v3
+- id: ansi.standard.0070
+  identifier:
+    _type: pubid:ansi:standard
+    number: C63.9
+    year: '2008'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C63.9-2008
+    urn: urn:ansi:C63.9:2008
+  style: v3
+- id: ansi.standard.0071
+  identifier:
+    _type: pubid:ansi:standard
+    number: C92.2
+    year: '1987'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C92.2-1987
+    urn: urn:ansi:C92.2:1987
+  style: v3
+- id: ansi.standard.0072
+  identifier:
+    _type: pubid:ansi:standard
+    number: C93.1
+    year: '1999'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C93.1-1999
+    urn: urn:ansi:C93.1:1999
+  style: v3
+- id: ansi.standard.0073
+  identifier:
+    _type: pubid:ansi:standard
+    number: C93.3
+    year: '1995'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C93.3-1995
+    urn: urn:ansi:C93.3:1995
+  style: v3
+- id: ansi.standard.0074
+  identifier:
+    _type: pubid:ansi:standard
+    number: C93.5
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C93.5-1997
+    urn: urn:ansi:C93.5:1997
+  style: v3
+- id: ansi.standard.0075
+  identifier:
+    _type: pubid:ansi:standard
+    number: C95.1
+    year: '1982'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C95.1-1982
+    urn: urn:ansi:C95.1:1982
+  style: v3
+- id: ansi.standard.0076
+  identifier:
+    _type: pubid:ansi:standard
+    number: C95.2
+    year: '1982'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C95.2-1982
+    urn: urn:ansi:C95.2:1982
+  style: v3
+- id: ansi.standard.0077
+  identifier:
+    _type: pubid:ansi:standard
+    number: C95.3
+    year: '1973'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C95.3-1973
+    urn: urn:ansi:C95.3:1973
+  style: v3
+- id: ansi.standard.0078
+  identifier:
+    _type: pubid:ansi:standard
+    number: C95.5
+    year: '1981'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI C95.5-1981
+    urn: urn:ansi:C95.5:1981
+  style: v3
+- id: ansi.standard.0079
+  identifier:
+    _type: pubid:ansi:standard
+    number: N317
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N317-1980
+    urn: urn:ansi:N317:1980
+  style: v3
+- id: ansi.standard.0080
+  identifier:
+    _type: pubid:ansi:standard
+    number: N320
+    year: '1979'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N320-1979
+    urn: urn:ansi:N320:1979
+  style: v3
+- id: ansi.standard.0081
+  identifier:
+    _type: pubid:ansi:standard
+    number: N322
+    year: '1977'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N322-1977
+    urn: urn:ansi:N322:1977
+  style: v3
+- id: ansi.standard.0082
+  identifier:
+    _type: pubid:ansi:standard
+    number: N322
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N322-1997
+    urn: urn:ansi:N322:1997
+  style: v3
+- id: ansi.standard.0083
+  identifier:
+    _type: pubid:ansi:standard
+    number: N323
+    year: '1978'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N323-1978
+    urn: urn:ansi:N323:1978
+  style: v3
+- id: ansi.standard.0084
+  identifier:
+    _type: pubid:ansi:standard
+    number: N323A
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N323A-1997
+    urn: urn:ansi:N323A:1997
+  style: v3
+- id: ansi.standard.0085
+  identifier:
+    _type: pubid:ansi:standard
+    number: N323B
+    year: '2003'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N323B-2003
+    urn: urn:ansi:N323B:2003
+  style: v3
+- id: ansi.standard.0086
+  identifier:
+    _type: pubid:ansi:standard
+    number: N323D
+    year: '2002'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N323D-2002
+    urn: urn:ansi:N323D:2002
+  style: v3
+- id: ansi.standard.0087
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.12
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.12-1980
+    urn: urn:ansi:N42.12:1980
+  style: v3
+- id: ansi.standard.0088
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.12
+    year: '1994'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.12-1994
+    urn: urn:ansi:N42.12:1994
+  style: v3
+- id: ansi.standard.0089
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.13
+    year: '1986'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.13-1986
+    urn: urn:ansi:N42.13:1986
+  style: v3
+- id: ansi.standard.0090
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.14
+    year: '1978'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.14-1978
+    urn: urn:ansi:N42.14:1978
+  style: v3
+- id: ansi.standard.0091
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.14
+    year: '1991'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.14-1991
+    urn: urn:ansi:N42.14:1991
+  style: v3
+- id: ansi.standard.0092
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.14
+    year: '1999'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.14-1999
+    urn: urn:ansi:N42.14:1999
+  style: v3
+- id: ansi.standard.0093
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.15
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.15-1980
+    urn: urn:ansi:N42.15:1980
+  style: v3
+- id: ansi.standard.0094
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.15
+    year: '1990'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.15-1990
+    urn: urn:ansi:N42.15:1990
+  style: v3
+- id: ansi.standard.0095
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.15
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.15-1997
+    urn: urn:ansi:N42.15:1997
+  style: v3
+- id: ansi.standard.0096
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.16
+    year: '1986'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.16-1986
+    urn: urn:ansi:N42.16:1986
+  style: v3
+- id: ansi.standard.0097
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.17A
+    year: '1989'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.17A-1989
+    urn: urn:ansi:N42.17A:1989
+  style: v3
+- id: ansi.standard.0098
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.17B
+    year: '1989'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.17B-1989
+    urn: urn:ansi:N42.17B:1989
+  style: v3
+- id: ansi.standard.0099
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.17C
+    year: '1989'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.17C-1989
+    urn: urn:ansi:N42.17C:1989
+  style: v3
+- id: ansi.standard.0100
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.18
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.18-1980
+    urn: urn:ansi:N42.18:1980
+  style: v3
+- id: ansi.standard.0101
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.20
+    year: '1995'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.20-1995
+    urn: urn:ansi:N42.20:1995
+  style: v3
+- id: ansi.standard.0102
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.22
+    year: '1995'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.22-1995
+    urn: urn:ansi:N42.22:1995
+  style: v3
+- id: ansi.standard.0103
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.23
+    year: '1996'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.23-1996
+    urn: urn:ansi:N42.23:1996
+  style: v3
+- id: ansi.standard.0104
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.25
+    year: '1997'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.25-1997
+    urn: urn:ansi:N42.25:1997
+  style: v3
+- id: ansi.standard.0105
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.27
+    year: '1999'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.27-1999
+    urn: urn:ansi:N42.27:1999
+  style: v3
+- id: ansi.standard.0106
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.28
+    year: '2002'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.28-2002
+    urn: urn:ansi:N42.28:2002
+  style: v3
+- id: ansi.standard.0107
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.30
+    year: '2002'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.30-2002
+    urn: urn:ansi:N42.30:2002
+  style: v3
+- id: ansi.standard.0108
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.31
+    year: '2003'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.31-2003
+    urn: urn:ansi:N42.31:2003
+  style: v3
+- id: ansi.standard.0109
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.32
+    year: '2003'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.32-2003
+    urn: urn:ansi:N42.32:2003
+  style: v3
+- id: ansi.standard.0110
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.33
+    year: '2003'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.33-2003
+    urn: urn:ansi:N42.33:2003
+  style: v3
+- id: ansi.standard.0111
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.34
+    year: '2003'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.34-2003
+    urn: urn:ansi:N42.34:2003
+  style: v3
+- id: ansi.standard.0112
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.35
+    year: '2004'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.35-2004
+    urn: urn:ansi:N42.35:2004
+  style: v3
+- id: ansi.standard.0113
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.37
+    year: '2006'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.37-2006
+    urn: urn:ansi:N42.37:2006
+  style: v3
+- id: ansi.standard.0114
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.38
+    year: '2006'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.38-2006
+    urn: urn:ansi:N42.38:2006
+  style: v3
+- id: ansi.standard.0115
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.4
+    year: '1971'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.4-1971
+    urn: urn:ansi:N42.4:1971
+  style: v3
+- id: ansi.standard.0116
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.41
+    year: '2007'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.41-2007
+    urn: urn:ansi:N42.41:2007
+  style: v3
+- id: ansi.standard.0117
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.42
+    year: '2006'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.42-2006
+    urn: urn:ansi:N42.42:2006
+  style: v3
+- id: ansi.standard.0118
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.43
+    year: '2006'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.43-2006
+    urn: urn:ansi:N42.43:2006
+  style: v3
+- id: ansi.standard.0119
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.45
+    year: '2011'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.45-2011
+    urn: urn:ansi:N42.45:2011
+  style: v3
+- id: ansi.standard.0120
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.46
+    year: '2008'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.46-2008
+    urn: urn:ansi:N42.46:2008
+  style: v3
+- id: ansi.standard.0121
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.47
+    year: '2010'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.47-2010
+    urn: urn:ansi:N42.47:2010
+  style: v3
+- id: ansi.standard.0122
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.48
+    year: '2008'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.48-2008
+    urn: urn:ansi:N42.48:2008
+  style: v3
+- id: ansi.standard.0123
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.49A
+    year: '2011'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.49A-2011
+    urn: urn:ansi:N42.49A:2011
+  style: v3
+- id: ansi.standard.0124
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.49B
+    year: '2013'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.49B-2013
+    urn: urn:ansi:N42.49B:2013
+  style: v3
+- id: ansi.standard.0125
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.5
+    year: '1965'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.5-1965
+    urn: urn:ansi:N42.5:1965
+  style: v3
+- id: ansi.standard.0126
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.53
+    year: '2013'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.53-2013
+    urn: urn:ansi:N42.53:2013
+  style: v3
+- id: ansi.standard.0127
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.54
+    year: '2018'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.54-2018
+    urn: urn:ansi:N42.54:2018
+  style: v3
+- id: ansi.standard.0128
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.55
+    year: '2013'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.55-2013
+    urn: urn:ansi:N42.55:2013
+  style: v3
+- id: ansi.standard.0129
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.6
+    year: '1980'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.6-1980
+    urn: urn:ansi:N42.6:1980
+  style: v3
+- id: ansi.standard.0130
+  identifier:
+    _type: pubid:ansi:standard
+    number: N42.60
+    year: '2019'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N42.60-2019
+    urn: urn:ansi:N42.60:2019
+  style: v3
+- id: ansi.standard.0131
+  identifier:
+    _type: pubid:ansi:standard
+    number: N449.1
+    year: '1978'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI N449.1-1978
+    urn: urn:ansi:N449.1:1978
+  style: v3
+- id: ansi.standard.0132
+  identifier:
+    _type: pubid:ansi:standard
+    number: X3.4
+    year: '1986'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI X3.4-1986
+    urn: urn:ansi:X3.4:1986
+  style: v3
+- id: ansi.standard.0133
+  identifier:
+    _type: pubid:ansi:standard
+    number: X9.62
+    year: '2005'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI X9.62-2005
+    urn: urn:ansi:X9.62:2005
+  style: v3
+- id: ansi.standard.0134
+  identifier:
+    _type: pubid:ansi:standard
+    number: X9.8
+    part: '1'
+    year: '2007'
+    publisher:
+      body: ANSI
+  representations:
+    human: ANSI X9.8-1:2007
+    urn: urn:ansi:X9.8:-1:2007
+  style: v3
+- id: ansi.standard.0135
+  identifier:
+    _type: pubid:ansi:standard
+    number: X9.95
+    year: '2022'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI X9.95-2022
+    urn: urn:ansi:X9.95:2022
+  style: v3
+- id: ansi.standard.0136
+  identifier:
+    _type: pubid:ansi:standard
+    number: Y32.9
+    year: '1972'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI Y32.9-1972
+    urn: urn:ansi:Y32.9:1972
+  style: v3
+- id: ansi.standard.0137
+  identifier:
+    _type: pubid:ansi:standard
+    number: Z535.1
+    year: '2022'
+    publisher:
+      body: ANSI
+    date_separator: "-"
+  representations:
+    human: ANSI Z535.1-2022
+    urn: urn:ansi:Z535.1:2022
+  style: v3
+- id: ansi.standard.0138
+  identifier:
+    _type: pubid:ansi:standard
+    number: ST79
+    year: '2017'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: AAMI
+  representations:
+    human: ANSI/AAMI ST79:2017
+    urn: urn:ansi-aami:ST79:2017
+  style: v3
+- id: ansi.standard.0139
+  identifier:
+    _type: pubid:ansi:standard
+    number: '8.1'
+    year: '2014'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ANS
+    date_separator: "-"
+    number_separator: "-"
+  representations:
+    human: ANSI/ANS-8.1-2014
+    urn: urn:ansi-ans:8.1:2014
+  style: v3
+- id: ansi.standard.0140
+  identifier:
+    _type: pubid:ansi:standard
+    number: X9.95
+    year: '2022'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASC
+    date_separator: "-"
+  representations:
+    human: ANSI/ASC X9.95-2022
+    urn: urn:ansi-asc:X9.95:2022
+  style: v3
+- id: ansi.standard.0141
+  identifier:
+    _type: pubid:ansi:standard
+    number: '90.1'
+    year: '2019'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASHRAE
+    date_separator: "-"
+  representations:
+    human: ANSI/ASHRAE 90.1-2019
+    urn: urn:ansi-ashrae:90.1:2019
+  style: v3
+- id: ansi.standard.0142
+  identifier:
+    _type: pubid:ansi:standard
+    number: '90.1'
+    year: '2019'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASHRAE
+    - body: IES
+    date_separator: "-"
+  representations:
+    human: ANSI/ASHRAE/IES 90.1-2019
+    urn: urn:ansi-ashrae-ies:90.1:2019
+  style: v3
+- id: ansi.standard.0143
+  identifier:
+    _type: pubid:ansi:standard
+    number: B16.5
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASME
+  representations:
+    human: ANSI/ASME B16.5
+    urn: urn:ansi-asme:B16.5
+  style: v3
+- id: ansi.standard.0144
+  identifier:
+    _type: pubid:ansi:standard
+    number: Z359.1
+    year: '2020'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASSP
+    date_separator: "-"
+  representations:
+    human: ANSI/ASSP Z359.1-2020
+    urn: urn:ansi-assp:Z359.1:2020
+  style: v3
+- id: ansi.standard.0145
+  identifier:
+    _type: pubid:ansi:standard
+    number: E1527
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASTM
+  representations:
+    human: ANSI/ASTM E1527
+    urn: urn:ansi-astm:E1527
+  style: v3
+- id: ansi.standard.0146
+  identifier:
+    _type: pubid:ansi:standard
+    number: E1527
+    year: '2013'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ASTM
+    date_separator: "-"
+  representations:
+    human: ANSI/ASTM E1527-2013
+    urn: urn:ansi-astm:E1527:2013
+  style: v3
+- id: ansi.standard.0147
+  identifier:
+    _type: pubid:ansi:standard
+    number: '60601'
+    part: '1'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEC
+  representations:
+    human: ANSI/IEC 60601-1
+    urn: urn:ansi-iec:60601:-1
+  style: v3
+- id: ansi.standard.0148
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1'
+    year: '1986'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1-1986
+    urn: urn:ansi-ieee:1:1986
+  style: v3
+- id: ansi.standard.0149
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1000'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1000-1987
+    urn: urn:ansi-ieee:1000:1987
+  style: v3
+- id: ansi.standard.0150
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1001'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1001-1988
+    urn: urn:ansi-ieee:1001:1988
+  style: v3
+- id: ansi.standard.0151
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1004'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1004-1987
+    urn: urn:ansi-ieee:1004:1987
+  style: v3
+- id: ansi.standard.0152
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1008'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1008-1987
+    urn: urn:ansi-ieee:1008:1987
+  style: v3
+- id: ansi.standard.0153
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1010'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1010-1987
+    urn: urn:ansi-ieee:1010:1987
+  style: v3
+- id: ansi.standard.0154
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1014'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1014-1987
+    urn: urn:ansi-ieee:1014:1987
+  style: v3
+- id: ansi.standard.0155
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1021'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1021-1988
+    urn: urn:ansi-ieee:1021:1988
+  style: v3
+- id: ansi.standard.0156
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1030'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1030-1987
+    urn: urn:ansi-ieee:1030:1987
+  style: v3
+- id: ansi.standard.0157
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1035'
+    year: '1989'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1035-1989
+    urn: urn:ansi-ieee:1035:1989
+  style: v3
+- id: ansi.standard.0158
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1042'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1042-1987
+    urn: urn:ansi-ieee:1042:1987
+  style: v3
+- id: ansi.standard.0159
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1051'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1051-1988
+    urn: urn:ansi-ieee:1051:1988
+  style: v3
+- id: ansi.standard.0160
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1070'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1070-1988
+    urn: urn:ansi-ieee:1070:1988
+  style: v3
+- id: ansi.standard.0161
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1076'
+    year: '1993'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1076-1993
+    urn: urn:ansi-ieee:1076:1993
+  style: v3
+- id: ansi.standard.0162
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1084'
+    year: '1986'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1084-1986
+    urn: urn:ansi-ieee:1084:1986
+  style: v3
+- id: ansi.standard.0163
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1096'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1096-1988
+    urn: urn:ansi-ieee:1096:1988
+  style: v3
+- id: ansi.standard.0164
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1101'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1101-1987
+    urn: urn:ansi-ieee:1101:1987
+  style: v3
+- id: ansi.standard.0165
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1106'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1106-1987
+    urn: urn:ansi-ieee:1106:1987
+  style: v3
+- id: ansi.standard.0166
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1122'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1122-1987
+    urn: urn:ansi-ieee:1122:1987
+  style: v3
+- id: ansi.standard.0167
+  identifier:
+    _type: pubid:ansi:standard
+    number: '113'
+    year: '1985'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 113-1985
+    urn: urn:ansi-ieee:113:1985
+  style: v3
+- id: ansi.standard.0168
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1131'
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 1131-1987
+    urn: urn:ansi-ieee:1131:1987
+  style: v3
+- id: ansi.standard.0169
+  identifier:
+    _type: pubid:ansi:standard
+    number: '116'
+    year: '1975'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 116-1975
+    urn: urn:ansi-ieee:116:1975
+  style: v3
+- id: ansi.standard.0170
+  identifier:
+    _type: pubid:ansi:standard
+    number: '152'
+    year: '1953'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 152-1953
+    urn: urn:ansi-ieee:152:1953
+  style: v3
+- id: ansi.standard.0171
+  identifier:
+    _type: pubid:ansi:standard
+    number: '275'
+    year: '1981'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 275-1981
+    urn: urn:ansi-ieee:275:1981
+  style: v3
+- id: ansi.standard.0172
+  identifier:
+    _type: pubid:ansi:standard
+    number: '450'
+    year: '1980'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 450-1980
+    urn: urn:ansi-ieee:450:1980
+  style: v3
+- id: ansi.standard.0173
+  identifier:
+    _type: pubid:ansi:standard
+    number: 802.1b
+    year: '1995'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 802.1b-1995
+    urn: urn:ansi-ieee:802.1b:1995
+  style: v3
+- id: ansi.standard.0174
+  identifier:
+    _type: pubid:ansi:standard
+    number: 802.3j
+    year: '1993'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE 802.3j-1993
+    urn: urn:ansi-ieee:802.3j:1993
+  style: v3
+- id: ansi.standard.0175
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.012
+    year: '1979'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.012-1979
+    urn: urn:ansi-ieee:C37.012:1979
+  style: v3
+- id: ansi.standard.0176
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.1
+    year: '1979'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.1-1979
+    urn: urn:ansi-ieee:C37.1:1979
+  style: v3
+- id: ansi.standard.0177
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.101
+    year: '1985'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.101-1985
+    urn: urn:ansi-ieee:C37.101:1985
+  style: v3
+- id: ansi.standard.0178
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.14
+    year: '1979'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.14-1979
+    urn: urn:ansi-ieee:C37.14:1979
+  style: v3
+- id: ansi.standard.0179
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.60
+    year: '1981'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.60-1981
+    urn: urn:ansi-ieee:C37.60:1981
+  style: v3
+- id: ansi.standard.0180
+  identifier:
+    _type: pubid:ansi:standard
+    number: C37.95
+    year: '1973'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C37.95-1973
+    urn: urn:ansi-ieee:C37.95:1973
+  style: v3
+- id: ansi.standard.0181
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.12.00
+    year: '1980'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C57.12.00-1980
+    urn: urn:ansi-ieee:C57.12.00:1980
+  style: v3
+- id: ansi.standard.0182
+  identifier:
+    _type: pubid:ansi:standard
+    number: C57.98
+    year: '1986'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C57.98-1986
+    urn: urn:ansi-ieee:C57.98:1986
+  style: v3
+- id: ansi.standard.0183
+  identifier:
+    _type: pubid:ansi:standard
+    number: C62.32
+    year: '1981'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C62.32-1981
+    urn: urn:ansi-ieee:C62.32:1981
+  style: v3
+- id: ansi.standard.0184
+  identifier:
+    _type: pubid:ansi:standard
+    number: C67.92
+    year: '1987'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: IEEE
+    date_separator: "-"
+  representations:
+    human: ANSI/IEEE C67.92-1987
+    urn: urn:ansi-ieee:C67.92:1987
+  style: v3
+- id: ansi.standard.0185
+  identifier:
+    _type: pubid:ansi:standard
+    number: '154'
+    year: '1988'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: INCITS
+    date_separator: "-"
+  representations:
+    human: ANSI/INCITS 154-1988
+    urn: urn:ansi-incits:154:1988
+  style: v3
+- id: ansi.standard.0186
+  identifier:
+    _type: pubid:ansi:standard
+    number: '359'
+    year: '2004'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: INCITS
+    date_separator: "-"
+  representations:
+    human: ANSI/INCITS 359-2004
+    urn: urn:ansi-incits:359:2004
+  style: v3
+- id: ansi.standard.0187
+  identifier:
+    _type: pubid:ansi:standard
+    number: '5.1'
+    year: '2009'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ISA
+    date_separator: "-"
+    number_separator: "-"
+  representations:
+    human: ANSI/ISA-5.1-2009
+    urn: urn:ansi-isa:5.1:2009
+  style: v3
+- id: ansi.standard.0188
+  identifier:
+    _type: pubid:ansi:standard
+    number: '61511'
+    part: '1'
+    year: '2018'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ISA
+    date_separator: "-"
+    number_separator: "-"
+  representations:
+    human: ANSI/ISA-61511-1-2018
+    urn: urn:ansi-isa:61511:-1:2018
+  style: v3
+- id: ansi.standard.0189
+  identifier:
+    _type: pubid:ansi:standard
+    number: '9899'
+    year: '1990'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: ISO
+  representations:
+    human: ANSI/ISO 9899:1990
+    urn: urn:ansi-iso:9899:1990
+  style: v3
+- id: ansi.standard.0190
+  identifier:
+    _type: pubid:ansi:standard
+    number: C78.377
+    year: '2017'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: NEMA
+    date_separator: "-"
+  representations:
+    human: ANSI/NEMA C78.377-2017
+    urn: urn:ansi-nema:C78.377:2017
+  style: v3
+- id: ansi.standard.0191
+  identifier:
+    _type: pubid:ansi:standard
+    number: Z39.50
+    year: '2003'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: NISO
+    date_separator: "-"
+  representations:
+    human: ANSI/NISO Z39.50-2003
+    urn: urn:ansi-niso:Z39.50:2003
+  style: v3
+- id: ansi.standard.0192
+  identifier:
+    _type: pubid:ansi:standard
+    number: Z39.88
+    year: '2004'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: NISO
+    date_separator: "-"
+  representations:
+    human: ANSI/NISO Z39.88-2004
+    urn: urn:ansi-niso:Z39.88:2004
+  style: v3
+- id: ansi.standard.0193
+  identifier:
+    _type: pubid:ansi:standard
+    number: J1939
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: SAE
+  representations:
+    human: ANSI/SAE J1939
+    urn: urn:ansi-sae:J1939
+  style: v3
+- id: ansi.standard.0194
+  identifier:
+    _type: pubid:ansi:standard
+    number: '568.2'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: TIA
+    number_separator: "-"
+    revision: D
+  representations:
+    human: ANSI/TIA-568.2-D
+    urn: urn:ansi-tia:568.2:rev-D
+  style: v3
+- id: ansi.standard.0195
+  identifier:
+    _type: pubid:ansi:standard
+    number: '1449'
+    year: '2021'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: UL
+    date_separator: "-"
+  representations:
+    human: ANSI/UL 1449-2021
+    urn: urn:ansi-ul:1449:2021
+  style: v3
+- id: ansi.standard.0196
+  identifier:
+    _type: pubid:ansi:standard
+    number: '94'
+    year: '2023'
+    publisher:
+      body: ANSI
+    copublishers:
+    - body: UL
+    date_separator: "-"
+  representations:
+    human: ANSI/UL 94-2023
+    urn: urn:ansi-ul:94:2023
+  style: v3

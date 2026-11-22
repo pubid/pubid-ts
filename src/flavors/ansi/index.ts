@@ -1,203 +1,126 @@
-import { Grammar, P, match, str } from "../../grammar/engine.js";
-import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
-import type { Tree, TreeObject } from "../../grammar/engine.js";
+import { ParseFailed } from "../../grammar/engine.js";
+import { PubidRuntime } from "../../parg/runtime.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { BaseIdentifier, registerType } from "../../model/identifier.js";
-import type { IdentifierStatic } from "../../model/identifier.js";
-import { extendAttributes, keyValue } from "../../model/attribute.js";
-import { BaseUrnGenerator } from "../../model/urn-generator.js";
-import { BaseBuilder } from "../../model/builder.js";
-import { Publisher, Language } from "../../model/component.js";
+import { Publisher, PubidDate, Language } from "../../model/component.js";
+import { AnsiIdentifier, AnsiStandard } from "./model.js";
+
+export * from "./model.js";
 
 /**
- * 1:1 port of lib/pubid/ansi/ on the unified model. Copublishers
- * (controlled vocabulary) rewrite the URN namespace; the dash segment
- * serializes as `part` (Ruby Builder split-on-dash), the ":YYYY" form as
- * `year`; "Std" is consumed and dropped; languages round-trip.
+ * The ansi parse entry — the same baked artifact the Ruby flavor runs
+ * (pubid data/parg/ansi.json, sealed at parsanol 1.5.1.0; the gem's
+ * artifact runs AHEAD of the pubid-grammar checkout, the known
+ * artifact-ahead-of-source drift), loaded through the artifact runtime.
+ * The builder mirrors Pubid::Ansi::Builder: the grammar checks the
+ * shape, this side splits the number group on dashes and reclassifies a
+ * trailing dash-year.
  */
 
-const ORGANIZATIONS = ["ISO", "IEC", "IEEE", "SAE", "ASME", "ASTM"] as const;
+// --- Builder (lib/pubid/ansi/builder.rb) -------------------------------------
 
-function buildRules(): Record<string, P> {
-  const rules: Record<string, P> = {};
-  const rule = (name: string, build: () => P) => {
-    rules[name] = build();
-  };
-  const space = str(" ");
-  const spaceQ = space.maybe();
-  const digits = match("[0-9]").repeat(1, Infinity);
-  const dashDigits = str("-").then(digits).maybe();
+/**
+ * A trailing "-" + 4 digits (19xx/20xx) is the publication year, not a
+ * part: "ANSI X9.62-2005" (relaton#45). Only when no ":YYYY" follows,
+ * so the part of "ANSI X9.8-1:2007" stays a part.
+ */
+const DASH_YEAR = /^(?:19|20)\d{2}$/;
 
-  rule("copublishers", () =>
-    str("/")
-      .then(
-        spaceQ,
-        ORGANIZATIONS.reduce<P>((acc, org) => acc.or(str(org)), str(ORGANIZATIONS[0])).as("copublisher"),
-      )
-      .repeat(1, Infinity)
-      .as("copublishers"),
-  );
-  rule("std_keyword", () => str("Std").then(space).maybe());
-  rule(
-    "number_with_part",
-    () =>
-      match("[A-Z]")
-        .repeat(1, Infinity)
-        .then(digits, str(".").then(digits).repeat(0, 3), match("[A-Z]").maybe(), dashDigits)
-        .or(
-          digits.then(
-            str(".").then(digits, match("[a-z]").maybe()).repeat(0, 2),
-            dashDigits,
-          ),
-        )
-        .as("number_with_part"),
-  );
-  rule("year_digits", () =>
-    str("19").or(str("20")).then(match("\\d").repeat(2, 2), digits.absent()),
-  );
-  rule("date", () => str(":").then(rules["year_digits"]!.as("date")));
-  rule("language", () =>
-    str("(")
-      .then(
-        match("[a-z]")
-          .repeat(2, Infinity)
-          .then(str(",").maybe())
-          .repeat(0, Infinity)
-          .as("languages"),
-        str(")"),
-      ),
-  );
-  rule(
-    "identifier_with_copublishers",
-    () =>
-      str("ANSI")
-        .as("publisher")
-        .then(rules["copublishers"]!, space, rules["std_keyword"]!)
-        .then(rules["number_with_part"]!)
-        .then(rules["date"]!.maybe())
-        .then(rules["language"]!.maybe()),
-  );
-  rule(
-    "identifier_sole",
-    () =>
-      str("ANSI")
-        .as("publisher")
-        .then(space, rules["std_keyword"]!, rules["number_with_part"]!)
-        .then(rules["date"]!.maybe())
-        .then(rules["language"]!.maybe()),
-  );
-  rule("identifier", () =>
-    rules["identifier_with_copublishers"]!.or(rules["identifier_sole"]!),
-  );
-  rule("root", () => rules["identifier"]!);
-  return rules;
-}
-
-export const ansiGrammar: Grammar = { rules: buildRules(), root: "root" };
-
-class AnsiUrnGenerator extends BaseUrnGenerator<AnsiIdentifier> {
-  generate(): string {
-    const id = this.identifier;
-    const parts = ["urn", "ansi", id.number];
-    if (id.part !== undefined) parts.push(`-${id.part}`);
-    if (id.year !== undefined) parts.push(id.year);
-    if (id.copublishers.length > 0) {
-      parts[1] = ["ansi", ...id.copublishers.map((c) => c.body.toLowerCase())].join("-");
-    }
-    if (id.languages.length > 0) {
-      parts.push(id.languages.map((l) => l.code).join(","));
-    }
-    return parts.join(":");
+/**
+ * Ruby Builder split_number_with_part: a third dash group is always the
+ * year ("ANSI/ISA-61511-1-2018") — the grammar admits only a 19xx/20xx
+ * group there. At most one part group reaches the tree, so three
+ * segments is the maximum.
+ */
+function splitNumberWithPart(value: string): Record<string, unknown> {
+  const segments = value.split("-");
+  const [number, part, dashYear] = segments;
+  const attrs: Record<string, unknown> = {};
+  if (number !== undefined) attrs["number"] = number;
+  if (part !== undefined) attrs["part"] = part;
+  if (dashYear !== undefined) {
+    attrs["date"] = new PubidDate({ year: dashYear });
+    attrs["date_separator"] = "-";
   }
+  return attrs;
 }
 
-export class AnsiIdentifier extends BaseIdentifier {
-  static polymorphicName = "pubid:ansi:standard";
-  static attributes = extendAttributes(BaseIdentifier, {
-    number: { type: "string" },
-    part: { type: "string" },
-    year: { type: "string" },
-    copublishers: { type: Publisher, collection: true, initializeEmpty: true },
-    languages: { type: Language, collection: true, initializeEmpty: true },
-  });
-  static mappings = keyValue(
-    { wire: "number", to: "number" },
-    { wire: "part", to: "part" },
-    { wire: "year", to: "year" },
-    { wire: "publisher", to: "publisher" },
-    { wire: "copublishers", to: "copublishers" },
-    { wire: "languages", to: "languages" },
-  );
-  static urnGenerator = AnsiUrnGenerator;
+/**
+ * read_dash_year: a trailing "-" + 4 digits is the publication year,
+ * not a part — unless a date or a revision already claimed the slot (a
+ * revision follows the part, so "568-2009-D" keeps 2009 as a part:
+ * read as a year, it would render after the revision).
+ */
+function readDashYear(identifier: AnsiIdentifier): void {
+  const record = identifier as unknown as Record<string, unknown>;
+  if (record["date"] !== undefined || record["revision"] !== undefined) return;
+  const part = record["part"];
+  if (typeof part !== "string" || !DASH_YEAR.test(part)) return;
+  record["date"] = new PubidDate({ year: part });
+  record["date_separator"] = "-";
+  record["part"] = undefined;
+}
 
-  declare readonly number: string;
-  declare readonly part: string | undefined;
-  declare readonly year: string | undefined;
-  declare readonly publisher: Publisher;
-  declare readonly copublishers: Publisher[];
-  declare readonly languages: Language[];
-
-  render(): string {
-    const publisherPortion =
-      this.copublishers.length > 0
-        ? [this.publisher.body, ...this.copublishers.map((p) => p.body)].join("/")
-        : this.publisher.body;
-    let numberPortion = this.number;
-    if (this.part !== undefined) numberPortion += `-${this.part}`;
-    if (this.year !== undefined) numberPortion += `:${this.year}`;
-    let result = `${publisherPortion} ${numberPortion}`;
-    if (this.languages.length > 0) result += `(${this.languages.map((l) => l.code).join(",")})`;
-    return result;
+function buildAnsi(data: Record<string, unknown>): AnsiIdentifier {
+  const attrs: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined || value === null) continue;
+    switch (key) {
+      case "publisher":
+        attrs["publisher"] = new Publisher({ body: String(value) });
+        break;
+      case "std_keyword":
+        // Consumed and dropped: no identifier attribute reads it.
+        break;
+      case "copublishers": {
+        const list = Array.isArray(value) ? value : [value];
+        if (list.length === 0) break;
+        attrs["copublishers"] = list.map((entry) => {
+          const body = typeof entry === "object" && entry !== null && "copublisher" in entry
+            ? String((entry as Record<string, unknown>)["copublisher"])
+            : String(entry);
+          return new Publisher({ body });
+        });
+        break;
+      }
+      case "number_with_part":
+        Object.assign(attrs, splitNumberWithPart(String(value)));
+        break;
+      case "number_separator":
+      case "revision":
+        attrs[key] = String(value);
+        break;
+      case "date":
+        attrs["date"] = new PubidDate({ year: String(value) });
+        break;
+      case "languages":
+        attrs["languages"] = String(value)
+          .split(",")
+          .map((lang) => new Language({ code: lang.trim() }));
+        break;
+      default:
+        // Unknown captures raise in the Ruby builder; the grammar binds
+        // exactly the keys above, so this is unreachable today.
+        throw new Error(`Unknown parameter type: ${key}`);
+    }
   }
-}
-registerType(AnsiIdentifier as unknown as IdentifierStatic);
-
-function extractCopublishers(raw: Tree): Publisher[] {
-  const list = Array.isArray(raw) ? raw : [raw];
-  return list.map((p) => {
-    const body = typeof p === "object" && p !== null && "copublisher" in (p as object)
-      ? String((p as TreeObject)["copublisher"])
-      : String(p);
-    return new Publisher({ body });
-  });
+  const identifier = new AnsiStandard(attrs);
+  readDashYear(identifier);
+  return identifier;
 }
 
-class AnsiBuilder extends BaseBuilder {
-  protected defaultIdentifierClass() {
-    return AnsiIdentifier as unknown as IdentifierStatic;
-  }
+// --- Implementation ----------------------------------------------------------
 
-  protected cast(key: string, value: unknown): unknown {
-    if (key === "number_with_part") {
-      // Ruby Builder: split on "-", first segment = number, second = part.
-      const segments = String(value).split("-");
-      return segments[1] === undefined ? { number: segments[0] } : { number: segments[0], part: segments[1] };
-    }
-    if (key === "publisher") {
-      return { publisher: new Publisher({ body: String(value) }) };
-    }
-    if (key === "copublishers") {
-      return { copublishers: extractCopublishers(value as Tree) };
-    }
-    if (key === "date") {
-      return { year: String(value) };
-    }
-    if (key === "languages") {
-      return { languages: this.parseLanguages(value) };
-    }
-    return value;
-  }
-}
+let cachedRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
 
 export function ansiGrammarImplementation(): FlavorImplementation {
-  const builder = new AnsiBuilder();
   return {
     parse(input: string): Identifier {
-      const tree = parseGrammar(ansiGrammar, input);
-      if (typeof tree !== "object" || tree === null || Array.isArray(tree)) {
-        throw new ParseFailed("ANSI: unexpected parse tree", 0);
+      cachedRuntime ??= PubidRuntime.load("ansi");
+      const bound = cachedRuntime.parseAndBind(input);
+      if (bound === null || typeof bound !== "object" || Array.isArray(bound)) {
+        throw new ParseFailed("ansi: the artifact rejected the input", 0);
       }
-      return builder.build(tree as Record<string, unknown>) as unknown as Identifier;
+      return buildAnsi(bound as Record<string, unknown>) as unknown as Identifier;
     },
   };
 }
