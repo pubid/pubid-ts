@@ -1,0 +1,44 @@
+---
+- id: wmo.publication.0008
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1364'
+  representations:
+    human: WMO-No. 1364
+    urn: urn:mrn:wmo:pub:wmo-1364
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:wmo-1364
+    style: v3
+- id: wmo.publication.0009
+  identifier:
+    _type: pubid:wmo:publication
+    number: '1364'
+    edition: '2025'
+  representations:
+    human: WMO-No. 1364, 2025 edition
+    urn: urn:mrn:wmo:pub:wmo-1364:ed2025
+  style: v3
+  non_normalized_aliases:
+  - spelling: WMO-No. 1364 2025 edition
+    style: v3
+  - spelling: WMO-No. 1364:ed2025
+    style: v3
+  - spelling: urn:mrn:wmo:pub:wmo-1364:ed2025
+    style: v3
+- id: wmo.publication.0010
+  identifier:
+    _type: pubid:wmo:publication
+    number: '49'
+  representations:
+    human: WMO-No. 49
+    urn: urn:mrn:wmo:pub:wmo-49
+  style: v3
+- id: wmo.publication.0011
+  identifier:
+    _type: pubid:wmo:publication
+    number: '8'
+  representations:
+    human: WMO-No. 8
+    urn: urn:mrn:wmo:pub:wmo-8
+  style: v3

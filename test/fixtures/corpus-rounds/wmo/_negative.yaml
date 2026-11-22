@@ -1,0 +1,36 @@
+---
+- id: wmo.neg.unknown.0001
+  input: WMO-No. edition
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0002
+  input: WMO-No. 1364, edition
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0003
+  input: WMO-No. 1364:ed25
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0004
+  input: WMO 1364
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0005
+  input: S411
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0006
+  input: S-411 1234
+  expect:
+    error:
+      code: unclassified
+- id: wmo.neg.unknown.0007
+  input: S-411:ed
+  expect:
+    error:
+      code: unclassified

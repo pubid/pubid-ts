@@ -1,0 +1,50 @@
+---
+- id: wmo.debt.78d146dee36a
+  input: WMO-No. edition
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [[\x30-\x39]] at line 1 char 9.'
+- id: wmo.debt.2d9be8db0b2c
+  input: WMO-No. 1364, edition
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [[\x30-\x39]] at line 1 char 15.'
+- id: wmo.debt.432222a0348b
+  input: WMO-No. 1364:ed25
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [[\x30-\x39]] at line 1 char 18.'
+- id: wmo.debt.aa53f958d2e7
+  input: WMO 1364
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.''] at line 1 char 1.'
+- id: wmo.debt.fb1a1a9f3519
+  input: S411
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [''S-'', ''WMO-No.''] at line 1 char 1.'
+- id: wmo.debt.9ffb34829aef
+  input: S-411 1234
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [[\x30-\x39], ''.''] at line 1 char 11.'
+- id: wmo.debt.d3893f58ad29
+  input: S-411:ed
+  expect:
+    error:
+      code: unclassified
+  notes: 'unparsed ground-truth fixture: Pubid::Errors::ParseError: Failed to match:
+    expected one of [[\x30-\x39]] at line 1 char 9.'

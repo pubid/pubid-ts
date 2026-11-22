@@ -702,6 +702,78 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       return parse(text);
     },
   },
+
+  // lib/pubid/wmo/urn_parser.rb — the MRN segments: a "wmo-<digits>" code
+  // rebuilds the compact year edition (the text parser normalizes to the
+  // comma face); an "s-<digits>" code takes a caseless annex segment (at
+  // most one, rebuilt as the attested "Annex" face) then the dotted
+  // edition. Every non-annex segment must be "ed" + the shape the code
+  // declares (a year for a publication, dotted for a standard) — per the
+  // ISO urn_parser strictness.
+  wmo: {
+    prefix: "urn:mrn:wmo:pub:",
+    reconstruct(body, parse) {
+      const parts = splitParts(body);
+      const code = parts[0];
+      if (code === undefined) {
+        throw new Error(`Invalid WMO URN code segment: ${JSON.stringify(code)}`);
+      }
+      const segments = parts.slice(1);
+      const editionValue = (seg: string, shape: RegExp): string => {
+        if (!/^ed/i.test(seg)) {
+          throw new Error(`Invalid WMO URN segment: ${JSON.stringify(seg)}`);
+        }
+        const edition = seg.replace(/^ed/i, "");
+        if (!shape.test(edition)) {
+          throw new Error(`Invalid WMO URN segment: ${JSON.stringify(seg)}`);
+        }
+        return edition;
+      };
+      const publication = /^wmo-(\d+)$/i.exec(code);
+      if (publication !== null) {
+        let edition: string | undefined;
+        for (const seg of segments) {
+          if (edition !== undefined) {
+            throw new Error(`Invalid WMO URN segment (duplicate edition): ${JSON.stringify(seg)}`);
+          }
+          edition = editionValue(seg, /^\d{4}$/);
+        }
+        let text = `WMO-No. ${publication[1]}`;
+        if (edition !== undefined) text += `:ed${edition}`;
+        return parse(text);
+      }
+      const standard = /^s-(\d+)$/i.exec(code);
+      if (standard !== null) {
+        let annexLetter: string | undefined;
+        let edition: string | undefined;
+        let hasAnnex = false;
+        for (const seg of segments) {
+          const annex = /^annex(-([a-z]))?$/i.exec(seg);
+          if (annex !== null) {
+            if (hasAnnex) {
+              throw new Error(`Invalid WMO URN segment (duplicate annex): ${JSON.stringify(seg)}`);
+            }
+            hasAnnex = true;
+            annexLetter = annex[2]?.toUpperCase();
+          } else {
+            if (edition !== undefined) {
+              throw new Error(`Invalid WMO URN segment: ${JSON.stringify(seg)}`);
+            }
+            edition = editionValue(seg, /^\d+(\.\d+)+$/);
+          }
+        }
+        // The annex segment is caseless in the MRN, so the rebuild picks
+        // the attested WMO face "Annex" (the DCEG docidentifier); the
+        // uppercase "ANNEX" form stays a parse-only human alias.
+        let text = `S-${standard[1]}`;
+        if (hasAnnex) text += " Annex";
+        if (annexLetter !== undefined) text += ` ${annexLetter}`;
+        if (edition !== undefined) text += ` ${edition}`;
+        return parse(text);
+      }
+      throw new Error(`Invalid WMO URN code segment: ${JSON.stringify(code)}`);
+    },
+  },
 }
 
 export function lookupUrnParser(flavor: string): UrnParserDef | undefined {

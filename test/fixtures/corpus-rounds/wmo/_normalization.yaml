@@ -1,0 +1,19 @@
+---
+- from: urn:mrn:wmo:pub:s-411:annex-a
+  to: S-411 Annex A
+- from: WMO-No. 1364 2025 edition
+  to: WMO-No. 1364, 2025 edition
+- from: WMO-No. 1364:ed2025
+  to: WMO-No. 1364, 2025 edition
+- from: urn:mrn:wmo:pub:wmo-1364
+  to: WMO-No. 1364
+- from: urn:mrn:wmo:pub:wmo-1364:ed2025
+  to: WMO-No. 1364, 2025 edition
+- from: urn:mrn:wmo:pub:s-411
+  to: S-411
+- from: urn:mrn:wmo:pub:s-411:ed1.2.1
+  to: S-411 1.2.1
+- from: urn:mrn:wmo:pub:s-411:ed1.2.0
+  to: S-411 1.2.0
+- from: S-411:ed1.2.1
+  to: S-411 1.2.1

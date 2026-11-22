@@ -48,6 +48,7 @@ import { ietfGrammarImplementation } from "./ietf/index.js";
 import { ialaGrammarImplementation } from "./iala/index.js";
 import { euGrammarImplementation } from "./eu/index.js";
 import { arxivGrammarImplementation } from "./arxiv/index.js";
+import { wmoGrammarImplementation } from "./wmo/index.js";
 
 /**
  * The grammar-wave registry: flavors whose Ruby grammar has been ported
@@ -178,6 +179,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return euGrammarImplementation();
     case "arxiv":
       return arxivGrammarImplementation();
+    case "wmo":
+      return wmoGrammarImplementation();
     default:
       return undefined;
   }

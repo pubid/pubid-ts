@@ -55,6 +55,7 @@ import { saeSchema } from "./sae.js";
 import { tgppSchema } from "./tgpp.js";
 import { unSchema } from "./un.js";
 import { w3cSchema } from "./w3c.js";
+import { wmoSchema } from "./wmo.js";
 import { xsfSchema } from "./xsf.js";
 
 /** All flavor schemas, in the ruby registry order (alphabetical by module). */
@@ -108,6 +109,7 @@ export const PUBID_URN_SCHEMAS: FlavorSchema[] = [
   tgppSchema,
   unSchema,
   w3cSchema,
+  wmoSchema,
   xsfSchema,
 ];
 
