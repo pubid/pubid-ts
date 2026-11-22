@@ -98,7 +98,11 @@ class ItuBuilder {
       });
     }
 
-    const klass = tree["report_marker"] !== undefined ? ITU_CLASSES["report"] : ITU_CLASSES["recommendation"];
+    const klass = tree["report_marker"] !== undefined
+      ? ITU_CLASSES["report"]
+      : tree["resolution_marker"] !== undefined
+      ? ITU_CLASSES["resolution"]
+      : ITU_CLASSES["recommendation"];
     return new klass({ ...common });
   }
 

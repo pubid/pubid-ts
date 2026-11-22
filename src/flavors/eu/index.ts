@@ -22,7 +22,9 @@ export * from "./model.js";
  * Pubid::Eu::Builder: CELEX and ELI fix year/number by position, the
  * canonical and Official-Journal forms carry two numbers whose ORDER is
  * not in the grammar (number_first_for), and the renderer's "No"
- * disambiguation lives on the model (EuIdentifier#numbers).
+ * disambiguation lives on the model (EuIdentifier#numbers). The ELI
+ * subtype ("reg_impl") is stripped before the grammar and carried as an
+ * equality-ignored facet, as Identifier.bound_without_subtype does.
  */
 
 // --- Builder (lib/pubid/eu/builder.rb) ---------------------------------------
@@ -50,6 +52,29 @@ const s = (v: unknown): string | undefined => {
   const text = String(v);
   return text.length > 0 ? text : undefined;
 };
+
+// The subtypes CELLAR gives each ELI type: implementing and delegated
+// acts of every type, and the financial regulation (Identifier::
+// ELI_SUBTYPES).
+const ELI_SUBTYPES: Record<string, string[]> = {
+  reg: ["impl", "del", "financ"],
+  dir: ["impl", "del"],
+  dec: ["impl", "del"],
+};
+
+// The subtype of an ELI input, removed before the baked grammar (which
+// knows only reg/dir/dec), as BSI and IETF strip their prefixes
+// (Identifier::ELI_SUBTYPE).
+const ELI_SUBTYPE = /^(https?:\/\/data\.europa\.eu\/eli\/(reg|dir|dec))_([a-z]+)\//;
+
+/** A known subtype of a known ELI type, or undefined. An unknown one
+ *  stays in the input, so the grammar rejects it. */
+function eliSubtype(identifier: string): string | undefined {
+  const match = ELI_SUBTYPE.exec(identifier);
+  if (match === null) return undefined;
+  const subtype = match[3] as string;
+  return (ELI_SUBTYPES[match[2] as string] ?? []).includes(subtype) ? subtype : undefined;
+}
 
 /** One parsed act before it becomes an identifier. */
 interface Act {
@@ -104,7 +129,7 @@ function family(data: Record<string, unknown>): string | undefined {
   return bracket ?? suffix;
 }
 
-function buildEu(data: Record<string, unknown>): EuIdentifier {
+function buildEu(data: Record<string, unknown>, subtype?: string): EuIdentifier {
   const act = positional(data) ?? fromPair(data);
   if (!isPlausibleYear(act.year)) {
     throw new Error(`EU legal act: ${act.year} is not a year`);
@@ -114,10 +139,12 @@ function buildEu(data: Record<string, unknown>): EuIdentifier {
     throw new Error("EU legal act: number 0");
   }
 
+  const fam = family(data);
   const id = new act.klass({
     number,
     date: { year: act.year },
-    ...(family(data) !== undefined ? { family: family(data) } : {}),
+    ...(fam !== undefined ? { family: fam } : {}),
+    ...(subtype !== undefined ? { subtype } : {}),
   });
   // Keep the order only when it is not what the render rule prints.
   if (act.numberFirst !== undefined && act.numberFirst !== id.defaultNumberFirst()) {
@@ -134,11 +161,18 @@ export function euGrammarImplementation(): FlavorImplementation {
   return {
     parse(input: string): Identifier {
       cachedRuntime ??= PubidRuntime.load("eu");
-      const bound = cachedRuntime.parseAndBind(input);
+      // An ELI subtype ("reg_impl") is stripped before the grammar, as
+      // the reference's bound_without_subtype does; the subtype rides
+      // the build as an equality-ignored facet.
+      const subtype = eliSubtype(input);
+      const stripped = subtype !== undefined
+        ? input.replace(ELI_SUBTYPE, "$1/")
+        : input;
+      const bound = cachedRuntime.parseAndBind(stripped);
       if (bound === null || typeof bound !== "object") {
         throw new ParseFailed("eu: the artifact rejected the input", 0);
       }
-      return buildEu(bound as Record<string, unknown>) as unknown as Identifier;
+      return buildEu(bound as Record<string, unknown>, subtype) as unknown as Identifier;
     },
   };
 }

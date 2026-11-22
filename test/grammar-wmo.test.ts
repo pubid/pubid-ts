@@ -15,8 +15,9 @@ import type { Identifier } from "../src/conformance/implementation.js";
 // The gate runs the pubid-testsuite round (PR #119, frozen at pubid
 // 0f7ba38b / 2.0.48) through the same conformance runner as corpus
 // mode, vendored byte-identical under test/fixtures/corpus-rounds/ -
-// the eu/arxiv fixture pattern of #214; the pinned testsuite ref
-// (.github/pins.yaml) predates the round.
+// the eu/arxiv fixture pattern of #214. The testsuite pin now carries
+// the round (0c9ddd7); the vendored copy stays as the flavor's
+// self-contained fixture (verified identical against the pin).
 
 const CORPUS_ROUND_DIR = new URL("../../test/fixtures/corpus-rounds", import.meta.url).pathname;
 

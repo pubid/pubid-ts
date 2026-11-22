@@ -6,8 +6,8 @@ import { Grammar, P, match, str } from "../../grammar/engine.js";
  * succeeded alternative, so neighbour order in `identifier` is pinned
  * by the Ruby comments):
  *   annex_to | special_publication | supplement | annex | appendix |
- *   report | handbook | numeric_question | letter_question | with_series |
- *   contribution | series_code | without_series
+ *   report | resolution | handbook | numeric_question | letter_question |
+ *   with_series | contribution | series_code | without_series
  * and supplement chains precede supplement_with_base (which would
  * otherwise strand "/Technical Cor. 1" trailing input).
  */
@@ -364,6 +364,35 @@ function buildRules(): Record<string, P> {
     rules["base_report"]!.then(rules["language"]!.maybe()),
   );
 
+  // ITU-R Resolution ("Resolution ITU-R 1-9 (2023)"): a number and its
+  // revision, never a series. Like the Report marker, the word is
+  // captured, and both the leading and the infix spelling are accepted.
+  rule("resolution_word", () =>
+    str("Resolution").or(str("Res.")).as("resolution_marker"),
+  );
+
+  rule("resolution_body", () =>
+    rules["code"]!.then(rules["document_date"]!.maybe()),
+  );
+
+  rule("base_resolution", () =>
+    rules["resolution_word"]!
+      .then(space, rules["itu_prefix"]!, rules["sector"]!, space, rules["resolution_body"]!)
+      .or(
+        rules["itu_prefix"]!.then(
+          rules["sector"]!,
+          space,
+          rules["resolution_word"]!,
+          space,
+          rules["resolution_body"]!,
+        ),
+      ),
+  );
+
+  rule("resolution_identifier", () =>
+    rules["base_resolution"]!.then(rules["language"]!.maybe()),
+  );
+
   rule("base", () =>
     rules["base_report"]!.or(
       rules["base_with_series"]!,
@@ -698,6 +727,7 @@ function buildRules(): Record<string, P> {
         rules["annex_identifier"]!,
         rules["appendix_identifier"]!,
         rules["report_identifier"]!,
+        rules["resolution_identifier"]!,
         rules["handbook"]!,
         rules["numeric_question"]!,
         rules["letter_question"]!,
