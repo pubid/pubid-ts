@@ -1,0 +1,16 @@
+---
+- id: wmo.annex.0006
+  identifier:
+    _type: pubid:wmo:annex
+    base:
+      _type: pubid:wmo:standard
+      number: '411'
+    annex_form: Annex
+    letter: A
+  representations:
+    human: S-411 Annex A
+    urn: urn:mrn:wmo:pub:s-411:annex-a
+  style: v3
+  non_normalized_aliases:
+  - spelling: urn:mrn:wmo:pub:s-411:annex-a
+    style: v3

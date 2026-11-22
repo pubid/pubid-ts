@@ -124,7 +124,9 @@ test("the worker entry's import graph is worker-safe", () => {
 // and registers the whole ANSI trio (identifier, standard,
 // american-national-standard), so the schema's ansi declarations fully
 // resolve — +2.
-const REGISTERED_TYPES = 320;
+// pubid#763: the wmo leaves (publication, standard, annex) land their
+// classes, so the schema's wmo declarations fully resolve — +3.
+const REGISTERED_TYPES = 323;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;

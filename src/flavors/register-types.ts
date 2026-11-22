@@ -56,6 +56,7 @@ import "./iso/model.js";
 import "./itu/model.js";
 import "./nist/model.js";
 import "./oiml/model.js";
+import "./wmo/model.js";
 
 // Index-registrant flavors: registration lives in <flavor>/index.js.
 import "./bipm/index.js";
