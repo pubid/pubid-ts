@@ -13,6 +13,7 @@ export const euSchema = define("eu", (s) => {
   s.atom("family", "family");
 
   s.facet("number_first", "numberfirst", "bool");
+  s.facet("subtype", "subtype");
 
   s.type("pubid:eu:regulation", "reg", { core: ["year", "number"] });
   s.type("pubid:eu:directive", "dir", { core: ["year", "number"] });

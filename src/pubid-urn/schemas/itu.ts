@@ -48,6 +48,7 @@ export const ituSchema = define("itu", (s) => {
 
   s.type("pubid:itu:recommendation", "rec");
   s.type("pubid:itu:report", "rpt");
+  s.type("pubid:itu:resolution", "res");
   s.type("pubid:itu:combined-identifier", "comb");
   s.type("pubid:itu:question", "q");
   s.type("pubid:itu:handbook", "hb");

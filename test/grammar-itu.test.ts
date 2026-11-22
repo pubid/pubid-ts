@@ -4,8 +4,10 @@ import { loadCorpus } from "../src/corpus/loader.js";
 import { runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
+import type { BaseIdentifier } from "../src/model/identifier.js";
 
-// itu — 2,745 corpus rows (13 types), the grammar fully mirroring
+// itu — 2,756 corpus rows (14 types, the Resolution joining with the
+// testsuite#117 round), the grammar fully mirroring
 // lib/pubid/itu/parser.rb including the marker-capture spellings.
 
 const TESTSUITE_DIR =
@@ -16,9 +18,6 @@ test("every itu corpus case passes through the grammar", () => {
   const payloads = corpus.flavors.get("itu")!;
   const impl = grammarImplementation("itu")!;
   assert.ok(impl, "itu is grammar-backed");
-  // The corpus@5cce3b8 regen moved one special_publication row's
-  // canonical; it is pended (the same ledger the conformance runner
-  // gates on) until the itu mirror round.
   const report = runFlavor("itu", payloads, impl, PendingRegistry.load("conformance/pending.yaml"));
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
   assert.equal(report.outcome, "pass");
@@ -82,6 +81,44 @@ test("itu parses open-ended beyond the corpus", () => {
       },
     },
   });
+});
+
+// relaton#402 (testsuite#117): the ITU-R Resolution rows — a number and
+// its revision (code.parts), never a series, with the optional year.
+test("itu parses the R-Resolution forms", () => {
+  const impl = grammarImplementation("itu")!;
+  assert.deepEqual(impl.parse("Resolution ITU-R 1").toHash(), {
+    _type: "pubid:itu:resolution",
+    sector: "R",
+    number: "1",
+  });
+  assert.equal(impl.parse("Resolution ITU-R 1").toUrn(), "urn:itu:r:resolution:1");
+  // The revision rides code.parts; the year is the parenthesised date.
+  assert.deepEqual(impl.parse("Resolution ITU-R 1-9 (2023)").toHash(), {
+    _type: "pubid:itu:resolution",
+    sector: "R",
+    number: "1",
+    parts: ["9"],
+    year: "2023",
+  });
+  assert.equal(
+    impl.parse("Resolution ITU-R 1-9 (2023)").toUrn(),
+    "urn:itu:r:resolution:1-9:2023",
+  );
+  // The infix and abbreviated spellings render ITU's leading form.
+  assert.equal(impl.parse("ITU-R Resolution 2-8 (2019)").toHuman(), "Resolution ITU-R 2-8 (2019)");
+  assert.equal(impl.parse("Res. ITU-R 1").toHuman(), "Resolution ITU-R 1");
+  assert.equal(impl.parse("ITU-R Res. 10-1").toHuman(), "Resolution ITU-R 10-1");
+  // Resolutions number independently of Recommendations, so the class
+  // and the marker split the same number pair in both directions.
+  const resolution = impl.parse("Resolution ITU-R 1-9") as BaseIdentifier;
+  const recommendation = impl.parse("ITU-R 1-9") as BaseIdentifier;
+  assert.equal(recommendation.toHash()._type, "pubid:itu:recommendation");
+  assert.equal(resolution.equals(recommendation), false);
+  assert.equal(recommendation.equals(resolution), false);
+  // The legacy relaton-data-itu spelling carries no marker: it stays a
+  // Recommendation of series R (the resolution rule must not steal it).
+  assert.equal(impl.parse("ITU-R R.1-9").toHash()._type, "pubid:itu:recommendation");
 });
 
 test("itu rejects non-identifiers", () => {

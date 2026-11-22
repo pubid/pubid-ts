@@ -25,7 +25,7 @@ consumed here at a **pinned ref** and are never edited from this repo.
 
 ## Status
 
-**All 42 flavors supported in corpus mode.** The pubid-testsuite corpus is
+**All 46 flavors supported in corpus mode.** The pubid-testsuite corpus is
 a **closed universe**: every canonical spelling, canonical hash and URN,
 plus every attested non-normalized alias. pubid-ts resolves and normalizes
 any identifier IN that universe, and nothing outside it:
@@ -84,12 +84,12 @@ package — though it still uses Node's `fs`/`zlib` to read it, so
 browser runtimes remain out of scope.
 
 The conformance gate enforces corpus mode over the whole testsuite on
-every CI run: 42/42 flavors, canonical hash, human form, URN, alias
+every CI run: 46/46 flavors, canonical hash, human form, URN, alias
 normalization, negative rejection and deserialize idempotency.
 
 ## Grammar mode: open-universe runtime parsing
 
-All 42 flavors are grammar-backed and ship the wave plan end to end
+All 46 flavors are grammar-backed and ship the wave plan end to end
 (core model → parser engine → builder → normalizer → renderer → urn →
 per-flavor grammars). Grammar implementations parse real-world
 identifiers far beyond the published corpus — novel spellings, unseen

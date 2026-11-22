@@ -329,6 +329,9 @@ export class ItuUrnGenerator extends BaseUrnGenerator<ItuIdentifier> {
     // Reports number independently of Recommendations — the marker must
     // reach the URN or the two same-numbered documents collide.
     if (id instanceof ItuReport) parts.push("report");
+    // A Resolution numbers independently too ("1-9" is also a
+    // Recommendation number), so it gets its own segment.
+    if (id instanceof ItuResolution) parts.push("resolution");
     if (id.series !== undefined) {
       if (id.code !== undefined) {
         const join = id.series_dash === true ? "-" : ".";
@@ -397,6 +400,25 @@ export class ItuReport extends ItuIdentifier {
 }
 registerType(ItuReport as unknown as IdentifierStatic);
 attachUrn(ItuReport);
+
+// The ITU-R Resolution, adopted by the Radiocommunication Assembly
+// ("Resolution ITU-R 1-9 (2023)"). A Resolution has a number and a
+// revision (code.parts, as for a Recommendation edition), never a
+// series. Resolutions number independently of Recommendations, so the
+// leading word is part of the identity: it reaches to_s and the URN,
+// and the class-strict == keeps "Resolution ITU-R 1-9" unequal to
+// "ITU-R 1-9" in both directions. The grammar also reads "ITU-R Res.
+// 1-9", "ITU-R Resolution 1-9" and "Res. ITU-R 1-9"; all render ITU's
+// leading form.
+export class ItuResolution extends ItuIdentifier {
+  static polymorphicName = "pubid:itu:resolution";
+  static mappings = STANDARD_MAPPINGS;
+  renderBase(): string {
+    return `Resolution ${super.renderBase()}`;
+  }
+}
+registerType(ItuResolution as unknown as IdentifierStatic);
+attachUrn(ItuResolution);
 
 export class ItuHandbook extends ItuIdentifier {
   static polymorphicName = "pubid:itu:handbook";
@@ -740,6 +762,7 @@ attachUrn(ItuAnnex);
 export const ITU_CLASSES = {
   recommendation: ItuRecommendation,
   report: ItuReport,
+  resolution: ItuResolution,
   handbook: ItuHandbook,
   special_publication: ItuSpecialPublication,
   radio_regulations: ItuRadioRegulations,

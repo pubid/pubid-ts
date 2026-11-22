@@ -17,6 +17,13 @@ import type { PubidDate } from "../../model/component.js";
  * `number_first` is the print ORDER of the two numbers — spelling, not
  * identity: it serializes but `==` skips it (equality_ignored), so
  * "EU Decision 1082/2013" equals the CELEX number 32013D1082.
+ * `subtype` is the ELI type subtype ("impl" implementing act, "del"
+ * delegated act, "financ" financial regulation) from an ELI such as
+ * http://data.europa.eu/eli/reg_impl/2016/1356/oj. Such an act shares
+ * the numbering of its type (the Official Journal cites it as
+ * "Commission Implementing Regulation (EU) 2016/1356"), so the subtype
+ * is not identity either: "EU Regulation 2016/1356" is the same act.
+ * Only #toEli reads it, to give the ELI back.
  */
 
 /** The act-type metadata each leaf class carries (Ruby self.type). */
@@ -40,14 +47,16 @@ export class EuIdentifier extends BaseIdentifier {
   static attributes = extendAttributes(BaseIdentifier, {
     family: { type: "string" },
     number_first: { type: "boolean", equalityIgnored: true },
+    subtype: { type: "string", equalityIgnored: true },
   });
-  // The gem's key_value whitelist: only the four slots hit the wire; the
+  // The gem's key_value whitelist: only the five slots hit the wire; the
   // base's part/edition/publisher/... slots stay off it.
   static mappings = keyValue(
     { wire: "number", to: "number" },
     { wire: "date", to: "date" },
     { wire: "family", to: "family" },
     { wire: "number_first", to: "number_first" },
+    { wire: "subtype", to: "subtype" },
   );
 
   static euType: EuType = { key: "identifier", title: "", celex: null, eli: null };
@@ -56,6 +65,7 @@ export class EuIdentifier extends BaseIdentifier {
   declare readonly date: PubidDate | undefined;
   declare readonly family: string | undefined;
   declare readonly number_first: boolean | undefined;
+  declare readonly subtype: string | undefined;
 
   /** The year, read off the date component (Ruby #year). */
   get year(): string | undefined {
@@ -115,9 +125,12 @@ export class EuIdentifier extends BaseIdentifier {
     return `3${this.year ?? ""}${this.euCelexLetter() ?? ""}${(this.number ?? "").padStart(4, "0")}`;
   }
 
-  /** The ELI of the act as published in the Official Journal. */
+  /** The ELI of the act as published in the Official Journal — the
+   *  subtype rides the type segment ("reg_impl") when the input had one. */
   toEli(): string {
-    return `http://data.europa.eu/eli/${this.euEliSegment() ?? ""}/${this.year ?? ""}/${this.number ?? ""}/oj`;
+    const eli = this.euEliSegment() ?? "";
+    const typed = this.subtype !== undefined ? `${eli}_${this.subtype}` : eli;
+    return `http://data.europa.eu/eli/${typed}/${this.year ?? ""}/${this.number ?? ""}/oj`;
   }
 
   /** The EU has no registered URN namespace (the ELI is its official

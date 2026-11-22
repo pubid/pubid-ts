@@ -1,15 +1,21 @@
-# pubid-testsuite (adecf10cef5c62b99222e459c4ccccdaedb13774, testsuite#112
-# + its regeneration round): the IALA legacy A-session corpus round
-# (pubid#734 - the 11 A-shaped rows (A12-01, A13-01 through A13-04)
-# reclassify from pubid:iala:advice onto pubid:iala:general-assembly as
-# the GA's legacy session letter - relaton-data-iala holds no Advice
-# document and the covers read "GA Resolution A12-01"; human/URN
-# representations unchanged (IALA A12-01 / urn:mrn:iala:pub:a12-01),
-# advice.yaml retired and the A rows join general_assembly.yaml as
-# iala.general_assembly.0001-0011 (the 26 dotted GA rows keep their
-# 0448-0473 ids); iala stays 702 cases, 99,793 total) - the tree the
-# vendored corpus was regenerated from.
-testsuite_ref: adecf10cef5c62b99222e459c4ccccdaedb13774
+# pubid-testsuite (0c9ddd7, the corpus rounds #115/#117/#118/#119 cut by
+# the one-command round:freeze tooling of #114): the iso #749 consumption
+# round at pubid iso/118-consumption (the 7 new tc_document rows plus the
+# rawCopy twin mirror leg re-keying the IS/IWA/PAS rows); the eu, itu and
+# arxiv rounds at pubid 2.0.46 (5d5fc470) - eu grows the ELI
+# implemented/delegated-act alias rows (dec_impl/dir_del/reg_impl/reg_del
+# spelling the same act as its plain ELI; the TS port strips the subtype
+# before the grammar, as the gem does), itu gains the ITU-R Resolution
+# rows (relaton#402's R-Resolution form: number + revision, optional
+# year) and arxiv rides the brand-new-flavor round support with its debt
+# ledger; the ansi re-encode (#118, at pubid 0f7ba38b) re-keys the 170
+# trailing -YYYY rows from the part to year + date_separator - the TS
+# engine already passes them strictly, so the 170 pending markers unmark
+# with this move (mirroring the Ruby unmark, pubid#767); and the wmo
+# flavor joins at #119 (the 11 WMO-No. publication / S-100 rows frozen at
+# pubid 0f7ba38b) - 46 flavors, 99,832 cases - the tree the vendored
+# corpus was regenerated from.
+testsuite_ref: 0c9ddd7fab0dc1386f77ca121150998a3ca28320
 # pubid-grammar main (6b606937e7eb32ccdd1356653c8d33759781907b): the ansi
 # dash-form artifact carry (relaton#45 - the in-number dash year, the
 # revision capture and the number_separator capture mirrored verbatim

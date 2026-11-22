@@ -225,3 +225,37 @@ test("the year-less face prints without a slash", () => {
   const id = EuIdentifier.fromHash({ _type: "pubid:eu:regulation", number: "1227" });
   assert.equal(id.toHuman(), "EU Regulation 1227");
 });
+
+// testsuite#117: the ELI implemented/delegated-act rows. The subtype
+// ("impl", "del", "financ") strips before the baked grammar (which knows
+// only reg/dir/dec) and rides the build as an equality-ignored facet —
+// the gem's Identifier.bound_without_subtype.
+test("the ELI subtype is a spelling facet, not identity", () => {
+  assert.equal(
+    impl.parse("http://data.europa.eu/eli/reg_impl/2016/1356/oj").toHuman(),
+    "EU Regulation 2016/1356",
+  );
+  assert.equal(
+    impl.parse("http://data.europa.eu/eli/reg_del/2025/934/oj").toHuman(),
+    "EU Regulation 2025/934",
+  );
+  assert.equal(
+    impl.parse("http://data.europa.eu/eli/dir_del/2014/69/oj").toHuman(),
+    "EU Directive 2014/69",
+  );
+  assert.equal(
+    impl.parse("http://data.europa.eu/eli/dec_impl/2026/732/oj").toHuman(),
+    "EU Decision 2026/732",
+  );
+  // The subtype rides #toEli back out and == skips it.
+  const implemented = impl.parse("http://data.europa.eu/eli/reg_impl/2016/1356/oj") as BaseIdentifier;
+  assert.equal(
+    (implemented as unknown as { toEli(): string }).toEli(),
+    "http://data.europa.eu/eli/reg_impl/2016/1356/oj",
+  );
+  assert.equal(implemented.equals(impl.parse("EU Regulation 2016/1356") as BaseIdentifier), true);
+  // The subtype serializes (equality_ignored affects ==, not the hash).
+  assert.equal((implemented.toHash() as Record<string, unknown>).subtype, "impl");
+  // An unknown subtype stays in the input, so the grammar rejects it.
+  assert.throws(() => impl.parse("http://data.europa.eu/eli/reg_foo/2016/1356/oj"));
+});

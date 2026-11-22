@@ -126,7 +126,9 @@ test("the worker entry's import graph is worker-safe", () => {
 // resolve — +2.
 // pubid#763: the wmo leaves (publication, standard, annex) land their
 // classes, so the schema's wmo declarations fully resolve — +3.
-const REGISTERED_TYPES = 323;
+// relaton#402 (the testsuite#117 itu round): the Resolution class lands,
+// so the schema's pubid:itu:resolution declaration resolves — +1.
+const REGISTERED_TYPES = 324;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;
