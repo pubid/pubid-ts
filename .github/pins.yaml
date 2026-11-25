@@ -1,28 +1,19 @@
-# pubid-testsuite (6179c23, testsuite#125 - the iala round:freeze at
-# pubid acae7a620e95 / 2.0.54): the IALA S-100-family
-# product-specification round - the new pubid:iala:product-specification
-# type (15 cases, the IHO-granted S-201..S-299 range with the dotted
-# x.y.z edition on the bare designation face and the
-# urn:mrn:iala:pub:s-2xx URN), the S-201 ANNEX B2 annex sub-numbers
-# (+1, the annex letter's optional trailing digit), the 6 grant-bound
-# rejects in the negative ledger (S-200, S-411 (WMO's), S-101 (IHO's),
-# S-30, S-2011, S-201 Ed) and +6 alias spellings riding the new rows -
-# iala 880 cases, 100,081 total - the tree the vendored corpus was
-# regenerated from.
-testsuite_ref: 6179c23b117dd33d24e82b5ec6832618bce157f1
-# pubid-grammar main (c1a11bf, grammar #146): the IALA S-100-family
-# product specifications - the s100_identifier / s100_annex_identifier
-# hyphenated code with the hundreds digit fixed to 2 by the grant
-# ("S-200" excluded - the range spans from S-201), the bare dotted
-# edition canonical with "Ed 2.0.0" and the compact ":ed2.0.0" as
-# normalizing aliases, the lower-case code spelling binding the typed
-# form instead of the codeless slug, the sub-numbered annex letters
-# ("Annex A", "ANNEX B2", "Annex D1") widening the shared annex letter
-# rule to an optional trailing digit, and grammar 0.1.0 -> 0.2.0 (the
-# iala artifact re-baked at the pinned parsanol; every other flavor
-# byte-identical) - the artifact the slug-publication port parses
-# beside (the slug rules themselves landed at relaton#604 / grammar
-# #144, already inside the previous pin). The artifacts vendor/parg was
-# mirrored from, byte-checked by the "Vendored artifacts match the
-# pinned grammar ref" gate.
-grammar_ref: c1a11bf1e54f854218bd66eef8b877f1ad11c50f
+# pubid-testsuite (4a3b030, testsuite#126 - the iho round:freeze at
+# pubid 81b786888833 / 2.0.55): the coupled corpus round for the S-158
+# member facet rename checks_for -> product (pubid#783) - the 10 frozen
+# S-158 rows carry product: instead of checks_for:, the _debt note and
+# the fail-fixture twin carry the renamed rejection message, the mirror
+# SUMMARY syncs to the gem's reclassification, and provenance
+# regenerates (the MRN segment form s158-<NNN> and every render are
+# byte-unchanged) - iho 184 cases, 100,081 total - the tree the
+# pubid-urn parity fixture and the conformance gate run against.
+testsuite_ref: 4a3b030feb349e922881cd987cffd062e5853384
+# pubid-grammar main (51f5c4b, grammar #148): the iho.parg binding
+# rename checks_for -> product (the binding, capture, rule name and the
+# header/component-table prose; parse behavior unchanged - a binding
+# rename alters no accepts/rejects) and the re-baked iho artifact at
+# the 1.5.1.0 fleet pin (schema/corpus contracts regen idempotent;
+# every other flavor byte-identical) - the artifact vendor/parg was
+# re-mirrored from, byte-checked (iho.json md5 1d9a1156) by the
+# "Vendored artifacts match the pinned grammar ref" gate.
+grammar_ref: 51f5c4b21a88f124de8693b97e2eb3fc0569946f

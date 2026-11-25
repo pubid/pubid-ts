@@ -7,9 +7,9 @@ import { grammarImplementation } from "../src/flavors/index.js";
 // plus the whole-flavor MRN migration to the adopted IHO MRN guidance
 // scheme (spec/per/reg for S/P/M; B/C keep the legacy emission).
 //
-// checks_for is the typed facet for the S-100 product number whose
+// product is the typed facet for the S-100 product number whose
 // validation checks the publication specifies. "S-158:<NNN>" is the
-// PRIMARY designator form (number=158, checks_for=NNN — never an
+// PRIMARY designator form (number=158, product=NNN — never an
 // opaque number, never a part); the draft-era spellings "S-158 Part
 // S-102" / "S-158-S-102" / "S-158 Part 102" bind the SAME identity as
 // non-normalized aliases: render keeps the input spelling (the face
@@ -40,36 +40,36 @@ test("S-158 colon designator is the primary form", () => {
   assert.deepEqual(id.toHash(), {
     _type: "pubid:iho:standard",
     number: "158",
-    checks_for: "102",
+    product: "102",
     edition: "1.0.0",
   });
   // The human face keeps the colon spelling.
   assert.equal(id.toHuman(), "IHO S-158:102 1.0.0");
-  // MRN: the checks member hyphenates into the name segment, the
+  // MRN: the product member hyphenates into the name segment, the
   // edition keeps its canonical position (the guidance's <edition
   // number> slot).
   assert.equal(urnOf(id), "urn:mrn:iho:pub:spec:s158-102:1.0.0");
-  // pubid-URN: the typed checks- atom rides the document code, before
+  // pubid-URN: the typed product- atom rides the document code, before
   // the edition.
-  assert.equal(pubidUrnOf(id), "urn:pubid:iho:std:158:checks-102:ed-1.0.0");
+  assert.equal(pubidUrnOf(id), "urn:pubid:iho:std:158:product-102:ed-1.0.0");
 });
 
-test("the checks member covers every S-100 product number", () => {
+test("the product member covers every S-100 product number", () => {
   for (const [input, member] of [
     ["IHO S-158:100", "100"],
     ["IHO S-158:98", "98"],
     ["IHO S-158:128", "128"],
   ] as const) {
     const id = impl.parse(input);
-    assert.equal(id.toHash()["checks_for"], member);
+    assert.equal(id.toHash()["product"], member);
     assert.equal(id.toHash()["number"], "158");
     assert.equal(id.toHash()["edition"], undefined);
     assert.equal(urnOf(id), `urn:mrn:iho:pub:spec:s158-${member}`);
-    assert.equal(pubidUrnOf(id), `urn:pubid:iho:std:158:checks-${member}`);
+    assert.equal(pubidUrnOf(id), `urn:pubid:iho:std:158:product-${member}`);
   }
 });
 
-test("the S-158 framework publication has no checks member", () => {
+test("the S-158 framework publication has no product member", () => {
   const id = impl.parse("IHO S-158 1.0.0");
   assert.deepEqual(id.toHash(), {
     _type: "pubid:iho:standard",
@@ -82,7 +82,7 @@ test("the S-158 framework publication has no checks member", () => {
 
 test("draft-era spellings bind the same identity", () => {
   // The expanded part face, the compact face and the bare-number part
-  // face all parse to checks_for=102 — never a part, never a
+  // face all parse to product=102 — never a part, never a
   // parted- edition.
   const spellings = [
     "IHO S-158:102 0.2.0",
@@ -95,7 +95,7 @@ test("draft-era spellings bind the same identity", () => {
   assert.deepEqual(ids[0]!.toHash(), {
     _type: "pubid:iho:standard",
     number: "158",
-    checks_for: "102",
+    product: "102",
     edition: "0.2.0",
   });
   for (const [index, id] of ids.entries()) {
@@ -121,7 +121,7 @@ test("render keeps the input spelling; URNs stay canonical", () => {
   assert.equal(impl.parse("IHO S-158-S-102 0.2.0").toHuman(), "IHO S-158 0.2.0 Part S-102");
   assert.equal(impl.parse("IHO S-158 Part 102 0.2.0").toHuman(), "IHO S-158 0.2.0 Part 102");
   const canonicalMrn = "urn:mrn:iho:pub:spec:s158-102:0.2.0";
-  const canonicalPubidUrn = "urn:pubid:iho:std:158:checks-102:ed-0.2.0";
+  const canonicalPubidUrn = "urn:pubid:iho:std:158:product-102:ed-0.2.0";
   for (const spelling of [
     "IHO S-158:102 0.2.0",
     "IHO S-158 0.2.0 Part S-102",
@@ -176,7 +176,7 @@ test("the member keeps genuine parts; the modes are exclusive", () => {
   assert.deepEqual(member.toHash(), {
     _type: "pubid:iho:standard",
     number: "158",
-    checks_for: "100",
+    product: "100",
     edition: "1.0.0",
     part: "2",
   });
@@ -185,7 +185,7 @@ test("the member keeps genuine parts; the modes are exclusive", () => {
   assert.deepEqual(separate.toHash(), {
     _type: "pubid:iho:standard",
     number: "158",
-    checks_for: "100",
+    product: "100",
     part: "2",
     part_edition: "1.0.0",
   });
@@ -287,16 +287,16 @@ test("the migrated MRNs re-parse to the canonical identity", () => {
 test("the legacy urn:iho: spellings stay decodable, never emitted for S/P/M", () => {
   assert.equal(impl.parse("urn:iho:s:44:ed-5.0.0").toHuman(), "IHO S-44 5.0.0");
   assert.equal(urnOf(impl.parse("urn:iho:s:44:ed-5.0.0")), "urn:mrn:iho:pub:spec:s44:5.0.0");
-  // The bare member segment binds checks_for (the #774 decode).
+  // The bare member segment binds product (the #774 decode).
   assert.equal(impl.parse("urn:iho:s:158:100:ed-1.0.0").toHuman(), "IHO S-158:100 1.0.0");
   assert.equal(
     impl.parse("urn:iho:s:100:ed-1.0.0:year-2024:part-A").toHuman(),
     "IHO S-100 1.0.0 Part A (2024)",
   );
-  // The draft-era part URN decodes onto the checks identity, canonical
+  // The draft-era part URN decodes onto the product identity, canonical
   // colon face (the spelling face drops on decode).
   const decoded = impl.parse("urn:iho:s:158:part-S-102:ed-0.2.0");
-  assert.equal(decoded.toHash()["checks_for"], "102");
+  assert.equal(decoded.toHash()["product"], "102");
   assert.equal(decoded.toHuman(), "IHO S-158:102 0.2.0");
   assert.equal(urnOf(decoded), "urn:mrn:iho:pub:spec:s158-102:0.2.0");
   // Unknown junk still rejects.
@@ -339,5 +339,5 @@ test("the with-year qualifier rides the S-158 member", () => {
   const id = impl.parse("IHO S-158:102 1.0.0 (2025)");
   assert.equal(id.toHash()["year"], "2025");
   assert.equal(urnOf(id), "urn:mrn:iho:pub:spec:s158-102:1.0.0:year-2025");
-  assert.equal(pubidUrnOf(id), "urn:pubid:iho:std:158:checks-102:ed-1.0.0:year-2025");
+  assert.equal(pubidUrnOf(id), "urn:pubid:iho:std:158:product-102:ed-1.0.0:year-2025");
 });

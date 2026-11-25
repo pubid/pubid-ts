@@ -155,7 +155,7 @@ function ihoConsumeSegments(attrs: Record<string, string>, segments: string[], b
  *  before the part, the citation replacing the Part face). */
 function ihoCanonicalText(typeLetter: string, attrs: Record<string, string>): string {
   let text = `IHO ${typeLetter}-${attrs["number"] ?? ""}`;
-  if (attrs["checks_for"] !== undefined) text += `:${attrs["checks_for"]}`;
+  if (attrs["product"] !== undefined) text += `:${attrs["product"]}`;
   if (attrs["edition"] !== undefined) text += ` ${attrs["edition"]}`;
   if (attrs["supplement"] !== undefined) {
     text += ` Sup ${attrs["supplement"]}`;
@@ -195,11 +195,11 @@ function ihoCanonicalText(typeLetter: string, attrs: Record<string, string>): st
 }
 
 /** The S-158 family rebind on the decode path: a draft-era part face
- *  riding number 158 rebinds onto checks_for and the spelling face
+ *  riding number 158 rebinds onto product and the spelling face
  *  drops (the decoded identifier renders the primary colon
  *  designator). */
 function ihoRebindChecks(typeLetter: string, attrs: Record<string, string>): void {
-  if (typeLetter !== "S" || attrs["number"] !== "158" || attrs["checks_for"] !== undefined) {
+  if (typeLetter !== "S" || attrs["number"] !== "158" || attrs["product"] !== undefined) {
     return;
   }
   const part = attrs["part"];
@@ -218,7 +218,7 @@ function ihoRebindChecks(typeLetter: string, attrs: Record<string, string>): voi
   }
   delete attrs["part_edition"];
   delete attrs["part_year"];
-  attrs["checks_for"] = digits;
+  attrs["product"] = digits;
 }
 
 /** The MRN guidance decode: type token, name (number + optional S-158
@@ -236,7 +236,7 @@ function ihoMrnText(body: string): string {
     throw new Error(`Unknown IHO publication name ${JSON.stringify(name)} in ${JSON.stringify(body)}`);
   }
   const attrs: Record<string, string> = { number: nameMatch[2]! };
-  if (nameMatch[3] !== undefined) attrs["checks_for"] = nameMatch[3];
+  if (nameMatch[3] !== undefined) attrs["product"] = nameMatch[3];
   if (segments[0] !== undefined && IHO_DOTTED.test(segments[0])) {
     attrs["edition"] = segments.shift()!;
   }
@@ -246,7 +246,7 @@ function ihoMrnText(body: string): string {
 }
 
 /** The legacy positional decode: the type letter, the docnumber, a
- *  further bare digit segment binding the S-158 member (checks_for —
+ *  further bare digit segment binding the S-158 member (product —
  *  "urn:iho:s:158:100"; another anchor rejects through the builder),
  *  then the shared marker machinery. */
 function ihoLegacyText(body: string): string {
@@ -261,7 +261,7 @@ function ihoLegacyText(body: string): string {
   }
   const attrs: Record<string, string> = { number };
   if (segments[0] !== undefined && /^\d+$/.test(segments[0])) {
-    attrs["checks_for"] = segments.shift()!;
+    attrs["product"] = segments.shift()!;
   }
   ihoConsumeSegments(attrs, segments, body);
   ihoRebindChecks(typeToken.toUpperCase(), attrs);

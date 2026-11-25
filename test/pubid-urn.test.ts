@@ -317,6 +317,45 @@ test("parse enforces the canonical re-encode", () => {
   assert.throws(() => parse("not-a-urn"), UrnParseError);
 });
 
+test("the legacy checks- atom stays decodable, never emitted (gem #783)", () => {
+  // The iho S-158 member atom rode checks-<NNN> before the facet
+  // renamed to product: the 0.1.x line emitted it, so it decodes onto
+  // the product identity through the Decoder — the legacy-decode
+  // stance (decodable, never emitted).
+  const back = new Decoder("iho:std:158:checks-102:ed-1.0.0").toIdentifierHash();
+  assert.deepEqual(back, {
+    _type: "pubid:iho:standard",
+    number: "158",
+    product: "102",
+    edition: "1.0.0",
+  });
+  // The canonical spelling decodes identically.
+  assert.deepEqual(
+    new Decoder("iho:std:158:product-102:ed-1.0.0").toIdentifierHash(),
+    back,
+  );
+  // A legacy spelling obeys the slot law: out of order still rejects.
+  assert.throws(
+    () => new Decoder("iho:std:158:ed-1.0.0:checks-102").toIdentifierHash(),
+    UrnParseError,
+  );
+  // An unknown legacy spelling on another atom is no alias.
+  assert.throws(
+    () => new Decoder("iho:std:158:prod-102").toIdentifierHash(),
+    UrnParseError,
+  );
+  // parse stays canonical: the legacy spelling is not canonical and
+  // names the canonical form; emission is product- only.
+  assert.throws(
+    () => parse("urn:pubid:iho:std:158:checks-102:ed-1.0.0"),
+    /is not canonical; the canonical form is "urn:pubid:iho:std:158:product-102:ed-1.0.0"/,
+  );
+  assert.equal(
+    generate({ _type: "pubid:iho:standard", number: "158", product: "102" }),
+    "urn:pubid:iho:std:158:product-102",
+  );
+});
+
 test("input guards: length and type", () => {
   assert.equal(MAX_LENGTH, 16000);
   assert.equal(isPubidUrn("URN:PUBID:iso:is:1"), true);

@@ -32,10 +32,10 @@ import { BaseBuilder } from "../../model/builder.js";
  * right after it. The legacy urn:iho: scheme stays decodable for every
  * series, never emitted for S/P/M.
  *
- * The S-158 family (pubid#774): checks_for is the typed facet for the
+ * The S-158 family (pubid#774): product is the typed facet for the
  * S-100 product number whose validation checks the publication
  * specifies; "S-158:<NNN>" is the primary designator (number=158,
- * checks_for=NNN — never an opaque number, never a part; the member
+ * product=NNN — never an opaque number, never a part; the member
  * designator rejects on any other anchor), and the legacy draft-era
  * spellings "S-158 Part S-102", "S-158-S-102" and "S-158 Part 102"
  * bind the SAME identity as non-normalized aliases (render keeps the
@@ -68,7 +68,7 @@ function buildRules(): Record<string, P> {
   rule("series", () => seriesLetter.as("type"));
   // The colon member captures SEPARATELY ("S-158:102" → number "158" +
   // colon_suffix "102"): the builder re-keys the S-158 member into
-  // checks_for and re-glues every other series' member into the number
+  // product and re-glues every other series' member into the number
   // (the C-16:2 opaque face, pubid#637).
   rule("number_suffix", () => str(":").then(digits.as("colon_suffix")));
   rule("number", () => digits.as("number").then(rules["number_suffix"]!.maybe()));
@@ -296,7 +296,7 @@ function padEditionShorthand(value: string): string {
  * Builder.normalize_checks_alias, pubid#774). A hash carrying the
  * draft-era part model on the standard family — a series reference
  * ("S-102") or the bare member number ("102") riding number 158 with
- * no checks_for — rebinding onto checks_for; the edition/year that
+ * no product — rebinding onto product; the edition/year that
  * followed the part face are the BASE ones. Pure function: returns the
  * hash untouched when it carries no draft-era part face, a normalized
  * copy otherwise. The face is not restored (the canonical colon form).
@@ -308,7 +308,7 @@ function normalizeChecksAlias(data: Record<string, unknown>): Record<string, unk
   if (
     typeof part !== "string" ||
     number !== "158" ||
-    data["checks_for"] !== undefined ||
+    data["product"] !== undefined ||
     (typeKey !== undefined && !String(typeKey).endsWith("standard"))
   ) {
     return data;
@@ -329,7 +329,7 @@ function normalizeChecksAlias(data: Record<string, unknown>): Record<string, unk
   delete out["part"];
   delete out["part_edition"];
   delete out["part_year"];
-  out["checks_for"] = digits;
+  out["product"] = digits;
   if (out["edition"] === undefined && edition !== undefined) out["edition"] = edition;
   if (out["year"] === undefined && year !== undefined) out["year"] = year;
   return out;
@@ -343,7 +343,7 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     /** The deserialization path applies the same S-158 alias unification
      *  the parse path applies (the gem's Builder.normalize_checks_alias):
      *  a stored row or a legacy URN carrying the draft-era part model
-     *  (part: "S-102", part_edition: "0.2.0") decodes to the checks_for
+     *  (part: "S-102", part_edition: "0.2.0") decodes to the product
      *  identity, so no construction path yields the two-identity disease
      *  of issue #775. The spelling face is NOT restored — a deserialized
      *  identifier renders the canonical colon designator. */
@@ -357,8 +357,8 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       // whose validation checks this publication specifies. The colon
       // designator form "S-158:102" is the primary face; the legacy
       // draft-era part spellings bind the SAME identity.
-      checks_for: { type: "string" },
-      // The face the input spelled checks_for with: undefined = the
+      product: { type: "string" },
+      // The face the input spelled product with: undefined = the
       // primary colon face ("S-158:102"), otherwise the draft-era part
       // value as written ("S-102" of "Part S-102"/"S-158-S-102", "102"
       // of "Part 102") — it prints in the Part slot verbatim.
@@ -366,7 +366,7 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       // serializes, and equality skips it — render keeps the input
       // spelling, equality/URN use the canonical shape. URN
       // deserialization restores no face (the canonical colon form).
-      checks_face: { type: "string", equalityIgnored: true },
+      product_face: { type: "string", equalityIgnored: true },
       part: { type: "string" },
       part_edition: { type: "string" },
       part_year: { type: "string" },
@@ -396,7 +396,7 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     });
     static mappings = keyValue(
       { wire: "number", to: "number" },
-      { wire: "checks_for", to: "checks_for" },
+      { wire: "product", to: "product" },
       { wire: "part", to: "part" },
       { wire: "part_edition", to: "part_edition" },
       { wire: "part_year", to: "part_year" },
@@ -422,8 +422,8 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     );
 
     declare readonly number: string;
-    declare readonly checks_for: string | undefined;
-    declare readonly checks_face: string | undefined;
+    declare readonly product: string | undefined;
+    declare readonly product_face: string | undefined;
     declare readonly part: string | undefined;
     declare readonly part_edition: string | undefined;
     declare readonly part_year: string | undefined;
@@ -449,12 +449,12 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
 
     render(): string {
       let result = `IHO ${letter}-${this.number}`;
-      // The S-158 checks face: the primary colon form rides the code
+      // The S-158 product face: the primary colon form rides the code
       // ("S-158:102"); the draft-era part face keeps its spelling and
       // prints in the Part slot — after the edition ("S-158 0.2.0
       // Part S-102"). The compact face renders expanded (the S-5A law).
-      if (this.checks_for !== undefined && this.checks_face === undefined) {
-        result += `:${this.checks_for}`;
+      if (this.product !== undefined && this.product_face === undefined) {
+        result += `:${this.product}`;
       }
       if (this.edition !== undefined) result += ` ${this.edition}`;
       if (this.supplement !== undefined) {
@@ -469,10 +469,10 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
         result += ` ${this.part}-${this.spec}`;
         if (this.spec_sub !== undefined) result += `.${this.spec_sub}`;
         if (this.spec_variant !== undefined) result += `(${this.spec_variant})`;
-      } else if (this.checks_face !== undefined) {
+      } else if (this.product_face !== undefined) {
         // The draft-era member face prints in the Part slot, the part
         // value as written ("Part S-102", "Part 102").
-        result += ` Part ${this.checks_face}`;
+        result += ` Part ${this.product_face}`;
       } else if (this.part !== undefined) {
         result += ` Part ${this.part}`;
         if (this.part_edition !== undefined) result += ` ${this.part_edition}`;
@@ -566,7 +566,7 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
      *  position. */
     private mrnName(id: IhoKindIdentifier): string {
       let name = `${letter.toLowerCase()}${id.number}`;
-      if (id.checks_for !== undefined) name += `-${id.checks_for}`;
+      if (id.product !== undefined) name += `-${id.product}`;
       return name;
     }
 
@@ -638,7 +638,7 @@ class IhoBuilder extends BaseBuilder {
   static S4_NUMBER = "4";
   // The S-158 framework publication: its series members (the colon
   // designator and the series-reference part faces) re-key into
-  // checks_for (pubid#774).
+  // product (pubid#774).
   static S158_NUMBER = "158";
   // The two publication modes are mutually exclusive (the gem's
   // assert_edition_mode!): a base edition and any component edition
@@ -695,12 +695,12 @@ class IhoBuilder extends BaseBuilder {
     }
     // The S-158 family re-key (pubid#774, the gem's Builder). The colon
     // designator "S-158:<NNN>" is the PRIMARY face: number stays 158,
-    // the member binds checks_for. The member designator is the S-158
+    // the member binds product. The member designator is the S-158
     // series device — a colon form on any other anchor rejects
     // ("S-44:5", "C-16:2"). A draft-era part face on the S-158 family —
     // a series reference ("Part S-102"), the compact face
     // ("S-158-S-102") or the bare member number ("Part 102") — rebinds
-    // onto checks_for while checks_for is UNBOUND (a bound member keeps
+    // onto product while product is UNBOUND (a bound member keeps
     // a genuine part: "S-158:100 Part 2"); a lettered or compound part
     // value ("Part A", "Part 4a") never rebinds. The edition/year that
     // follow the draft-era part face are the BASE ones (the pubid#775
@@ -713,23 +713,23 @@ class IhoBuilder extends BaseBuilder {
     if (colonSuffix !== undefined) {
       const type = flat["type"];
       if (flat["number"] === IhoBuilder.S158_NUMBER && (type === undefined || type === "S")) {
-        if (flat["checks_for"] !== undefined && flat["checks_for"] !== colonSuffix) {
+        if (flat["product"] !== undefined && flat["product"] !== colonSuffix) {
           throw new ParseFailed(
-            `IHO: checks_for ${String(flat["checks_for"])} conflicts with the colon member ${String(colonSuffix)}`,
+            `IHO: product ${String(flat["product"])} conflicts with the colon member ${String(colonSuffix)}`,
             0,
           );
         }
-        flat["checks_for"] = colonSuffix;
+        flat["product"] = colonSuffix;
       } else {
         throw new ParseFailed(
-          `IHO: the checks_for member designator is the S-158 series device: ${String(type ?? "S")}-${String(flat["number"])}:${String(colonSuffix)} cannot carry it`,
+          `IHO: the product member designator is the S-158 series device: ${String(type ?? "S")}-${String(flat["number"])}:${String(colonSuffix)} cannot carry it`,
           0,
         );
       }
     }
     if (
       flat["number"] === IhoBuilder.S158_NUMBER &&
-      flat["checks_for"] === undefined &&
+      flat["product"] === undefined &&
       typeof flat["part"] === "string"
     ) {
       const partValue = flat["part"];
@@ -737,8 +737,8 @@ class IhoBuilder extends BaseBuilder {
       const digits =
         seriesRef !== null ? seriesRef[2] : /^\d+$/.test(partValue) ? partValue : undefined;
       if (digits !== undefined) {
-        flat["checks_for"] = digits;
-        flat["checks_face"] = partValue;
+        flat["product"] = digits;
+        flat["product_face"] = partValue;
         delete flat["part"];
         const edition = flat["part_edition"];
         const year = flat["part_year"];
