@@ -22,6 +22,7 @@ export const ialaSchema = define("iala", (s) => {
   s.type("pubid:iala:letter", "letter");
   s.type("pubid:iala:manual", "manual");
   s.type("pubid:iala:model-course", "mc");
+  s.type("pubid:iala:publication", "pub");
   s.type("pubid:iala:recommendation", "rec");
   s.type("pubid:iala:report", "rpt");
   s.type("pubid:iala:resolution", "r");
