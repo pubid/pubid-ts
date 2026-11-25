@@ -658,7 +658,9 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
       let edition: string | undefined;
       let language: string | undefined;
       for (const seg of parts) {
-        const annexMatch = seg.match(/^annex(-([a-z]))?$/i);
+        // The letter carries the sub-numbered S-100 annex letters
+        // ("annex-b2"), grammar#146.
+        const annexMatch = seg.match(/^annex(-([a-z]\d?))?$/i);
         if (annexMatch) {
           annexLetter = annexMatch[2]?.toUpperCase();
           annexForm = annexLetter ? "ANNEX" : "Annex";

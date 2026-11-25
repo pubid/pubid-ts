@@ -8,13 +8,34 @@ import { BaseUrnGenerator } from "../../model/urn-generator.js";
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 
 /**
- * 1:1 port of lib/pubid/iala/ — 702 corpus rows. Typed prefixes
+ * 1:1 port of lib/pubid/iala/ — 880 corpus rows. Typed prefixes
  * (S/R/G/M/C/GA/L/X/P plus the legacy A session letter, which routes to
  * GeneralAssembly — there is no Advice type, pubid#734), class-driven
  * zero-padding (4 for S/R/G/M/C, 2+2 dotted for GA, verbatim for the
  * rest), "Ed 2.0" and ":ed2.0" edition forms, (F) languages, and Annex
  * wrappers. URN is the MRN form:
  * urn:mrn:iala:pub:<lower-code>[:ed<n>][:<lang>].
+ *
+ * The S-100-family product specifications (pubid#777, grammar#146): the
+ * IHO-granted S-201..S-299 range hyphenated ("S-201"), the dotted x.y.z
+ * edition on the BARE designation face ("S-201 2.0.0", iala.int's own
+ * citation form) with "Ed 2.0.0" and the compact ":ed2.0.0" as
+ * normalizing aliases; the hundreds digit is fixed to 2 by the grant and
+ * S-200 is excluded, so WMO's S-4xx and IHO's S-1xx never parse here.
+ * The annex wrapper rides the same class (the S-201 package's
+ * sub-numbered letters "ANNEX B2" widen the shared letter rule to an
+ * optional trailing digit); the annex edition face follows the base's
+ * family (bare for S-100, "Ed" for the legacy series).
+ *
+ * The codeless slug publications (gem #772, relaton#604): iala.int
+ * reports/proceedings with no code, named by their product-URL slug
+ * ("IALA arctic-seminar-report (E)"). The slug is two or more
+ * hyphen-joined [a-z0-9] runs whose FIRST run must not look like a code
+ * (0-2 letters then digits), so a lower-case or letterless typo of a
+ * typed code ("IALA s1070", "IALA 1070 Ed 2.0") still fails; the
+ * "IALA " prefix is mandatory for a slug (optional for a typed code).
+ * The slug is `number` — the index key — and the type has no MRN URN
+ * (the gem's Publication#to_urn → nil).
  */
 
 function buildRules(): Record<string, P> {
@@ -77,7 +98,17 @@ function buildRules(): Record<string, P> {
   rule("publisher", () => str("IALA").then(space).maybe());
 
   // The letter's absent-lowercase guard keeps "Ed 1"'s E from being
-  // mis-captured as an annex letter.
+  // mis-captured as an annex letter. The letter takes an optional
+  // trailing digit (the S-201 package's sub-numbered annexes "Annex B2"
+  // / "Annex D1"), grammar#146.
+  const annexLetter = () =>
+    space
+      .then(
+        match("[A-Z]").then(match("[0-9]").maybe()).as("annex_letter"),
+        match("[a-z]").absent(),
+      )
+      .maybe();
+
   rule("annex_identifier", () =>
     rules["publisher"]!
       .then(rules["type_letter"]!, rules["number_with_dots"]!, rules["subpart"]!.maybe())
@@ -85,18 +116,86 @@ function buildRules(): Record<string, P> {
       .then(
         space,
         str("Annex").or(str("ANNEX")).as("annex_marker"),
-        space
-          .then(match("[A-Z]").as("annex_letter"), match("[a-z]").absent())
-          .maybe(),
+        annexLetter(),
         rules["edition"]!.maybe(),
         rules["language"]!.maybe(),
       ),
   );
 
+  rule("plain_identifier", () =>
+    rules["publisher"]!
+      .then(rules["code"]!, rules["edition"]!.maybe(), rules["language"]!.maybe()),
+  );
+
+  // The S-100-family code: the hyphenated grant ("S-201"), the hundreds
+  // digit fixed to 2 and exactly "200" excluded ("spans from S-201"),
+  // so WMO's S-4xx and IHO's S-1xx never parse here.
+  rule("s100_number", () =>
+    str("200")
+      .absent()
+      .then(str("2").then(match("[0-9]"), match("[0-9]")))
+      .as("s100_number"),
+  );
+  // The lower-case code spelling ("IALA s-201", the site-URL shape)
+  // binds the typed form, never the codeless slug.
+  rule("s100_code", () => str("S").or(str("s")).then(dash, rules["s100_number"]!));
+  // The bare dotted edition is canonical; "Ed 2.0.0" is the alias.
+  rule("s100_edition", () =>
+    space.then(str("Ed").then(space).maybe(), editionValue()).as("edition"),
+  );
+
+  rule("s100_annex_identifier", () =>
+    rules["publisher"]!
+      .then(rules["s100_code"]!)
+      .then(
+        space,
+        str("Annex").or(str("ANNEX")).as("annex_marker"),
+        annexLetter(),
+        rules["edition"]!.or(rules["s100_edition"]!).maybe(),
+        rules["language"]!.maybe(),
+      ),
+  );
+
+  rule("s100_identifier", () =>
+    rules["publisher"]!
+      .then(rules["s100_code"]!)
+      .then(
+        rules["edition"]!.or(rules["s100_edition"]!).maybe(),
+        rules["language"]!.maybe(),
+      ),
+  );
+
+  // The codeless slug (gem #772): two or more hyphen-joined [a-z0-9]
+  // runs, the first run NOT code-like (0-2 letters then digits — "s1070",
+  // "ga01", "1070"), so a typed-code typo still fails. Last alternative:
+  // every typed code keeps priority, and the mandatory "IALA " prefix
+  // keeps any lower-case word from parsing.
+  rule("slug_segment", () => match("[a-z0-9]").repeat(1, Infinity));
+  rule("slug_code_like", () =>
+    match("[a-z]")
+      .repeat(0, 2)
+      .then(match("[0-9]").repeat(1, Infinity), match("[a-z0-9]").absent()),
+  );
+  rule("slug", () =>
+    rules["slug_code_like"]!
+      .absent()
+      .then(
+        rules["slug_segment"]!,
+        dash.then(rules["slug_segment"]!).repeat(1, Infinity),
+      )
+      .as("slug"),
+  );
+  rule("slug_identifier", () =>
+    str("IALA ")
+      .then(rules["slug"]!, rules["edition_human"]!.maybe(), rules["language"]!.maybe()),
+  );
+
   rule("identifier", () =>
     rules["annex_identifier"]!.or(
-      rules["publisher"]!
-        .then(rules["code"]!, rules["edition"]!.maybe(), rules["language"]!.maybe()),
+      rules["plain_identifier"]!,
+      rules["s100_annex_identifier"]!,
+      rules["s100_identifier"]!,
+      rules["slug_identifier"]!,
     ),
   );
   rule("root", () => rules["identifier"]!);
@@ -141,17 +240,24 @@ export class IalaIdentifier extends BaseIdentifier {
 class IalaUrnGenerator extends BaseUrnGenerator<IalaIdentifier> {
   generate(): string {
     const id = this.identifier;
+    const parts: string[] = ["urn:mrn:iala:pub"];
     if (id instanceof IalaAnnex) {
-      const parts = ["urn:mrn:iala:pub", `${id.base!.typeLetter()?.toLowerCase()}${id.base!.number}`];
+      parts.push(this.baseCode(id.base!));
       parts.push(id.letter !== undefined ? `annex-${id.letter.toLowerCase()}` : "annex");
-      if (id.edition !== undefined) parts.push(`ed${id.edition}`);
-      if (id.language !== undefined) parts.push(id.language.toLowerCase());
-      return parts.join(":");
+    } else {
+      parts.push(this.baseCode(id));
     }
-    const parts = ["urn:mrn:iala:pub", `${id.typeLetter()?.toLowerCase()}${id.number}`];
     if (id.edition !== undefined) parts.push(`ed${id.edition}`);
     if (id.language !== undefined) parts.push(id.language.toLowerCase());
     return parts.join(":");
+  }
+
+  // The lowercase document identifier in IALA's managed namespace
+  // (G1143 §5.1.3): the legacy series codes join letter and number
+  // ("s1070"), the S-100-family codes hyphenate ("s-201").
+  private baseCode(base: IalaIdentifier): string {
+    if (base instanceof IalaProductSpecification) return `s-${base.number}`;
+    return `${base.typeLetter()?.toLowerCase()}${base.number}`;
   }
 }
 
@@ -249,14 +355,68 @@ export class IalaAnnex extends IalaIdentifier {
   }
 
   render(): string {
-    let rendered = `${this.base?.toHuman() ?? ""} ${this.annex_form ?? ""}`;
+    const baseStr = this.base?.toHuman() ?? "";
+    const s100Base = this.base instanceof IalaProductSpecification;
+    let rendered = `${baseStr} ${this.annex_form ?? ""}`;
     if (this.letter !== undefined) rendered += ` ${this.letter}`;
-    if (this.edition !== undefined) rendered += ` Ed ${this.edition}`;
+    if (this.edition !== undefined) {
+      // The edition face follows the base's family: bare for an
+      // S-100-family base ("S-201 Annex A 1.0.0"), "Ed" for the legacy
+      // series ("G1128 ANNEX A Ed 1.6").
+      rendered += s100Base ? ` ${this.edition}` : ` Ed ${this.edition}`;
+    }
     if (this.language !== undefined) rendered += ` (${this.language})`;
     return rendered;
   }
 }
 registerType(IalaAnnex as unknown as IdentifierStatic);
+
+/**
+ * The S-100-family product specification — the IHO-granted S-201..S-299
+ * range (pubid#777). The hyphenated code face is rendered by the
+ * renderer/URN generator directly; there is no type letter (an "S"
+ * short would collide with Standard's). The canonical face is bare —
+ * the designation carries no publisher token (the WMO S-100 rule).
+ */
+export class IalaProductSpecification extends IalaIdentifier {
+  static polymorphicName = "pubid:iala:product-specification";
+  static urnGenerator = IalaUrnGenerator;
+
+  typeLetter(): string | undefined {
+    return undefined;
+  }
+
+  render(): string {
+    let rendered = `S-${this.number ?? ""}`;
+    if (this.edition !== undefined) rendered += ` ${this.edition}`;
+    if (this.language !== undefined) rendered += ` (${this.language})`;
+    return rendered;
+  }
+}
+registerType(IalaProductSpecification as unknown as IdentifierStatic);
+
+/**
+ * The codeless slug publication (gem #772): iala.int reports and
+ * proceedings with no code, named by their product-URL slug. The slug
+ * is held in the inherited `number` attribute — the index key — and no
+ * padding applies. There is no type letter: "IALA <slug>".
+ */
+export class IalaPublication extends IalaIdentifier {
+  static polymorphicName = "pubid:iala:publication";
+  static urnGenerator = IalaUrnGenerator;
+
+  typeLetter(): string | undefined {
+    return undefined;
+  }
+
+  // IALA assigns no MRN to a codeless publication, so it has no
+  // official URN (the gem's Publication#to_urn → nil); to_pubid_urn
+  // still names it.
+  toUrn(): string {
+    return undefined as unknown as string;
+  }
+}
+registerType(IalaPublication as unknown as IdentifierStatic);
 
 // ---------------------------------------------------------------------------
 // Builder
@@ -311,6 +471,8 @@ class IalaBuilder {
   build(data: Tree): BaseIdentifier {
     const hash = flatten(data);
     if (hash["annex_marker"] !== undefined) return this.buildAnnex(hash);
+    if (hash["s100_number"] !== undefined) return this.buildProductSpec(hash);
+    if (hash["slug"] !== undefined) return this.buildPublication(hash);
     return this.buildFlat(hash);
   }
 
@@ -331,9 +493,48 @@ class IalaBuilder {
     return new (klass as unknown as new (a?: Record<string, unknown>) => BaseIdentifier)(attrs);
   }
 
+  // The S-100-family product specification: the s100_number capture
+  // (the digits after "S-", e.g. "201") is the whole identity; the
+  // hyphen and the S are the code face the renderer and the URN
+  // generator add. The edition is the S-100 dotted x.y.z, verbatim.
+  private buildProductSpec(hash: TreeObject): BaseIdentifier {
+    const attrs: Record<string, unknown> = {};
+    const number = s(hash["s100_number"]);
+    if (number !== undefined) attrs["number"] = number;
+    const editionHash = isObj(hash["edition"]) ? flatten(hash["edition"] as Tree) : undefined;
+    const edition = editionHash !== undefined ? s(editionHash["edition_value"]) : undefined;
+    if (edition !== undefined) attrs["edition"] = edition;
+    const languageHash = isObj(hash["language_group"]) ? flatten(hash["language_group"] as Tree) : undefined;
+    const language = languageHash !== undefined ? s(languageHash["language"])?.toUpperCase() : undefined;
+    if (language !== undefined) attrs["language"] = language;
+    return new IalaProductSpecification(attrs);
+  }
+
+  // The codeless publication: the slug is its whole identity and goes
+  // into `number`, verbatim (no padding applies).
+  private buildPublication(hash: TreeObject): BaseIdentifier {
+    const attrs: Record<string, unknown> = {};
+    const number = s(hash["slug"]);
+    if (number !== undefined) attrs["number"] = number;
+    const editionHash = isObj(hash["edition"]) ? flatten(hash["edition"] as Tree) : undefined;
+    const edition = editionHash !== undefined ? s(editionHash["edition_value"]) : undefined;
+    if (edition !== undefined) attrs["edition"] = edition;
+    const languageHash = isObj(hash["language_group"]) ? flatten(hash["language_group"] as Tree) : undefined;
+    const language = languageHash !== undefined ? s(languageHash["language"])?.toUpperCase() : undefined;
+    if (language !== undefined) attrs["language"] = language;
+    return new IalaPublication(attrs);
+  }
+
   private buildAnnex(hash: TreeObject): BaseIdentifier {
-    const baseHash = flatten(hash["base"] as Tree);
-    const base = this.buildFlat(baseHash);
+    // The S-100 annex stays flat (the grammar's base composite is
+    // unbound there — the s100_number capture is the only occurrence of
+    // its name on the annex path); the legacy annex nests its base
+    // composite under "base".
+    const s100Number = s(hash["s100_number"]);
+    const base =
+      s100Number !== undefined
+        ? new IalaProductSpecification({ number: s100Number })
+        : this.buildFlat(flatten(hash["base"] as Tree));
     const attrs: Record<string, unknown> = {
       base,
       annex_form: s(hash["annex_marker"]),
@@ -380,7 +581,11 @@ export function ialaGrammarImplementation(): FlavorImplementation {
     let annexForm: string | undefined;
     let annexLetter: string | undefined;
     for (const seg of parts.slice(1)) {
-      const annexMatch = /^annex(-([a-z]))?$/i.exec(seg);
+      // The letter carries the sub-numbered S-100 annex letters
+      // ("annex-b2"); the generator emits "annex" (bare) for the
+      // Annex-without-letter form and "annex-X" for the uppercase
+      // ANNEX form — mirror it so the round-trip is exact.
+      const annexMatch = /^annex(-([a-z]\d?))?$/i.exec(seg);
       if (annexMatch !== null) {
         annexLetter = annexMatch[2]?.toUpperCase();
         annexForm = annexLetter !== undefined ? "ANNEX" : "Annex";
