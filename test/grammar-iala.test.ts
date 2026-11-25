@@ -6,9 +6,10 @@ import { PendingRegistry } from "../src/conformance/pending.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 import type { Identifier } from "../src/conformance/implementation.js";
 
-// iala — 702 corpus rows across the S/R/G/M/C/GA/L series plus Annex
-// wrappers (the legacy A session rows are GA rows, pubid#734),
-// including the MRN URN aliases.
+// iala — 880 corpus rows across the S/R/G/M/C/GA/L series plus Annex
+// wrappers (the legacy A session rows are GA rows, pubid#734), the
+// codeless slug publications (gem #772) and the S-100-family product
+// specifications (pubid#777), including the MRN URN aliases.
 
 const TESTSUITE_DIR =
   process.env["TESTSUITE_DIR"] ?? "../pubid-testsuite/tests";
@@ -27,15 +28,14 @@ test("every iala corpus case passes through the grammar", () => {
     ),
   );
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
-  // The 162 codeless slug-publication rows (testsuite round #122) ride the
-  // slug-port wave: the artifact parses them, no builder binds the type yet,
-  // so they ledger-pend with reason + ref; the flavor stays clean, so the
-  // outcome is pass with the pending count carried on the report.
+  // The ledger is EMPTY again: the 162 codeless slug-publication rows
+  // (testsuite round #122) unmarked once the slug type ported (gem
+  // #772, grammar #146) — pending-satisfied verified, then removed.
   assert.equal(report.outcome, "pass");
-  assert.equal(report.pending, 162);
+  assert.equal(report.pending, 0);
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
-  assert.equal(report.cases, payloads.cases.length - 162);
-  assert.ok(report.cases > 690);
+  assert.equal(report.cases, payloads.cases.length);
+  assert.ok(report.cases > 870);
 });
 
 test("iala parses open-ended beyond the corpus", () => {
@@ -132,6 +132,116 @@ test("iala routes the legacy A session letter to GeneralAssembly", () => {
   assert.equal(keyed.toHuman(), "IALA A12-01");
 });
 
+// pubid#777 (grammar #146): the IHO-granted S-201..S-299 product
+// specifications. The bare dotted edition is canonical ("S-201 2.0.0",
+// iala.int's own citation form); the "IALA " prefix, the "Ed" marker
+// and the compact ":ed" form are normalizing aliases; the lower-case
+// code spelling binds the typed form, never the codeless slug. The
+// designation carries no publisher token.
+test("iala parses the S-100-family product specifications", () => {
+  const impl = grammarImplementation("iala")!;
+  assert.equal(impl.parse("S-201 2.0.0").toHuman(), "S-201 2.0.0");
+  assert.deepEqual(impl.parse("S-201 2.0.0").toHash(), {
+    _type: "pubid:iala:product-specification",
+    number: "201",
+    edition: "2.0.0",
+  });
+  assert.equal(impl.parse("S-201").toHuman(), "S-201");
+  // The granted range beyond S-201 (the dev-status pages).
+  assert.equal(impl.parse("IALA S-230 1.0.0 (E)").toHuman(), "S-230 1.0.0 (E)");
+  assert.deepEqual(impl.parse("IALA S-230 1.0.0 (E)").toHash(), {
+    _type: "pubid:iala:product-specification",
+    number: "230",
+    edition: "1.0.0",
+    language: "E",
+  });
+  // The prefixed spellings normalize to the bare face.
+  for (const spelling of ["IALA S-201 2.0.0", "IALA S-201 Ed 2.0.0", "IALA S-201:ed2.0.0", "IALA s-201 2.0.0"]) {
+    assert.equal(impl.parse(spelling).toHuman(), "S-201 2.0.0", spelling);
+  }
+  // The MRN URN carries the hyphenated code face and all three
+  // edition segments; the URN round-trips and restores the bare face.
+  assert.equal(impl.parse("S-201 2.0.0").toUrn(), "urn:mrn:iala:pub:s-201:ed2.0.0");
+  assert.equal(impl.parse("S-247 0.2.0 (E)").toUrn(), "urn:mrn:iala:pub:s-247:ed0.2.0:e");
+  assert.equal(impl.parse("urn:mrn:iala:pub:s-201:ed2.0.0").toHuman(), "S-201 2.0.0");
+  // Polymorphic round-trip through fromHash.
+  const id = impl.parse("S-230 1.0.0 (E)");
+  const rt = (id.constructor as unknown as { fromHash(h: Record<string, unknown>): Identifier })
+    .fromHash(id.toHash());
+  assert.equal(rt.toHuman(), "S-230 1.0.0 (E)");
+});
+
+// The annex wrapper rides the same class; the letter takes the
+// sub-numbered form the S-201 package attests ("Annex B2", "Annex D1"),
+// and the annex edition face follows the base's family (bare for
+// S-100, "Ed" for the legacy series).
+test("iala wraps S-100 annexes with sub-numbered letters", () => {
+  const impl = grammarImplementation("iala")!;
+  assert.deepEqual(impl.parse("IALA S-201 ANNEX B2").toHash(), {
+    _type: "pubid:iala:annex",
+    base: { _type: "pubid:iala:product-specification", number: "201" },
+    annex_form: "ANNEX",
+    letter: "B2",
+  });
+  assert.equal(impl.parse("IALA S-201 ANNEX B2").toHuman(), "S-201 ANNEX B2");
+  assert.equal(impl.parse("IALA S-201 ANNEX B2").toUrn(), "urn:mrn:iala:pub:s-201:annex-b2");
+  assert.equal(impl.parse("IALA S-201 Annex A 1.0.0").toHuman(), "S-201 Annex A 1.0.0");
+  // The URN parser reads the sub-numbered letter back.
+  assert.equal(impl.parse("urn:mrn:iala:pub:s-201:annex-b2").toHuman(), "S-201 ANNEX B2");
+  // The legacy annex keeps the "Ed" face, and its letters may now
+  // carry a sub-number too.
+  assert.equal(impl.parse("IALA G1128 ANNEX D1 Ed 1.6").toHuman(), "IALA G1128 ANNEX D1 Ed 1.6");
+});
+
+// gem #772 (relaton#604): the codeless slug publications — the slug is
+// `number` (the index key), two or more hyphen-joined [a-z0-9] runs
+// whose first run is not code-like; the "IALA " prefix is mandatory;
+// the type has no MRN URN.
+test("iala parses the codeless slug publications", () => {
+  const impl = grammarImplementation("iala")!;
+  assert.deepEqual(impl.parse("IALA arctic-seminar-report").toHash(), {
+    _type: "pubid:iala:publication",
+    number: "arctic-seminar-report",
+  });
+  assert.equal(impl.parse("IALA arctic-seminar-report (E)").toHuman(), "IALA arctic-seminar-report (E)");
+  assert.deepEqual(impl.parse("IALA arctic-seminar-report (E)").toHash(), {
+    _type: "pubid:iala:publication",
+    number: "arctic-seminar-report",
+    language: "E",
+  });
+  // Edition and language separate from the slug.
+  assert.deepEqual(impl.parse("IALA iala-style-guide Ed 1.0 (E)").toHash(), {
+    _type: "pubid:iala:publication",
+    number: "iala-style-guide",
+    edition: "1.0",
+    language: "E",
+  });
+  // An integer edition stays verbatim.
+  assert.equal(
+    impl.parse("IALA iala-world-wide-radio-navigation-plan Ed 2").toHuman(),
+    "IALA iala-world-wide-radio-navigation-plan Ed 2",
+  );
+  // Digit-leading slugs parse (13th-vts-symposium-report, the corpus's
+  // longest slug among them).
+  assert.equal(
+    impl.parse("IALA 13th-vts-symposium-report (E)").toHuman(),
+    "IALA 13th-vts-symposium-report (E)",
+  );
+  // No official MRN URN (the gem's Publication#to_urn → nil); the
+  // pubid-scheme URN still names it.
+  const id = impl.parse("IALA arctic-seminar-report");
+  assert.equal(id.toUrn(), undefined);
+  assert.equal(
+    (id as unknown as { toPubidUrn(): string }).toPubidUrn(),
+    "urn:pubid:iala:pub:~61rctic-seminar-report",
+  );
+  // Polymorphic round-trip through fromHash.
+  const rt = (id.constructor as unknown as { fromHash(h: Record<string, unknown>): Identifier })
+    .fromHash(id.toHash());
+  assert.equal(rt.toHuman(), "IALA arctic-seminar-report");
+  assert.deepEqual(rt.toHash(), id.toHash());
+});
+
 test("iala rejects non-identifiers", () => {
   const impl = grammarImplementation("iala")!;
   assert.throws(() => impl.parse("IALA"));
@@ -139,4 +249,53 @@ test("iala rejects non-identifiers", () => {
   assert.throws(() => impl.parse("B1070"));
   assert.throws(() => impl.parse("S1070 Ed"));
   assert.throws(() => impl.parse("urn:mrn:iala:pub:"));
+});
+
+// The grant bounds: outside the granted S-201..S-299 range nothing
+// parses — S-200 is excluded ("spans from S-201"), the other hundreds
+// digits are the other orgs' grants (WMO's S-4xx, IHO's S-1xx), and
+// the shape rejects (the testsuite's negative ledger, #125).
+test("iala rejects the grant-bound S-100 shapes", () => {
+  const impl = grammarImplementation("iala")!;
+  const reject = (input: string) =>
+    assert.throws(() => impl.parse(input), (e: Error) => e.name === "ParseFailed", input);
+  for (const input of [
+    "S-200 1.0.0",
+    "S-411 1.2.1",
+    "S-101 1.0.0",
+    "S-30 2.0",
+    "S-2011 2.0.0",
+    "S-201 Ed",
+    "IALA S-411 1.2.1",
+    "IALA S-200 1.0.0",
+  ]) {
+    reject(input);
+  }
+});
+
+// The slug is narrow on purpose (the gem's rejection table): the
+// "IALA " prefix is mandatory, a slug is lower-case with no spaces and
+// two or more runs, and a lower-case or letterless typo of a typed
+// code is not a slug.
+test("iala rejects the slug-adjacent shapes", () => {
+  const impl = grammarImplementation("iala")!;
+  const reject = (input: string) =>
+    assert.throws(() => impl.parse(input), (e: Error) => e.name === "ParseFailed", input);
+  for (const input of [
+    "arctic-seminar-report",
+    "IALA Arctic-Seminar-Report",
+    "IALA arctic seminar report",
+    "IALA -arctic-seminar-report",
+    "IALA arctic-seminar-report Ed",
+    "IALA arctic",
+    "IALA arctic-",
+    "IALA arctic--report",
+    "IALA s1070",
+    "IALA g1164 Ed 1.1",
+    "IALA c0103-1",
+    "IALA ga01-13",
+    "IALA 1070 Ed 2.0",
+  ]) {
+    reject(input);
+  }
 });

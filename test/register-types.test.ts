@@ -128,7 +128,11 @@ test("the worker entry's import graph is worker-safe", () => {
 // classes, so the schema's wmo declarations fully resolve — +3.
 // relaton#402 (the testsuite#117 itu round): the Resolution class lands,
 // so the schema's pubid:itu:resolution declaration resolves — +1.
-const REGISTERED_TYPES = 324;
+// pubid#777 (with gem #772's slug round): the iala publication and
+// product-specification classes land, so the schema's
+// pubid:iala:publication and pubid:iala:product-specification
+// declarations resolve — +2.
+const REGISTERED_TYPES = 326;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;
