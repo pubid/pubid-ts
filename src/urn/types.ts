@@ -9,8 +9,15 @@ export type UrnParserDef = {
   /** Full URN prefix including the trailing colon
    *  (gem UrnParser PREFIX / "urn:" + flavor_name + ":"). */
   prefix: string;
+  /** Additional accepted namespaces (legacy spellings stay decodable,
+   *  never emitted). reconstruct receives the matched prefix. */
+  prefixes?: readonly string[];
   /** Rebuild the human text (or parse directly) from the URN body. */
-  reconstruct: (body: string, parse: (text: string) => Identifier) => Identifier;
+  reconstruct: (
+    body: string,
+    parse: (text: string) => Identifier,
+    prefix?: string,
+  ) => Identifier;
 };
 
 /** Split the body on ":" (gem Base#split_parts). */
