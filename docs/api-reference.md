@@ -136,6 +136,9 @@ The canonical serialized form - compared byte-exactly against the corpus identif
 ### `toHuman()`
 The canonical human spelling.
 
+### `toPubidUrn()`
+The pubid-scheme URN (urn:pubid:...) from the flavor schema table; BaseIdentifier provides it.
+
 ### `toString()`
 String coercion of the identifier — the canonical human spelling.
 

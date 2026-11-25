@@ -30,6 +30,8 @@ export interface Identifier {
   /** Ruby ==: canonical equality skipping equalityIgnored attributes
    *  (the (E) position is spelling, the language itself is not). */
   equals?(other: Identifier): boolean;
+  /** The pubid-scheme URN (urn:pubid:...) from the flavor schema table; BaseIdentifier provides it. */
+  toPubidUrn?(): string;
 }
 
 export type ImplementationRegistry = Map<string, FlavorImplementation>;

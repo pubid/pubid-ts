@@ -287,18 +287,128 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/iho/urn_parser.rb (positional segment grammar) —
-  // "urn:iho:<type>:<number>[:ed-…][:year-…][:sup-…][:part-…]
-  // [:annex-…][:appendix-…][:<sub>][:vol-…][:issue-…]". The number
-  // occupies every leading bare digit segment (colon numbers
-  // round-trip unescaped); every other component is marker-prefixed.
-  // Legacy 2.0.x spellings stay decodable: the bare a.b.c edition,
-  // the dotted keys part./ap./annex./suppl./appendix./vol./issue.
-  // (whose appendix value may carry the subnumber, "D-2") and the
-  // y. year tag whose value decodes into the volume.
+  // lib/pubid/iho/urn_parser.rb — two namespaces. The EMITTED form is
+  // the IHO MRN guidance scheme (urn:mrn:iho:pub:spec:<name>...): the
+  // name segment is the lowercased series letter + number with colon
+  // members (and the S-158 checks member) hyphenated in, the base
+  // edition the bare dotted segment right after the name, and every
+  // other component a trailing glued token (year<yyyy>, supplement<n>,
+  // part<X>, spec<n>[.sub][(variant)], annex<A>, appendix<B>[:<sub>],
+  // vol<n>, issue<n>); a component edition is the bare dotted segment
+  // after its component token. The LEGACY urn:iho: positional segment
+  // grammar — "urn:iho:<type>:<number>[:ed-…][:year-…][:sup-…]
+  // [:part-…][:annex-…][:appendix-…][:<sub>][:vol-…][:issue-…]" —
+  // stays decodable, never emitted: the number occupies every leading
+  // bare digit segment (colon numbers round-trip unescaped) and every
+  // other component is marker-prefixed. Legacy 2.0.x spellings stay
+  // decodable too: the dotted keys part./ap./annex./suppl./appendix./
+  // vol./issue. (whose appendix value may carry the subnumber, "D-2")
+  // and the y. year tag whose value decodes into the volume.
   iho: {
-    prefix: "urn:iho:",
-    reconstruct(body, parse) {
+    prefix: "urn:mrn:iho:pub:spec:",
+    prefixes: ["urn:mrn:iho:pub:spec:", "urn:iho:"],
+    reconstruct(body, parse, prefix) {
+      if (prefix !== "urn:iho:") {
+        // --- the MRN guidance scheme (the emitted form) ---
+        const segments = splitParts(body);
+        // The members are numeric: colon members and the S-158 checks
+        // member are digits-only by grammar (a compact part face is a
+        // part token, never a name member).
+        const nameMatch = /^([a-z])(\d+)((?:-\d+)*)$/.exec(segments[0] ?? "");
+        if (nameMatch === null) {
+          throw new Error(`invalid iho mrn name: ${JSON.stringify(segments[0])}`);
+        }
+        const typeLetter = nameMatch[1]!.toUpperCase();
+        const baseNumber = nameMatch[2]!;
+        const members = nameMatch[3] === "" ? [] : nameMatch[3]!.slice(1).split("-");
+        // The S-158 member is checks_for (the primary colon face);
+        // every other series' members re-glue into the colon number.
+        // No member: the framework publication.
+        let text: string;
+        if (typeLetter === "S" && baseNumber === "158") {
+          if (members.length > 1) {
+            throw new Error(`invalid iho mrn S-158 name: ${JSON.stringify(segments[0])}`);
+          }
+          text = members.length === 1
+            ? `IHO S-158:${members[0]}`
+            : `IHO S-158`;
+        } else {
+          text = `IHO ${typeLetter}-${[baseNumber, ...members].join(":")}`;
+        }
+        let idx = 1;
+        // The base edition: the first fully-dotted segment (the
+        // canonical slot right after the name).
+        if (idx < segments.length && /^\d+\.\d+\.\d+$/.test(segments[idx]!)) {
+          text += ` ${segments[idx]}`;
+          idx += 1;
+        }
+        // Trailing tokens; the component a bare dotted segment attaches
+        // to is the one whose token precedes it.
+        let componentSeen = false;
+        let appendixSeen = false;
+        let partLetter: string | undefined;
+        let partPending = false;
+        for (; idx < segments.length; idx += 1) {
+          const segment = segments[idx]!;
+          if (/^\d+\.\d+\.\d+$/.test(segment)) {
+            if (!componentSeen) throw new Error(`unexpected iho mrn edition segment: ${segment}`);
+            text += ` ${segment}`;
+            continue;
+          }
+          if (/^\d+$/.test(segment)) {
+            // The appendix subnumber is the only bare atom past the
+            // name, allowed directly after its appendix segment.
+            if (!appendixSeen) throw new Error(`unexpected bare segment: ${segment}`);
+            text += `-${segment}`;
+            continue;
+          }
+          let m: RegExpExecArray | null;
+          if ((m = /^year(\d{4})$/.exec(segment)) !== null) {
+            text += ` (${m[1]})`;
+          } else if ((m = /^supplement(\d+)$/.exec(segment)) !== null) {
+            text += ` Sup ${m[1]}`;
+            componentSeen = true;
+          } else if ((m = /^part([A-Za-z0-9-]+)$/.exec(segment)) !== null) {
+            partLetter = m[1]!;
+            // The S-4 citation face replaces the Part face — when the
+            // next segment is the spec token the letter rides it.
+            partPending = /^spec\d/.test(segments[idx + 1] ?? "");
+            if (!partPending) {
+              text += ` Part ${partLetter}`;
+              componentSeen = true;
+            }
+          } else if ((m = /^spec(\d+)(?:\.(\d+))?(\([A-Za-z0-9]+\))?$/.exec(segment)) !== null) {
+            if (partLetter === undefined) {
+              throw new Error(`iho mrn spec token without its part: ${segment}`);
+            }
+            text += ` ${partLetter}-${m[1]}${m[2] !== undefined ? `.${m[2]}` : ""}${m[3] ?? ""}`;
+            partLetter = undefined;
+            partPending = false;
+            componentSeen = true;
+          } else if ((m = /^annex([A-Z])$/.exec(segment)) !== null) {
+            text += ` Annex ${m[1]}`;
+            componentSeen = true;
+          } else if ((m = /^appendix([A-Za-z0-9]+)$/.exec(segment)) !== null) {
+            text += ` Appendix ${m[1]}`;
+            appendixSeen = true;
+            componentSeen = true;
+          } else if ((m = /^vol(\d+)$/.exec(segment)) !== null) {
+            text += ` Vol. ${m[1]}`;
+            componentSeen = true;
+          } else if ((m = /^issue(\d+)$/.exec(segment)) !== null) {
+            if (!componentSeen) throw new Error(`unexpected iho mrn issue segment: ${segment}`);
+            text += ` (${m[1]})`;
+          } else {
+            throw new Error(`unknown iho mrn segment: ${segment}`);
+          }
+        }
+        if (partPending) {
+          throw new Error("iho mrn part token without its spec citation");
+        }
+        return parse(text);
+      }
+      // --- the legacy urn:iho: positional scheme (decodable, never
+      // emitted) ---
       const NEW_TAG = /^([a-z]+)-(.+)$/;
       const LEGACY_TAG = /^([a-z]+)\.(.*)$/;
       const VERSION_SEGMENT = /^\d+\.\d+\.\d+$/;
@@ -840,9 +950,10 @@ export function parseUrnFor(
   urn: string,
   parse: (text: string) => Identifier,
 ): Identifier {
-  const prefix = def.prefix;
-  if (!urn.toLowerCase().startsWith(prefix)) {
+  const prefixes = def.prefixes ?? [def.prefix];
+  const hit = prefixes.find((p) => urn.toLowerCase().startsWith(p));
+  if (hit === undefined) {
     throw new Error(`Invalid ${def.prefix.toUpperCase()} URN: ${JSON.stringify(urn)}`);
   }
-  return def.reconstruct(urn.slice(prefix.length), parse);
+  return def.reconstruct(urn.slice(hit.length), parse, hit);
 }
