@@ -58,23 +58,23 @@ test("iho parses open-ended beyond the corpus", () => {
   // Prefix-less form parses; renders with the IHO prefix.
   assert.equal(impl.parse("S-44 5.0.0").toHuman(), "IHO S-44 5.0.0");
   // The slash chain is the volume's short face; the edition rides the
-  // base and emits in the MRN's canonical edition slot (the IHO MRN
-  // guidance scheme: urn:mrn:iho:pub:spec:...).
+  // base and emits in the MRN's canonical edition slot (the adopted
+  // IHO MRN guidance scheme: spec/per/reg for S/P/M).
   assert.equal(impl.parse("IHO P-1/21 1.0.0").toUrn(),
-    "urn:mrn:iho:pub:spec:p1:vol21:1.0.0");
+    "urn:mrn:iho:pub:per:p1:vol-21:ed-1.0.0");
   assert.equal(impl.parse("IHO P-1/21 1.0.0").toHuman(),
     "IHO P-1 Vol. 21 1.0.0");
-  // Colon numbers round-trip unescaped; the edition stays bare dotted
-  // in the human face, and the compound number hyphenates into the
-  // MRN name segment.
-  assert.equal(impl.parse("IHO C-16:2 1.0.0").toHuman(), "IHO C-16:2 1.0.0");
-  assert.equal(impl.parse("IHO C-16:2 1.0.0").toUrn(),
-    "urn:mrn:iho:pub:spec:c16-2:1.0.0");
+  // The member designator is the S-158 series device: another anchor's
+  // colon form rejects (pubid#774).
+  assert.throws(() => impl.parse("IHO C-16:2 1.0.0"));
+  assert.equal(impl.parse("IHO C-16 1.0.0").toHuman(), "IHO C-16 1.0.0");
+  // B/C have no guidance type code: the legacy positional emission.
+  assert.equal(impl.parse("IHO C-16 1.0.0").toUrn(), "urn:iho:c:16:ed-1.0.0");
   // Component-edition duality: supplement, part, annex and appendix
   // parse in tail order and each carries its own edition.
   assert.equal(
     impl.parse("IHO S-65 2.1.0 Sup 3 Part 4a Annex B Appendix A-2").toUrn(),
-    "urn:mrn:iho:pub:spec:s65:2.1.0:supplement3:part4a:annexB:appendixA:2",
+    "urn:mrn:iho:pub:spec:s65:2.1.0:sup-3:part-4a:annex-B:appendix-A-2",
   );
   // The volume carries its own edition ("separately-published").
   assert.equal(impl.parse("IHO P-6 Vol. 2 1.0.1").toHuman(),

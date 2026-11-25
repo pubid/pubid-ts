@@ -6,6 +6,268 @@ import { splitParts, withYear, type UrnParserDef } from "./types.js";
 // cases. The parity fixture (test/fixtures/urn-parity.json) pins the
 // reference behavior for ~93k corpus URNs.
 
+// --- the IHO URN decode (lib/pubid/iho/urn_parser.rb) -------------------
+//
+// Both namespaces decode onto the canonical shape through the same
+// marker machinery: the segments build an attribute map (the positional
+// ed-/year- attachment included), and the map renders the canonical
+// human text for the text parse — the draft-era part faces rebind
+// through the builder and the spelling face drops, so a decoded
+// identifier renders the primary colon designator.
+
+const IHO_MRN_TYPE_LETTERS: Record<string, string> = { spec: "S", per: "P", reg: "M" };
+// The publication name: the lowercase series letter + number, the
+// S-158 member hyphen-joined (s158-102).
+const IHO_MRN_NAME_RE = /^([spmbc])(\d+)(?:-(\d+))?$/;
+const IHO_DOTTED = /^\d+\.\d+\.\d+$/;
+const IHO_SUBNUMBER = /^\d+$/;
+// The docnumber's own charset: digits with : / - suffix runs.
+const IHO_NUMBER = /^\d+(?:[:/-]\d+)*$/;
+// Marker => attribute, with the value pattern each marker's slot
+// accepts (the grammar's own production rules; values case-preserved).
+const IHO_MARKERS: Record<string, { key: string; pattern: RegExp }> = {
+  ed: { key: "ed", pattern: /^\d+\.\d+\.\d+$/ },
+  sup: { key: "supplement", pattern: /^\d+$/ },
+  part: { key: "part", pattern: /^(?:\d+[a-zA-Z]*|[A-Z]|[SPMBC]-\d+)$/ },
+  spec: { key: "spec", pattern: /^[1-6]\d\d$/ },
+  specsub: { key: "spec_sub", pattern: /^\d+$/ },
+  specvar: { key: "spec_variant", pattern: /^[A-Z]+$/ },
+  annex: { key: "annex", pattern: /^[A-Z]$/ },
+  appendix: { key: "appendix", pattern: /^(?:[A-Z](?:-\d+)?|\d+)$/ },
+  vol: { key: "volume", pattern: /^\d+$/ },
+  issue: { key: "issue", pattern: /^\d+$/ },
+  year: { key: "year", pattern: /^(?:19|20)\d{2}$/ },
+};
+const IHO_MARKER_RE = new RegExp(`^(${Object.keys(IHO_MARKERS).join("|")})-(.+)$`);
+// Legacy dotted keys (deprecated; decodable, never emitted). "y." is
+// the pre-positional year tag — a year IS a volume, so its value
+// decodes into the volume.
+const IHO_LEGACY_KEYS: Record<string, string> = {
+  part: "part",
+  annex: "annex",
+  suppl: "supplement",
+  ap: "appendix",
+  appendix: "appendix",
+  vol: "volume",
+  issue: "issue",
+  y: "volume",
+};
+
+/** The segments build the attribute map: marker segments validated
+ *  against their own value pattern, ed-/year- positional (the edition
+ *  attaches to the component it follows, the year to that component's
+ *  edition owner), specsub-/specvar- only after their parent, the
+ *  appendix carrying its subnumber hyphen-joined or as the bare atom
+ *  directly after it. Unknown, reordered or junk segments reject. */
+function ihoConsumeSegments(attrs: Record<string, string>, segments: string[], body: string): void {
+  let component: string | undefined;
+  let editionOwner: string | undefined;
+  const fail = (message: string, segment: string): never => {
+    throw new Error(`${message} ${JSON.stringify(segment)} in ${JSON.stringify(body)}`);
+  };
+  const store = (key: string, value: string): void => {
+    if (attrs[key] !== undefined) fail("Duplicate", `${key}: ${value}`);
+    attrs[key] = value;
+  };
+  const isSpecNode = (node: string | undefined): boolean =>
+    node === "spec" || node === "spec_sub" || node === "spec_variant";
+  for (let idx = 0; idx < segments.length; idx += 1) {
+    const segment = segments[idx]!;
+    const marker = IHO_MARKER_RE.exec(segment);
+    if (marker !== null) {
+      const tag = marker[1]!;
+      const value = marker[2]!;
+      const entry = IHO_MARKERS[tag]!;
+      if (!entry.pattern.test(value)) fail(`Invalid ${tag} value`, JSON.stringify(value));
+      const key = entry.key;
+      if ((key === "spec_sub" || key === "spec_variant") &&
+          component !== "spec" && component !== "spec_sub") {
+        fail(`${key}- is only allowed after spec- in`, segment);
+      }
+      if (key === "ed" || key === "year") {
+        // Positional: the edition attaches to the component it follows
+        // (the base when none precedes), the year to that component's
+        // edition owner. An S-4 spec carries neither — it rides its
+        // publication's edition.
+        if (isSpecNode(component)) {
+          fail("an S-4 spec rides its publication's edition:", segment);
+        }
+        if (key === "ed") {
+          store(component === undefined ? "edition" : `${component}_edition`, value);
+          editionOwner = component;
+        } else {
+          store(editionOwner !== undefined ? `${editionOwner}_year` : "year", value);
+          editionOwner = undefined;
+        }
+        continue;
+      }
+      if (key === "appendix") {
+        // The hyphen-joined compound value ("D-2", the MRN emission)
+        // splits into the appendix and its subnumber; the legacy
+        // emission carries the subnumber as the bare atom below.
+        const compound = /^([A-Z])-(\d+)$/.exec(value);
+        if (compound !== null) {
+          store("appendix", compound[1]!);
+          store("appendix_subnumber", compound[2]!);
+        } else {
+          store("appendix", value);
+        }
+        component = "appendix";
+        editionOwner = undefined;
+        const next = segments[idx + 1];
+        if (next !== undefined && IHO_SUBNUMBER.test(next)) {
+          store("appendix_subnumber", next);
+          idx += 1;
+        }
+        continue;
+      }
+      store(key, value);
+      component = key;
+      editionOwner = undefined;
+      continue;
+    }
+    const legacy = /^([a-z]+)\.(.*)$/.exec(segment);
+    if (legacy !== null) {
+      const key = IHO_LEGACY_KEYS[legacy[1]!];
+      if (key === undefined) fail("Unexpected segment", segment);
+      // The legacy appendix value stored the subnumber in one string
+      // ("appendix.D-2"); it decodes into the two components.
+      const sub = key === "appendix" ? /^([A-Z])-(\d+)$/.exec(legacy[2]!) : null;
+      if (sub !== null) {
+        store("appendix", sub[1]!);
+        store("appendix_subnumber", sub[2]!);
+      } else {
+        store(key!, legacy[2]!);
+      }
+      continue;
+    }
+    if (IHO_DOTTED.test(segment)) {
+      // A bare a.b.c segment is the legacy edition encoding.
+      store("edition", segment);
+      continue;
+    }
+    fail("Unexpected segment", segment);
+  }
+}
+
+/** The canonical human text of a decoded attribute map (the render's
+ *  own FACES order: the colon designator on the code, the edition
+ *  before the part, the citation replacing the Part face). */
+function ihoCanonicalText(typeLetter: string, attrs: Record<string, string>): string {
+  let text = `IHO ${typeLetter}-${attrs["number"] ?? ""}`;
+  if (attrs["checks_for"] !== undefined) text += `:${attrs["checks_for"]}`;
+  if (attrs["edition"] !== undefined) text += ` ${attrs["edition"]}`;
+  if (attrs["supplement"] !== undefined) {
+    text += ` Sup ${attrs["supplement"]}`;
+    if (attrs["supplement_edition"] !== undefined) text += ` ${attrs["supplement_edition"]}`;
+    if (attrs["supplement_year"] !== undefined) text += ` (${attrs["supplement_year"]})`;
+  }
+  if (attrs["spec"] !== undefined) {
+    // "B-401", "B-122.1", "B-521(I)" — the citation face replaces the
+    // Part face.
+    text += ` ${attrs["part"]}-${attrs["spec"]}`;
+    if (attrs["spec_sub"] !== undefined) text += `.${attrs["spec_sub"]}`;
+    if (attrs["spec_variant"] !== undefined) text += `(${attrs["spec_variant"]})`;
+  } else if (attrs["part"] !== undefined) {
+    text += ` Part ${attrs["part"]}`;
+    if (attrs["part_edition"] !== undefined) text += ` ${attrs["part_edition"]}`;
+    if (attrs["part_year"] !== undefined) text += ` (${attrs["part_year"]})`;
+  }
+  if (attrs["annex"] !== undefined) {
+    text += ` Annex ${attrs["annex"]}`;
+    if (attrs["annex_edition"] !== undefined) text += ` ${attrs["annex_edition"]}`;
+    if (attrs["annex_year"] !== undefined) text += ` (${attrs["annex_year"]})`;
+  }
+  if (attrs["appendix"] !== undefined) {
+    text += ` Appendix ${attrs["appendix"]}`;
+    if (attrs["appendix_subnumber"] !== undefined) text += `-${attrs["appendix_subnumber"]}`;
+    if (attrs["appendix_edition"] !== undefined) text += ` ${attrs["appendix_edition"]}`;
+    if (attrs["appendix_year"] !== undefined) text += ` (${attrs["appendix_year"]})`;
+  }
+  if (attrs["volume"] !== undefined) {
+    text += ` Vol. ${attrs["volume"]}`;
+    if (attrs["issue"] !== undefined) text += ` (${attrs["issue"]})`;
+    if (attrs["volume_edition"] !== undefined) text += ` ${attrs["volume_edition"]}`;
+    if (attrs["volume_year"] !== undefined) text += ` (${attrs["volume_year"]})`;
+  }
+  if (attrs["year"] !== undefined) text += ` (${attrs["year"]})`;
+  return text;
+}
+
+/** The S-158 family rebind on the decode path: a draft-era part face
+ *  riding number 158 rebinds onto checks_for and the spelling face
+ *  drops (the decoded identifier renders the primary colon
+ *  designator). */
+function ihoRebindChecks(typeLetter: string, attrs: Record<string, string>): void {
+  if (typeLetter !== "S" || attrs["number"] !== "158" || attrs["checks_for"] !== undefined) {
+    return;
+  }
+  const part = attrs["part"];
+  if (part === undefined) return;
+  const seriesRef = /^([SPMBC])-(\d+)$/.exec(part);
+  const digits = seriesRef !== null ? seriesRef[2] : /^\d+$/.test(part) ? part : undefined;
+  if (digits === undefined) return;
+  delete attrs["part"];
+  // The edition/year that followed the draft-era part face are the
+  // BASE ones (the pubid#775 mis-bind fix).
+  if (attrs["edition"] === undefined && attrs["part_edition"] !== undefined) {
+    attrs["edition"] = attrs["part_edition"];
+  }
+  if (attrs["year"] === undefined && attrs["part_year"] !== undefined) {
+    attrs["year"] = attrs["part_year"];
+  }
+  delete attrs["part_edition"];
+  delete attrs["part_year"];
+  attrs["checks_for"] = digits;
+}
+
+/** The MRN guidance decode: type token, name (number + optional S-158
+ *  member), the bare dotted edition, then the shared marker machinery. */
+function ihoMrnText(body: string): string {
+  const segments = splitParts(body);
+  const typeToken = (segments.shift() ?? "").toLowerCase();
+  const letter = IHO_MRN_TYPE_LETTERS[typeToken];
+  if (letter === undefined) {
+    throw new Error(`Unknown IHO publication type ${JSON.stringify(typeToken)} in ${JSON.stringify(body)}`);
+  }
+  const name = segments.shift() ?? "";
+  const nameMatch = IHO_MRN_NAME_RE.exec(name);
+  if (nameMatch === null) {
+    throw new Error(`Unknown IHO publication name ${JSON.stringify(name)} in ${JSON.stringify(body)}`);
+  }
+  const attrs: Record<string, string> = { number: nameMatch[2]! };
+  if (nameMatch[3] !== undefined) attrs["checks_for"] = nameMatch[3];
+  if (segments[0] !== undefined && IHO_DOTTED.test(segments[0])) {
+    attrs["edition"] = segments.shift()!;
+  }
+  ihoConsumeSegments(attrs, segments, body);
+  ihoRebindChecks(letter, attrs);
+  return ihoCanonicalText(letter, attrs);
+}
+
+/** The legacy positional decode: the type letter, the docnumber, a
+ *  further bare digit segment binding the S-158 member (checks_for —
+ *  "urn:iho:s:158:100"; another anchor rejects through the builder),
+ *  then the shared marker machinery. */
+function ihoLegacyText(body: string): string {
+  const segments = splitParts(body);
+  const typeToken = (segments.shift() ?? "").toLowerCase();
+  if (!/^[spmbc]$/.test(typeToken)) {
+    throw new Error(`Unknown IHO series ${JSON.stringify(typeToken)} in ${JSON.stringify(body)}`);
+  }
+  const number = segments.shift() ?? "";
+  if (!IHO_NUMBER.test(number)) {
+    throw new Error(`Missing docnumber ${JSON.stringify(number)} in ${JSON.stringify(body)}`);
+  }
+  const attrs: Record<string, string> = { number };
+  if (segments[0] !== undefined && /^\d+$/.test(segments[0])) {
+    attrs["checks_for"] = segments.shift()!;
+  }
+  ihoConsumeSegments(attrs, segments, body);
+  ihoRebindChecks(typeToken.toUpperCase(), attrs);
+  return ihoCanonicalText(typeToken.toUpperCase(), attrs);
+}
+
 // The adopted CEN spine consumes its own supplements; their urn segments
 // carry the consolidation marker ("plus" = "+A1", its absence = "/A1") —
 // cen_cenelec/urn_generator.rb's supplement_segments.
@@ -287,179 +549,26 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
     },
   },
 
-  // lib/pubid/iho/urn_parser.rb — two namespaces. The EMITTED form is
-  // the IHO MRN guidance scheme (urn:mrn:iho:pub:spec:<name>...): the
-  // name segment is the lowercased series letter + number with colon
-  // members (and the S-158 checks member) hyphenated in, the base
-  // edition the bare dotted segment right after the name, and every
-  // other component a trailing glued token (year<yyyy>, supplement<n>,
-  // part<X>, spec<n>[.sub][(variant)], annex<A>, appendix<B>[:<sub>],
-  // vol<n>, issue<n>); a component edition is the bare dotted segment
-  // after its component token. The LEGACY urn:iho: positional segment
-  // grammar — "urn:iho:<type>:<number>[:ed-…][:year-…][:sup-…]
-  // [:part-…][:annex-…][:appendix-…][:<sub>][:vol-…][:issue-…]" —
-  // stays decodable, never emitted: the number occupies every leading
-  // bare digit segment (colon numbers round-trip unescaped) and every
-  // other component is marker-prefixed. Legacy 2.0.x spellings stay
-  // decodable too: the dotted keys part./ap./annex./suppl./appendix./
-  // vol./issue. (whose appendix value may carry the subnumber, "D-2")
-  // and the y. year tag whose value decodes into the volume.
+  // lib/pubid/iho/urn_parser.rb — two namespaces. The EMITTED form for
+  // S/P/M is the IHO MRN guidance scheme
+  // "urn:mrn:iho:pub:<type>:<name>[:<dotted edition>][:<atoms>]" —
+  // type spec/per/reg mapping back to the series letter, the name the
+  // lowercase letter + number with the S-158 member hyphenated in
+  // (s158-102), the bare dotted edition right after the name, then the
+  // lowercase marker atoms. The LEGACY urn:iho: positional scheme (the
+  // B/C emission; decodable for every series, never emitted for S/P/M):
+  // the type letter, the docnumber, a further bare digit segment
+  // binding the S-158 member ("urn:iho:s:158:100"), then the markers.
+  // Legacy 2.0.x dotted keys (part./annex./suppl./ap./appendix./vol./
+  // issue./y.) stay decodable, never emitted. Both paths decode onto
+  // the canonical shape: the draft-era part faces rebind through the
+  // builder and the spelling face drops, so a decoded identifier
+  // renders the primary colon designator.
   iho: {
-    prefix: "urn:mrn:iho:pub:spec:",
-    prefixes: ["urn:mrn:iho:pub:spec:", "urn:iho:"],
+    prefix: "urn:mrn:iho:pub:",
+    prefixes: ["urn:mrn:iho:pub:", "urn:iho:"],
     reconstruct(body, parse, prefix) {
-      if (prefix !== "urn:iho:") {
-        // --- the MRN guidance scheme (the emitted form) ---
-        const segments = splitParts(body);
-        // The members are numeric: colon members and the S-158 checks
-        // member are digits-only by grammar (a compact part face is a
-        // part token, never a name member).
-        const nameMatch = /^([a-z])(\d+)((?:-\d+)*)$/.exec(segments[0] ?? "");
-        if (nameMatch === null) {
-          throw new Error(`invalid iho mrn name: ${JSON.stringify(segments[0])}`);
-        }
-        const typeLetter = nameMatch[1]!.toUpperCase();
-        const baseNumber = nameMatch[2]!;
-        const members = nameMatch[3] === "" ? [] : nameMatch[3]!.slice(1).split("-");
-        // The S-158 member is checks_for (the primary colon face);
-        // every other series' members re-glue into the colon number.
-        // No member: the framework publication.
-        let text: string;
-        if (typeLetter === "S" && baseNumber === "158") {
-          if (members.length > 1) {
-            throw new Error(`invalid iho mrn S-158 name: ${JSON.stringify(segments[0])}`);
-          }
-          text = members.length === 1
-            ? `IHO S-158:${members[0]}`
-            : `IHO S-158`;
-        } else {
-          text = `IHO ${typeLetter}-${[baseNumber, ...members].join(":")}`;
-        }
-        let idx = 1;
-        // The base edition: the first fully-dotted segment (the
-        // canonical slot right after the name).
-        if (idx < segments.length && /^\d+\.\d+\.\d+$/.test(segments[idx]!)) {
-          text += ` ${segments[idx]}`;
-          idx += 1;
-        }
-        // Trailing tokens; the component a bare dotted segment attaches
-        // to is the one whose token precedes it.
-        let componentSeen = false;
-        let appendixSeen = false;
-        let partLetter: string | undefined;
-        let partPending = false;
-        for (; idx < segments.length; idx += 1) {
-          const segment = segments[idx]!;
-          if (/^\d+\.\d+\.\d+$/.test(segment)) {
-            if (!componentSeen) throw new Error(`unexpected iho mrn edition segment: ${segment}`);
-            text += ` ${segment}`;
-            continue;
-          }
-          if (/^\d+$/.test(segment)) {
-            // The appendix subnumber is the only bare atom past the
-            // name, allowed directly after its appendix segment.
-            if (!appendixSeen) throw new Error(`unexpected bare segment: ${segment}`);
-            text += `-${segment}`;
-            continue;
-          }
-          let m: RegExpExecArray | null;
-          if ((m = /^year(\d{4})$/.exec(segment)) !== null) {
-            text += ` (${m[1]})`;
-          } else if ((m = /^supplement(\d+)$/.exec(segment)) !== null) {
-            text += ` Sup ${m[1]}`;
-            componentSeen = true;
-          } else if ((m = /^part([A-Za-z0-9-]+)$/.exec(segment)) !== null) {
-            partLetter = m[1]!;
-            // The S-4 citation face replaces the Part face — when the
-            // next segment is the spec token the letter rides it.
-            partPending = /^spec\d/.test(segments[idx + 1] ?? "");
-            if (!partPending) {
-              text += ` Part ${partLetter}`;
-              componentSeen = true;
-            }
-          } else if ((m = /^spec(\d+)(?:\.(\d+))?(\([A-Za-z0-9]+\))?$/.exec(segment)) !== null) {
-            if (partLetter === undefined) {
-              throw new Error(`iho mrn spec token without its part: ${segment}`);
-            }
-            text += ` ${partLetter}-${m[1]}${m[2] !== undefined ? `.${m[2]}` : ""}${m[3] ?? ""}`;
-            partLetter = undefined;
-            partPending = false;
-            componentSeen = true;
-          } else if ((m = /^annex([A-Z])$/.exec(segment)) !== null) {
-            text += ` Annex ${m[1]}`;
-            componentSeen = true;
-          } else if ((m = /^appendix([A-Za-z0-9]+)$/.exec(segment)) !== null) {
-            text += ` Appendix ${m[1]}`;
-            appendixSeen = true;
-            componentSeen = true;
-          } else if ((m = /^vol(\d+)$/.exec(segment)) !== null) {
-            text += ` Vol. ${m[1]}`;
-            componentSeen = true;
-          } else if ((m = /^issue(\d+)$/.exec(segment)) !== null) {
-            if (!componentSeen) throw new Error(`unexpected iho mrn issue segment: ${segment}`);
-            text += ` (${m[1]})`;
-          } else {
-            throw new Error(`unknown iho mrn segment: ${segment}`);
-          }
-        }
-        if (partPending) {
-          throw new Error("iho mrn part token without its spec citation");
-        }
-        return parse(text);
-      }
-      // --- the legacy urn:iho: positional scheme (decodable, never
-      // emitted) ---
-      const NEW_TAG = /^([a-z]+)-(.+)$/;
-      const LEGACY_TAG = /^([a-z]+)\.(.*)$/;
-      const VERSION_SEGMENT = /^\d+\.\d+\.\d+$/;
-      const DIGITS = /^\d+$/;
-      const TAG_TEXT: Record<string, (v: string) => string> = {
-        ed: (v) => ` ${v}`,
-        year: (v) => ` (${v})`,
-        sup: (v) => ` Sup ${v}`,
-        part: (v) => ` Part ${v}`,
-        annex: (v) => ` Annex ${v}`,
-        appendix: (v) => ` Appendix ${v}`,
-        vol: (v) => ` Vol. ${v}`,
-        issue: (v) => ` (${v})`,
-        // Legacy dotted keys: decodable, never emitted. The dotted
-        // appendix value carries its subnumber in one string ("D-2").
-        ap: (v) => ` Ap. ${v}`,
-        suppl: (v) => ` Suppl ${v}`,
-        y: (v) => ` ${v}`,
-      };
-      const parts = splitParts(body);
-      const typeToken = (parts[0] ?? "").toUpperCase();
-      const tagged = (s: string): boolean => /^[a-z]+[-.]/i.test(s);
-      const first = parts[1] ?? "";
-      let idx = 2;
-      while (idx < parts.length && !tagged(parts[idx]!) && !VERSION_SEGMENT.test(parts[idx]!)) {
-        idx += 1;
-      }
-      const number = [first, ...parts.slice(2, idx)];
-      let text = `IHO ${typeToken}-${number.join(":")}`;
-      let appendixSeen = false;
-      for (; idx < parts.length; idx += 1) {
-        const segment = parts[idx]!;
-        if (VERSION_SEGMENT.test(segment)) {
-          text += ` ${segment}`;
-          continue;
-        }
-        if (DIGITS.test(segment)) {
-          // The appendix subnumber is the only bare atom past the
-          // markers, allowed directly after its appendix segment.
-          if (!appendixSeen) throw new Error(`unexpected bare segment: ${segment}`);
-          text += `-${segment}`;
-          continue;
-        }
-        const match = NEW_TAG.exec(segment) ?? LEGACY_TAG.exec(segment);
-        const tag = match?.[1]?.toLowerCase();
-        const value = match?.[2] ?? "";
-        const fn = tag !== undefined ? TAG_TEXT[tag] : undefined;
-        if (fn === undefined) throw new Error(`unknown iho urn segment: ${segment}`);
-        if (tag === "appendix") appendixSeen = true;
-        text += fn(value);
-      }
+      const text = prefix === "urn:iho:" ? ihoLegacyText(body) : ihoMrnText(body);
       return parse(text);
     },
   },

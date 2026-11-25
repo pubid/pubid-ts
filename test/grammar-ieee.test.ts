@@ -42,11 +42,13 @@ test("every ieee corpus case passes through the grammar", () => {
   // Track 01 wave 2e: the ledger is empty — the Draft-word rows take the
   // stage-ladder rules and the Cor adoptions walk their recorded
   // multi-round aliases. Six render-unreparseable rows are quarantined.
-  // The ansi dash-form wave pends the 35 adopted_standard rows whose
-  // nested ANSI id carries a trailing dash year: the testsuite ieee
-  // round predates relaton#45 (the reference fails the same rows the
-  // same way at main), so they wait on the round's re-freeze.
-  assert.equal(report.pending, 35);
+  // The ansi dash-form wave pended the 35 adopted_standard rows whose
+  // nested ANSI id carries a trailing dash year, waiting on the testsuite
+  // ieee round's re-freeze. The re-freeze landed (#121, corpus 9dcf0eb):
+  // the rows re-encode the tail as year + date_separator and pass through
+  // the port, so the 35 marks are unmarked (the pending-satisfied alarm
+  // verified all of them before the unmark).
+  assert.equal(report.pending, 0);
   // A pending case that passes must be unmarked.
   assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
   // No failures: the port matches the reference on every non-residual row,

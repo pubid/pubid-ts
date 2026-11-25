@@ -75,121 +75,8 @@
 # The remaining six ieee rows are `render_unreparseable` quarantines (the
 # reference's own canonical does not re-parse); they are not pends.
 
-# ansi dash-form wave (relaton#45, pubid 0f7ba38b): the 35 ieee
-# adopted_standard rows whose nested ANSI id carries a trailing dash
-# year. The round re-classifies the "-YYYY" tail as the date
-# (date_separator "-", the "ANSI C37.24-1971" spelling); these rows
-# predate the wave (the testsuite ieee round last re-froze at pubid main
-# 2026-11-15) and still record the old part-keyed hash. The REFERENCE
-# fails the same rows the same way (its conformance run over the same
-# tree prints FAIL ieee.adopted_standard.* canonical hash), so this is
-# the corpus waiting for its re-freeze, not a port gap. Unmark when the
-# ieee round re-freezes at a post-wave pubid ref.
-"ieee.adopted_standard.5516":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.5607":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.5931":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6007":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6033":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6038":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6048":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6056":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6216":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6259":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6272":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6279":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6364":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6406":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6459":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6484":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6488":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6496":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6497":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6498":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6503":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6505":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6506":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6525":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6526":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6527":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6528":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6529":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6534":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6536":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6546":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6554":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6573":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.6835":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
-"ieee.adopted_standard.7464":
-  reason: nested ansi dash year - the row predates the relaton#45 re-classification (reference fails it identically at main)
-  ref: pubid-testsuite ieee round re-freeze (post 0f7ba38b)
+# The 35 adopted_standard dash-year rows were re-encoded by the testsuite
+# ieee re-freeze (#121) and pass through the port - unmarked at corpus 9dcf0eb.
 
 # The pre-wave ansi round rows (testsuite ansi re-encode round #118):
 # the round re-encodes the trailing -YYYY as the year + date_separator
@@ -198,3 +85,174 @@
 # pin move to 0c9ddd7 - the same unmark the Ruby reference recorded in
 # pubid#767 (a0bf0e1d, "conformance: unmark the 170 satisfied ansi
 # pending markers").
+
+# The iala codeless slug publications (testsuite round #122, corpus 9dcf0eb):
+# the TS iala port predates the slug wave - the PARG artifact parses the
+# slugs but no builder binds the publication type. The port rides its own
+# wave; unmark these when it lands (the Ruby reference and Rust carry them).
+# The iala codeless slug publications (testsuite round #122, corpus 9dcf0eb):
+# the TS iala port predates the slug wave - the PARG artifact parses the
+# slugs but no builder binds the publication type. The port rides its own
+# wave; unmark these when it lands (the Ruby reference and Rust carry them).
+iala.publication.0001: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0002: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0003: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0004: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0005: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0006: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0709: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0710: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0711: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0712: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0713: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0714: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0715: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0716: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0717: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0718: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0719: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0720: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0721: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0722: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0723: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0724: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0725: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0726: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0727: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0728: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0729: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0730: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0731: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0732: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0733: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0734: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0735: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0736: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0737: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0738: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0739: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0740: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0741: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0742: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0743: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0744: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0745: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0746: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0747: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0748: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0749: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0750: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0751: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0752: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0753: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0754: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0755: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0756: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0757: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0758: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0759: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0760: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0761: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0762: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0763: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0764: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0765: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0766: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0767: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0768: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0769: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0770: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0771: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0772: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0773: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0774: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0775: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0776: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0777: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0778: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0779: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0780: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0781: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0782: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0783: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0784: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0785: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0786: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0787: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0788: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0789: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0790: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0791: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0792: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0793: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0794: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0795: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0796: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0797: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0798: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0799: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0800: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0801: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0802: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0803: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0804: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0805: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0806: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0807: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0808: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0809: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0810: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0811: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0812: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0813: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0814: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0815: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0816: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0817: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0818: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0819: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0820: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0821: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0822: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0823: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0824: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0825: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0826: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0827: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0828: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0829: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0830: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0831: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0832: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0833: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0834: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0835: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0836: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0837: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0838: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0839: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0840: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0841: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0842: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0843: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0844: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0845: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0846: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0847: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0848: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0849: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0850: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0851: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0852: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0853: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0854: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0855: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0856: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0857: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0858: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0859: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0860: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0861: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0862: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0863: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}
+iala.publication.0864: {reason: "the TS iala port lacks the slug publication type (the codeless-publication wave, gem #772) - the port rides its own wave", since: "2026-11-25", ref: "pubid-ts corpus catch-up at testsuite 9dcf0eb"}

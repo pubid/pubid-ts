@@ -18,23 +18,28 @@ import { BaseBuilder } from "../../model/builder.js";
  * the bare year are parse-only aliases), editions render bare dotted
  * in the human face.
  *
- * The MRN follows the IHO MRN guidance (S-100WG4): the publications
- * namespace urn:mrn:iho:pub: with type spec, the name segment the
- * lowercased letter + number with colon members hyphenated in (the
- * fleet extension for compound publication numbers, pubid#774 —
- * "S-158:102" names s158-102), the base edition the bare dotted
- * segment right after the name, and every other component a trailing
- * token (year<yyyy>, supplement<n>, part<X>, spec<n>[.sub][(variant)],
- * annex<A>, appendix<B>[:<sub>], vol<n>, issue<n>; a component
- * edition is the bare dotted segment after its component token).
+ * The MRN follows the adopted IHO MRN guidance (S-100WG4; the gem's
+ * UrnGenerator): the series the guidance gives a publication type emit
+ * urn:mrn:iho:pub:<type>:<name>[:<dotted edition>][:<trailing atoms>]
+ * — spec (S), per (P), reg (M); B and C keep the legacy positional
+ * urn:iho: emission until IHO assigns them a code. The name segment is
+ * the lowercase letter + number with the S-158 member hyphenated in
+ * ("S-158:102" names s158-102), the base edition the bare dotted
+ * segment right after the name, and every other component a lowercase
+ * marker atom (year-<yyyy>, sup-<n>, part-<X>, spec-<n> with its
+ * specsub-/specvar- children, annex-<A>, appendix-<B> hyphen-joining
+ * its subnumber, vol-<n>, issue-<n>); a component edition rides ed-
+ * right after it. The legacy urn:iho: scheme stays decodable for every
+ * series, never emitted for S/P/M.
  *
  * The S-158 family (pubid#774): checks_for is the typed facet for the
  * S-100 product number whose validation checks the publication
  * specifies; "S-158:<NNN>" is the primary designator (number=158,
- * checks_for=NNN — never an opaque number, never a part), and the
- * legacy draft-era spellings "S-158 Part S-102" / "S-158-S-102" bind
- * the SAME identity as non-normalized aliases (render keeps the input
- * spelling; equality/URN are canonical).
+ * checks_for=NNN — never an opaque number, never a part; the member
+ * designator rejects on any other anchor), and the legacy draft-era
+ * spellings "S-158 Part S-102", "S-158-S-102" and "S-158 Part 102"
+ * bind the SAME identity as non-normalized aliases (render keeps the
+ * input spelling; equality/URN are canonical).
  */
 
 type IhoKind = "standard" | "publication" | "miscellaneous" | "bibliographic" | "circular-letter";
@@ -286,10 +291,66 @@ function padEditionShorthand(value: string): string {
   return segments.join(".");
 }
 
+/**
+ * The S-158 alias unification on the deserialization path (the gem's
+ * Builder.normalize_checks_alias, pubid#774). A hash carrying the
+ * draft-era part model on the standard family — a series reference
+ * ("S-102") or the bare member number ("102") riding number 158 with
+ * no checks_for — rebinding onto checks_for; the edition/year that
+ * followed the part face are the BASE ones. Pure function: returns the
+ * hash untouched when it carries no draft-era part face, a normalized
+ * copy otherwise. The face is not restored (the canonical colon form).
+ */
+function normalizeChecksAlias(data: Record<string, unknown>): Record<string, unknown> {
+  const part = data["part"];
+  const number = data["number"];
+  const typeKey = data["_type"];
+  if (
+    typeof part !== "string" ||
+    number !== "158" ||
+    data["checks_for"] !== undefined ||
+    (typeKey !== undefined && !String(typeKey).endsWith("standard"))
+  ) {
+    return data;
+  }
+  const seriesRef = /^([SPMBC])-(\d+)$/.exec(part);
+  const digits =
+    seriesRef !== null ? seriesRef[2] : /^\d+$/.test(part) ? part : undefined;
+  if (digits === undefined) return data;
+  const out = { ...data };
+  const edition = out["part_edition"];
+  const year = out["part_year"];
+  if (out["edition"] !== undefined && edition !== undefined) {
+    throw new ParseFailed(
+      `IHO: duplicate edition: the base edition and the member edition ${String(edition)} cannot both ride S-158:${digits}`,
+      0,
+    );
+  }
+  delete out["part"];
+  delete out["part_edition"];
+  delete out["part_year"];
+  out["checks_for"] = digits;
+  if (out["edition"] === undefined && edition !== undefined) out["edition"] = edition;
+  if (out["year"] === undefined && year !== undefined) out["year"] = year;
+  return out;
+}
+
 function ihoClass(kind: IhoKind): IdentifierStatic {
   const letter = KIND_LETTERS[kind];
   class IhoKindIdentifier extends BaseIdentifier {
     static polymorphicName = `pubid:iho:${kind}`;
+
+    /** The deserialization path applies the same S-158 alias unification
+     *  the parse path applies (the gem's Builder.normalize_checks_alias):
+     *  a stored row or a legacy URN carrying the draft-era part model
+     *  (part: "S-102", part_edition: "0.2.0") decodes to the checks_for
+     *  identity, so no construction path yields the two-identity disease
+     *  of issue #775. The spelling face is NOT restored — a deserialized
+     *  identifier renders the canonical colon designator. */
+    static fromHash(hash: Record<string, unknown>): BaseIdentifier {
+      return super.fromHash(normalizeChecksAlias(hash));
+    }
+
     static attributes = extendAttributes(BaseIdentifier, {
       number: { type: "string" },
       // The S-158 family facet (pubid#774): the S-100 product number
@@ -298,11 +359,13 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       // draft-era part spellings bind the SAME identity.
       checks_for: { type: "string" },
       // The face the input spelled checks_for with: undefined = the
-      // primary colon face ("S-158:102"), a series letter = the part/
-      // compact face ("Part S-102", "S-158-S-102" — the letter it
-      // cited). Spelling-only: outside the mappings whitelist it never
+      // primary colon face ("S-158:102"), otherwise the draft-era part
+      // value as written ("S-102" of "Part S-102"/"S-158-S-102", "102"
+      // of "Part 102") — it prints in the Part slot verbatim.
+      // Spelling-only: outside the mappings whitelist it never
       // serializes, and equality skips it — render keeps the input
-      // spelling, equality/URN use the canonical shape.
+      // spelling, equality/URN use the canonical shape. URN
+      // deserialization restores no face (the canonical colon form).
       checks_face: { type: "string", equalityIgnored: true },
       part: { type: "string" },
       part_edition: { type: "string" },
@@ -387,16 +450,13 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     render(): string {
       let result = `IHO ${letter}-${this.number}`;
       // The S-158 checks face: the primary colon form rides the code
-      // ("S-158:102"); the legacy part face keeps its spelling and sits
-      // where the Part face sat — after the edition ("S-158 0.2.0
+      // ("S-158:102"); the draft-era part face keeps its spelling and
+      // prints in the Part slot — after the edition ("S-158 0.2.0
       // Part S-102"). The compact face renders expanded (the S-5A law).
       if (this.checks_for !== undefined && this.checks_face === undefined) {
         result += `:${this.checks_for}`;
       }
       if (this.edition !== undefined) result += ` ${this.edition}`;
-      if (this.checks_for !== undefined && this.checks_face !== undefined) {
-        result += ` Part ${this.checks_face}-${this.checks_for}`;
-      }
       if (this.supplement !== undefined) {
         result += ` Sup ${this.supplement}`;
         if (this.supplement_edition !== undefined) result += ` ${this.supplement_edition}`;
@@ -409,6 +469,10 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
         result += ` ${this.part}-${this.spec}`;
         if (this.spec_sub !== undefined) result += `.${this.spec_sub}`;
         if (this.spec_variant !== undefined) result += `(${this.spec_variant})`;
+      } else if (this.checks_face !== undefined) {
+        // The draft-era member face prints in the Part slot, the part
+        // value as written ("Part S-102", "Part 102").
+        result += ` Part ${this.checks_face}`;
       } else if (this.part !== undefined) {
         result += ` Part ${this.part}`;
         if (this.part_edition !== undefined) result += ` ${this.part_edition}`;
@@ -438,69 +502,114 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
     }
   }
   class IhoUrnGenerator extends BaseUrnGenerator<IhoKindIdentifier> {
+    // The guidance publication type per series letter (the gem's
+    // MRN_TYPES): S = Standards and Specifications -> spec, P = the
+    // periodic publications -> per, M = Miscellaneous (Base Regulatory
+    // Publications) -> reg. B and C have no guidance type code — they
+    // keep the legacy positional emission until IHO assigns one.
+    static MRN_TYPES: Record<string, string> = { S: "spec", P: "per", M: "reg" };
+
     generate(): string {
+      const mrnType = IhoUrnGenerator.MRN_TYPES[letter];
+      if (mrnType === undefined) return this.generateLegacy();
       const id = this.identifier;
-      // The IHO MRN guidance (S-100WG4): the publications namespace is
-      // urn:mrn:iho:pub:, type spec, the name segment the lowercased
-      // series letter + number. The edition keeps its canonical
-      // position directly after the name (dotted, bare — never an
-      // ed- marker); every other component is a trailing token.
-      const parts = ["urn", "mrn", "iho", "pub", "spec"];
-      // The name: colon members hyphenate into it (the fleet extension
-      // for compound publication numbers, pubid#774 — "C-16:2" names
-      // c16-2), and the S-158 checks member rides here too
-      // ("S-158:102" → s158-102), so the edition slot stays canonical.
-      let name = `${letter.toLowerCase()}${String(id.number).split(":")[0]}`;
-      const members = String(id.number).split(":").slice(1);
-      if (id.checks_for !== undefined) members.push(id.checks_for);
-      name += members.map((m) => `-${m}`).join("");
-      parts.push(name);
-      // The base edition is the bare positional segment (the guidance's
-      // <edition number> slot); the with-year qualifier a trailing
-      // year token.
+      // The IHO MRN guidance (S-100WG4, the gem's generate_mrn): the
+      // publications namespace urn:mrn:iho:pub:, the type token, the
+      // name segment, the bare dotted edition, then the trailing
+      // marker atoms in containment order.
+      const parts = ["urn:mrn:iho:pub", mrnType, this.mrnName(id)];
       if (id.edition !== undefined) parts.push(id.edition);
-      if (id.year !== undefined) parts.push(`year${id.year}`);
-      // Components in containment order; a component edition emits as
-      // the bare dotted segment right after its component token (the
-      // positional ed- rule of the old scheme, unmarked), a component
-      // year as its own year token.
+      if (id.year !== undefined) parts.push(`year-${id.year}`);
       if (id.supplement !== undefined) {
-        parts.push(`supplement${id.supplement}`);
-        if (id.supplement_edition !== undefined) parts.push(id.supplement_edition);
-        if (id.supplement_year !== undefined) parts.push(`year${id.supplement_year}`);
+        parts.push(`sup-${id.supplement}`);
+        if (id.supplement_edition !== undefined) parts.push(`ed-${id.supplement_edition}`);
+        if (id.supplement_year !== undefined) parts.push(`year-${id.supplement_year}`);
       }
       if (id.part !== undefined) {
-        parts.push(`part${id.part}`);
-        if (id.part_edition !== undefined) parts.push(id.part_edition);
-        if (id.part_year !== undefined) parts.push(`year${id.part_year}`);
+        parts.push(`part-${id.part}`);
+        if (id.part_edition !== undefined) parts.push(`ed-${id.part_edition}`);
+        if (id.part_year !== undefined) parts.push(`year-${id.part_year}`);
       }
-      // The S-4 spec citation: one token shaped like the printed face
-      // (spec401, spec351.1(I)); the spelled SECTION is NOT emitted —
-      // derivable from the spec's hundreds digit.
+      // The S-4 spec citation: a child of its part (the citation letter
+      // rides the part- atom); the SECTION is NOT emitted — derivable
+      // from the spec's hundreds digit.
       if (id.spec !== undefined) {
-        let token = `spec${id.spec}`;
-        if (id.spec_sub !== undefined) token += `.${id.spec_sub}`;
-        if (id.spec_variant !== undefined) token += `(${id.spec_variant})`;
-        parts.push(token);
+        parts.push(`spec-${id.spec}`);
+        if (id.spec_sub !== undefined) parts.push(`specsub-${id.spec_sub}`);
+        if (id.spec_variant !== undefined) parts.push(`specvar-${id.spec_variant}`);
       }
       if (id.annex !== undefined) {
-        parts.push(`annex${id.annex}`);
-        if (id.annex_edition !== undefined) parts.push(id.annex_edition);
-        if (id.annex_year !== undefined) parts.push(`year${id.annex_year}`);
+        parts.push(`annex-${id.annex}`);
+        if (id.annex_edition !== undefined) parts.push(`ed-${id.annex_edition}`);
+        if (id.annex_year !== undefined) parts.push(`year-${id.annex_year}`);
       }
       if (id.appendix !== undefined) {
-        parts.push(`appendix${id.appendix}`);
-        // The subnumber is a bare child segment directly after the
-        // appendix (the old scheme's bare-atom rule).
-        if (id.appendix_subnumber !== undefined) parts.push(id.appendix_subnumber);
-        if (id.appendix_edition !== undefined) parts.push(id.appendix_edition);
-        if (id.appendix_year !== undefined) parts.push(`year${id.appendix_year}`);
+        // The subnumber hyphen-joins its appendix (one compound
+        // segment, RFC 3986-safe).
+        let segment = `appendix-${id.appendix}`;
+        if (id.appendix_subnumber !== undefined) segment += `-${id.appendix_subnumber}`;
+        parts.push(segment);
+        if (id.appendix_edition !== undefined) parts.push(`ed-${id.appendix_edition}`);
+        if (id.appendix_year !== undefined) parts.push(`year-${id.appendix_year}`);
       }
       if (id.volume !== undefined) {
-        parts.push(`vol${id.volume}`);
-        if (id.issue !== undefined) parts.push(`issue${id.issue}`);
-        if (id.volume_edition !== undefined) parts.push(id.volume_edition);
-        if (id.volume_year !== undefined) parts.push(`year${id.volume_year}`);
+        parts.push(`vol-${id.volume}`);
+        if (id.issue !== undefined) parts.push(`issue-${id.issue}`);
+        if (id.volume_edition !== undefined) parts.push(`ed-${id.volume_edition}`);
+        if (id.volume_year !== undefined) parts.push(`year-${id.volume_year}`);
+      }
+      return parts.join(":");
+    }
+
+    /** The lowercase name form: sNNN, the S-158 member joining
+     *  hyphenated (s158-102) so the edition stays in its canonical 4th
+     *  position. */
+    private mrnName(id: IhoKindIdentifier): string {
+      let name = `${letter.toLowerCase()}${id.number}`;
+      if (id.checks_for !== undefined) name += `-${id.checks_for}`;
+      return name;
+    }
+
+    /** The legacy positional form (the B/C emission today; the shape
+     *  every legacy urn:iho: URN decodes from). */
+    private generateLegacy(): string {
+      const id = this.identifier;
+      const parts = ["urn", "iho", letter.toLowerCase(), id.number];
+      if (id.edition !== undefined) parts.push(`ed-${id.edition}`);
+      if (id.year !== undefined) parts.push(`year-${id.year}`);
+      if (id.supplement !== undefined) {
+        parts.push(`sup-${id.supplement}`);
+        if (id.supplement_edition !== undefined) parts.push(`ed-${id.supplement_edition}`);
+        if (id.supplement_year !== undefined) parts.push(`year-${id.supplement_year}`);
+      }
+      if (id.part !== undefined) {
+        parts.push(`part-${id.part}`);
+        if (id.part_edition !== undefined) parts.push(`ed-${id.part_edition}`);
+        if (id.part_year !== undefined) parts.push(`year-${id.part_year}`);
+      }
+      if (id.spec !== undefined) {
+        parts.push(`spec-${id.spec}`);
+        if (id.spec_sub !== undefined) parts.push(`specsub-${id.spec_sub}`);
+        if (id.spec_variant !== undefined) parts.push(`specvar-${id.spec_variant}`);
+      }
+      if (id.annex !== undefined) {
+        parts.push(`annex-${id.annex}`);
+        if (id.annex_edition !== undefined) parts.push(`ed-${id.annex_edition}`);
+        if (id.annex_year !== undefined) parts.push(`year-${id.annex_year}`);
+      }
+      if (id.appendix !== undefined) {
+        parts.push(`appendix-${id.appendix}`);
+        // The subnumber is a bare child segment directly after the
+        // appendix (the legacy emission's only bare atom).
+        if (id.appendix_subnumber !== undefined) parts.push(id.appendix_subnumber);
+        if (id.appendix_edition !== undefined) parts.push(`ed-${id.appendix_edition}`);
+        if (id.appendix_year !== undefined) parts.push(`year-${id.appendix_year}`);
+      }
+      if (id.volume !== undefined) {
+        parts.push(`vol-${id.volume}`);
+        if (id.issue !== undefined) parts.push(`issue-${id.issue}`);
+        if (id.volume_edition !== undefined) parts.push(`ed-${id.volume_edition}`);
+        if (id.volume_year !== undefined) parts.push(`year-${id.volume_year}`);
       }
       return parts.join(":");
     }
@@ -531,6 +640,16 @@ class IhoBuilder extends BaseBuilder {
   // designator and the series-reference part faces) re-key into
   // checks_for (pubid#774).
   static S158_NUMBER = "158";
+  // The two publication modes are mutually exclusive (the gem's
+  // assert_edition_mode!): a base edition and any component edition
+  // cannot ride together.
+  static COMPONENT_EDITIONS = [
+    "part_edition",
+    "supplement_edition",
+    "annex_edition",
+    "appendix_edition",
+    "volume_edition",
+  ];
   // A citation letter is one of S-4's lettered Parts; the section
   // vocabulary (100-600, Part C 100-500) is theirs.
   static SPEC_LETTERS = ["A", "B", "C"];
@@ -574,21 +693,26 @@ class IhoBuilder extends BaseBuilder {
         delete flat[yearKey];
       }
     }
-    // The S-158 family re-key (pubid#774). The colon designator form
-    // "S-158:<NNN>" is the PRIMARY face: number stays 158, the member
-    // binds checks_for. On every other series the colon member re-glues
-    // into the number (the opaque C-16:2 face, pubid#637). A
-    // series-reference part on S-158 ("Part S-102", compact
-    // "S-158-S-102") is a LEGACY draft-era spelling of the SAME
-    // identity: it binds checks_for, its citation letter rides the
-    // spelling-only face (render keeps the input spelling, equality/
-    // URN canonical), and its separately-published edition/year slots
-    // fold onto the base (the draft rows carry ONE edition wherever it
-    // sat — the pubid#775 mis-bind dies with the part capture).
+    // The S-158 family re-key (pubid#774, the gem's Builder). The colon
+    // designator "S-158:<NNN>" is the PRIMARY face: number stays 158,
+    // the member binds checks_for. The member designator is the S-158
+    // series device — a colon form on any other anchor rejects
+    // ("S-44:5", "C-16:2"). A draft-era part face on the S-158 family —
+    // a series reference ("Part S-102"), the compact face
+    // ("S-158-S-102") or the bare member number ("Part 102") — rebinds
+    // onto checks_for while checks_for is UNBOUND (a bound member keeps
+    // a genuine part: "S-158:100 Part 2"); a lettered or compound part
+    // value ("Part A", "Part 4a") never rebinds. The edition/year that
+    // follow the draft-era part face are the BASE ones (the pubid#775
+    // mis-bind fix), and the spelling face records the part value as
+    // written so the render keeps the input's spelling (equality/URN
+    // canonical). The two publication modes are mutually exclusive: a
+    // base edition and any component edition cannot ride together.
     const colonSuffix = flat["colon_suffix"];
     delete flat["colon_suffix"];
     if (colonSuffix !== undefined) {
-      if (flat["number"] === IhoBuilder.S158_NUMBER) {
+      const type = flat["type"];
+      if (flat["number"] === IhoBuilder.S158_NUMBER && (type === undefined || type === "S")) {
         if (flat["checks_for"] !== undefined && flat["checks_for"] !== colonSuffix) {
           throw new ParseFailed(
             `IHO: checks_for ${String(flat["checks_for"])} conflicts with the colon member ${String(colonSuffix)}`,
@@ -597,38 +721,52 @@ class IhoBuilder extends BaseBuilder {
         }
         flat["checks_for"] = colonSuffix;
       } else {
-        flat["number"] = `${String(flat["number"])}:${String(colonSuffix)}`;
+        throw new ParseFailed(
+          `IHO: the checks_for member designator is the S-158 series device: ${String(type ?? "S")}-${String(flat["number"])}:${String(colonSuffix)} cannot carry it`,
+          0,
+        );
       }
     }
-    if (flat["number"] === IhoBuilder.S158_NUMBER) {
-      const match =
-        typeof flat["part"] === "string" ? /^([A-Z])-(\d+)$/.exec(flat["part"]) : null;
-      if (match !== null) {
-        const seriesRef = match[1]!;
-        const member = match[2]!;
-        if (flat["checks_for"] !== undefined && flat["checks_for"] !== member) {
+    if (
+      flat["number"] === IhoBuilder.S158_NUMBER &&
+      flat["checks_for"] === undefined &&
+      typeof flat["part"] === "string"
+    ) {
+      const partValue = flat["part"];
+      const seriesRef = /^([SPMBC])-(\d+)$/.exec(partValue);
+      const digits =
+        seriesRef !== null ? seriesRef[2] : /^\d+$/.test(partValue) ? partValue : undefined;
+      if (digits !== undefined) {
+        flat["checks_for"] = digits;
+        flat["checks_face"] = partValue;
+        delete flat["part"];
+        const edition = flat["part_edition"];
+        const year = flat["part_year"];
+        delete flat["part_edition"];
+        delete flat["part_year"];
+        if (flat["edition"] !== undefined && edition !== undefined) {
           throw new ParseFailed(
-            `IHO: checks_for ${String(flat["checks_for"])} conflicts with the part ${String(flat["part"])}`,
+            `IHO: duplicate edition: the base edition ${String(flat["edition"])} and the member edition ${String(edition)} cannot both ride S-158:${digits}`,
             0,
           );
         }
-        flat["checks_for"] = member;
-        flat["checks_face"] = seriesRef;
-        delete flat["part"];
-        for (const [slot, base] of [
-          ["part_edition", "edition"],
-          ["part_year", "year"],
-        ] as const) {
-          if (flat[slot] === undefined) continue;
-          if (flat[base] !== undefined && flat[base] !== flat[slot]) {
-            throw new ParseFailed(
-              `IHO: the S-158 publication carries one edition — ${String(flat[base])} and the part's ${String(flat[slot])} conflict`,
-              0,
-            );
-          }
-          if (flat[base] === undefined) flat[base] = flat[slot];
-          delete flat[slot];
+        if (flat["year"] !== undefined && year !== undefined) {
+          throw new ParseFailed(
+            `IHO: duplicate year: the base year ${String(flat["year"])} and the member year ${String(year)} cannot both ride S-158:${digits}`,
+            0,
+          );
         }
+        if (flat["edition"] === undefined && edition !== undefined) flat["edition"] = edition;
+        if (flat["year"] === undefined && year !== undefined) flat["year"] = year;
+      }
+    }
+    if (flat["edition"] !== undefined) {
+      const owned = IhoBuilder.COMPONENT_EDITIONS.filter((k) => flat[k] !== undefined);
+      if (owned.length > 0) {
+        throw new ParseFailed(
+          `IHO: a base edition and a component edition are mutually exclusive: ${owned.join(", ")} cannot ride edition ${String(flat["edition"])}`,
+          0,
+        );
       }
     }
     // The S-4 spec citation resolution (ruby resolve_spec_citation!):

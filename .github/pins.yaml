@@ -1,36 +1,35 @@
-# pubid-testsuite (af9068b, the wmo round:freeze cut by the one-command
-# round:freeze tooling of #114): the wmo widening round at pubid
-# 7ac315d2 (2.0.49) - the WMO-No. publication series grows the volume
-# face ("WMO-No. 8, Volume I" through V, the dotted-roman sub-volume
-# "WMO-No. 306, Volume I.1", the letter volume "WMO-No. 9, Volume D"),
-# the compound editions (the year pair "WMO-No. 8, 2021/2018 edition"
-# riding one edition string, the status-qualified "WMO-No. 8,
-# Provisional 2026 edition", the updated-in tail "WMO-No. 1364, 2023
-# edition, updated in 2025") and the new series heads (WMO/TD-No.,
-# JCOMM Technical Report No., GAW Report No. - the prefix law: every
-# head names its publisher, so the bare "TD-No.", the spaced cover
-# "WMO/TD - No.", the misattributed "IMO/TD-No." and the third-party
-# "WMO/GAW Report No." spellings all reject); the wmo round 11 -> 40
-# cases, 9 -> 18 aliases (the MRN slug discriminators: wmo-td-196,
-# jcomm-tr-14, gaw-312, the caseless vol-i/status-provisional/updated
-# segments, the hyphenated ed2021-2018 pair), 7 -> 12 negatives,
-# 7 -> 12 debt - 46 flavors, 99,896 cases - the tree the vendored
-# corpus was regenerated from.
-testsuite_ref: af9068bccb5a740240c6e56289949a0604576833
-# pubid-grammar main (588687ee76b6d3f6b2ca82e8811ac9e7016b0d16): the
-# wmo widening artifact carry (gem#768, grammar#142 - the four new
-# captures volume/edition_status/updated_in/series_head, the compound
-# year-pair and status-qualified edition faces, the TD/JCOMM/GAW
-# series heads, the prefix-law rejects baked into the artifact's own
-# test set; the artifact re-baked at the fleet pin and the contracts
-# regenerated; grammar version 0.1.0 -> 0.2.0) - the artifact the wmo
-# port parses through. The pin range also carries the ansi dash-form
+# pubid-testsuite (9dcf0eb, the iho round:freeze cut by the one-command
+# round:freeze tooling of #124): the S-158 checks_for rekey round at
+# pubid 561ae276 (2.0.52) - the S-158 publication-series model: the
+# colon designator "S-158:102 [edition]" binds number=158 and
+# checks_for=102 (the draft-era rows 0106/0108 rekey onto the checks
+# identity, the colon rows 0109-0112 leave the opaque 158:NNN number
+# for the typed member), the draft-era spellings ("Part S-102",
+# "S-158-S-102", "Part 102") riding the same identity as
+# non-normalized aliases, the member designator rejecting on any other
+# anchor (S-44:5 joins the negatives) and the URN rows migrating to
+# the adopted IHO MRN guidance scheme (urn:mrn:iho:pub:spec/reg/per -
+# the B/C series keeping the legacy urn:iho: emission); the iho round
+# 180 -> 184 cases, 1 -> 4 negatives - 46 flavors, 100,032 cases - the
+# tree the vendored corpus was regenerated from.
+testsuite_ref: 9dcf0eb34b3600d9b0667f7b211045a3f78103cf
+# pubid-grammar main (9102466, the iho S-158 round): the checks_for
+# series-member designator (gem#776, grammar#147 - the colon form
+# "S-158:102 [edition]" binds number=158 and checks_for=102 as two
+# typed components, the draft-era spellings "S-158 Part S-102",
+# "S-158-S-102" and "S-158 Part 102" binding the same identity as
+# non-normalized aliases, the member designator rejecting on any other
+# anchor, and the MRN-guidance emission notes carried in the grammar
+# header; the artifact re-baked and the corpus/contract regenerated at
+# the same pin, idempotent on the other flavors) - the artifact the iho
+# port parses beside. The pin range also carries the ansi dash-form
 # artifact (relaton#45), the wmo flavor (pubid#763), the itu
 # Resolution rules (relaton#402), the eu and arxiv flavors
 # (pubid#752/#753), the bsi absorption features, the lua-subset and
-# toml flavors (rs#531), the json resync declaration (rs#539 layer 1)
-# and the csv/ini re-seal at the CI toolchain (ruby 3.4.8 + parsanol
-# 1.5.1.0); the other flavors' trees are byte-identical - the
-# artifacts vendor/parg was mirrored from, byte-checked by the
-# "Vendored artifacts match the pinned grammar ref" gate.
-grammar_ref: 588687ec7de76ed1e9e679b81b200d5c5ca72baf
+# toml flavors (rs#531), the json resync declaration (rs#539 layer 1),
+# the csv/ini re-seal and the adobe contracts re-bake at the CI
+# toolchain (ruby 3.4.8 + parsanol 1.5.1.0) and the iala slug-form
+# artifact (relaton#604) - the artifacts vendor/parg was mirrored
+# from, byte-checked by the "Vendored artifacts match the pinned
+# grammar ref" gate.
+grammar_ref: 91024661c7ea54b97e3e28ccddc13bf5c0652375

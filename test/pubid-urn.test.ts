@@ -58,8 +58,11 @@ const fixture: Fixture = JSON.parse(
  *  the canonical rebuild cannot until the model lands. SAE joined when
  *  the testsuite's corpus round recorded identifier hashes for it (the
  *  URN schema table is ported; the model is not). ccsds left when its
- *  model landed (pubid-ts#178). */
-const BUILD_PENDING = new Set(["sae"]);
+ *  model landed (pubid-ts#178). Adobe and iala joined with the iho
+ *  S-158 round's testsuite re-pin (the adobe dotted-versions and the
+ *  iala codeless-publications corpus rounds recorded hashes for types
+ *  whose model ports ride their own waves). */
+const BUILD_PENDING = new Set(["sae", "adobe", "iala"]);
 
 const canon = (node: unknown): unknown => {
   if (Array.isArray(node)) return node.map(canon);

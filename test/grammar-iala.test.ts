@@ -18,10 +18,23 @@ test("every iala corpus case passes through the grammar", () => {
   const payloads = corpus.flavors.get("iala")!;
   const impl = grammarImplementation("iala")!;
   assert.ok(impl, "iala is grammar-backed");
-  const report = runFlavor("iala", payloads, impl, new PendingRegistry());
+  const report = runFlavor(
+    "iala",
+    payloads,
+    impl,
+    PendingRegistry.load(
+      process.env["PENDING_PATH"] ?? "conformance/pending.yaml",
+    ),
+  );
   assert.equal(report.failures.length, 0, report.failures.slice(0, 10).join("; "));
+  // The 162 codeless slug-publication rows (testsuite round #122) ride the
+  // slug-port wave: the artifact parses them, no builder binds the type yet,
+  // so they ledger-pend with reason + ref; the flavor stays clean, so the
+  // outcome is pass with the pending count carried on the report.
   assert.equal(report.outcome, "pass");
-  assert.equal(report.cases, payloads.cases.length);
+  assert.equal(report.pending, 162);
+  assert.equal(report.pendingSatisfied.length, 0, report.pendingSatisfied.join("; "));
+  assert.equal(report.cases, payloads.cases.length - 162);
   assert.ok(report.cases > 690);
 });
 
