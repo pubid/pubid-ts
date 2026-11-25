@@ -18,6 +18,20 @@ const FACET = /^(\d+)\.([a-z0-9]+)-(.*)/;
 const INTEGER = /^-?[0-9]+$/;
 const NULL = "~";
 
+/**
+ * Legacy atom spellings, decode-only (never emitted): the flavor =>
+ * {legacy prefix => canonical prefix} table behind the renamed atoms.
+ * The iho S-158 member atom rode `checks-<NNN>` before the facet
+ * renamed to `product` (gem #783) — the 0.1.x line and gem 2.0.54 and
+ * earlier emitted it, so those URNs stay decodable here; the gem's own
+ * legacy-decode stance ("decodable, never emitted",
+ * urn_parser.rb). Lives OUTSIDE the generated schema tables (they
+ * carry the canonical prefixes only, per the regeneration flow).
+ */
+const LEGACY_ATOM_PREFIXES: Record<string, Record<string, string>> = {
+  iho: { checks: "product" },
+};
+
 export class Decoder {
   constructor(private readonly body: string) {}
 
@@ -98,7 +112,7 @@ export class Decoder {
     let i = index;
     while (i < tokens.length) {
       const token = tokens[i] as string;
-      const position = schema.atomPosition(token);
+      const position = this.atomPosition(schema, token);
       if (position === undefined) break;
       if (position <= last) {
         this.fail(`atom ${JSON.stringify(token)} is out of order or repeated`);
@@ -112,6 +126,20 @@ export class Decoder {
       i += 1;
     }
     return i;
+  }
+
+  /** The atom slot a token decodes to: the schema's own prefixes first,
+   *  then the flavor's legacy spellings (decode-only; see
+   *  LEGACY_ATOM_PREFIXES). Out-of-order and repeat checks run on the
+   *  canonical position, so a legacy spelling obeys the same slot law. */
+  private atomPosition(schema: TypeSchema, token: string): number | undefined {
+    const position = schema.atomPosition(token);
+    if (position !== undefined) return position;
+    const m = /^([a-z0-9]+)-/.exec(token);
+    if (m === null) return undefined;
+    const legacy = LEGACY_ATOM_PREFIXES[schema.flavor]?.[m[1] as string];
+    if (legacy === undefined) return undefined;
+    return schema.atomPosition(`${legacy}${token.slice(m[1]!.length)}`);
   }
 
   private atomValue(raw: string, atom: Atom): unknown {

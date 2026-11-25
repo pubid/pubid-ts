@@ -10,7 +10,7 @@
 import { define } from "../index.js";
 
 export const ihoSchema = define("iho", (s) => {
-  s.atom("checks_for", "checks");
+  s.atom("product", "product");
   s.atom("edition", "ed");
   s.atom("year", "year");
   s.atom("supplement", "sup");
