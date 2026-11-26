@@ -132,7 +132,9 @@ test("the worker entry's import graph is worker-safe", () => {
 // product-specification classes land, so the schema's
 // pubid:iala:publication and pubid:iala:product-specification
 // declarations resolve — +2.
-const REGISTERED_TYPES = 326;
+// pubid-ts#227: bsi_pfs re-declares the coded bsi ten, all of which
+// resolve through the coded classes — +10.
+const REGISTERED_TYPES = 336;
 
 test("every registered identifier type resolves under the worker entry", () => {
   let registered = 0;
