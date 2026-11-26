@@ -15,7 +15,9 @@ import { splitParts, withYear, type UrnParserDef } from "./types.js";
 // through the builder and the spelling face drops, so a decoded
 // identifier renders the primary colon designator.
 
-const IHO_MRN_TYPE_LETTERS: Record<string, string> = { spec: "S", per: "P", reg: "M" };
+const IHO_MRN_TYPE_LETTERS: Record<string, string> = {
+  spec: "S", per: "P", reg: "M", bathy: "B", cb: "C",
+};
 // The publication name: the lowercase series letter + number, the
 // S-158 member hyphen-joined (s158-102).
 const IHO_MRN_NAME_RE = /^([spmbc])(\d+)(?:-(\d+))?$/;
@@ -550,15 +552,16 @@ export const URN_PARSERS: Record<string, UrnParserDef> = {
   },
 
   // lib/pubid/iho/urn_parser.rb — two namespaces. The EMITTED form for
-  // S/P/M is the IHO MRN guidance scheme
+  // every series is the IHO MRN guidance scheme
   // "urn:mrn:iho:pub:<type>:<name>[:<dotted edition>][:<atoms>]" —
-  // type spec/per/reg mapping back to the series letter, the name the
+  // type spec/per/reg/bathy/cb (the five S-11 Part C Ed 1.0.0
+  // section 1.2 groups) mapping back to the series letter, the name the
   // lowercase letter + number with the S-158 member hyphenated in
   // (s158-102), the bare dotted edition right after the name, then the
-  // lowercase marker atoms. The LEGACY urn:iho: positional scheme (the
-  // B/C emission; decodable for every series, never emitted for S/P/M):
-  // the type letter, the docnumber, a further bare digit segment
-  // binding the S-158 member ("urn:iho:s:158:100"), then the markers.
+  // lowercase marker atoms. The LEGACY urn:iho: positional scheme is
+  // decode-only for every series, emitted by none: the type letter, the
+  // docnumber, a further bare digit segment binding the S-158 member
+  // ("urn:iho:s:158:100"), then the markers.
   // Legacy 2.0.x dotted keys (part./annex./suppl./ap./appendix./vol./
   // issue./y.) stay decodable, never emitted. Both paths decode onto
   // the canonical shape: the draft-era part faces rebind through the

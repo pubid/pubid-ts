@@ -50,6 +50,16 @@ export function registerType(klass: IdentifierStatic): void {
   TYPE_REGISTRY.set(klass.polymorphicName, klass);
 }
 
+/**
+ * Register a decode-only _type alias onto a registered class (the gem's
+ * `polymorphic_type_map` merge): a stored row carrying a pre-rename wire
+ * name routes to the renamed class. Decode-only, never emitted — the
+ * emission side writes the renamed `polymorphicName`.
+ */
+export function registerTypeAlias(alias: string, klass: IdentifierStatic): void {
+  TYPE_REGISTRY.set(alias, klass);
+}
+
 export function resolveType(type: string): IdentifierStatic | undefined {
   return TYPE_REGISTRY.get(type);
 }

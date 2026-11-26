@@ -1,19 +1,19 @@
-# pubid-testsuite (4a3b030, testsuite#126 - the iho round:freeze at
-# pubid 81b786888833 / 2.0.55): the coupled corpus round for the S-158
-# member facet rename checks_for -> product (pubid#783) - the 10 frozen
-# S-158 rows carry product: instead of checks_for:, the _debt note and
-# the fail-fixture twin carry the renamed rejection message, the mirror
-# SUMMARY syncs to the gem's reclassification, and provenance
-# regenerates (the MRN segment form s158-<NNN> and every render are
-# byte-unchanged) - iho 184 cases, 100,081 total - the tree the
-# pubid-urn parity fixture and the conformance gate run against.
-testsuite_ref: 4a3b030feb349e922881cd987cffd062e5853384
-# pubid-grammar main (51f5c4b, grammar #148): the iho.parg binding
-# rename checks_for -> product (the binding, capture, rule name and the
-# header/component-table prose; parse behavior unchanged - a binding
-# rename alters no accepts/rejects) and the re-baked iho artifact at
-# the 1.5.1.0 fleet pin (schema/corpus contracts regen idempotent;
-# every other flavor byte-identical) - the artifact vendor/parg was
-# re-mirrored from, byte-checked (iho.json md5 1d9a1156) by the
-# "Vendored artifacts match the pinned grammar ref" gate.
-grammar_ref: 51f5c4b21a88f124de8693b97e2eb3fc0569946f
+# pubid-testsuite (80cd08a, the iho round:freeze at pubid
+# 9c69f8d5c06e / 2.0.56 - the B/C series round: the 20 B/C rows move
+# onto the renamed wire types (pubid:iho:bathymetric /
+# pubid:iho:capacity_building) with the bathy/cb MRN URN expectations,
+# the row files rename in lockstep with the gem fixtures
+# (bibliographic.yaml -> bathymetric.yaml, circular_letter.yaml ->
+# capacity_building.yaml), the fail-fixture twin carries the renamed
+# bucket, and provenance regenerates at the released gem tree - iho 184
+# cases, the tree the pubid-urn parity fixture and the conformance gate
+# run against.
+testsuite_ref: 80cd08a826ab0b2f880899322a761f903b8ba744
+# pubid-grammar main (4ceffc76, grammar #149): the iho grammar joins the
+# B/C series onto the MRN-guidance emission (bathy/cb - the five S-11
+# Part C Ed 1.0.0 section 1.2 groups; the comments/rules move in
+# lockstep with gem fe2b8b1f) and the re-baked iho artifact at the
+# 1.5.1.0 fleet pin - the artifact vendor/parg was re-mirrored from,
+# byte-checked (the "Vendored artifacts match the pinned grammar ref"
+# gate) at this ref.
+grammar_ref: 4ceffc7637d0a88d8e8a74d3ec4f4ad6ec0e4111

@@ -59,7 +59,7 @@ test("iho parses open-ended beyond the corpus", () => {
   assert.equal(impl.parse("S-44 5.0.0").toHuman(), "IHO S-44 5.0.0");
   // The slash chain is the volume's short face; the edition rides the
   // base and emits in the MRN's canonical edition slot (the adopted
-  // IHO MRN guidance scheme: spec/per/reg for S/P/M).
+  // IHO MRN guidance scheme: spec/per/reg/bathy/cb — all five series).
   assert.equal(impl.parse("IHO P-1/21 1.0.0").toUrn(),
     "urn:mrn:iho:pub:per:p1:vol-21:ed-1.0.0");
   assert.equal(impl.parse("IHO P-1/21 1.0.0").toHuman(),
@@ -68,8 +68,8 @@ test("iho parses open-ended beyond the corpus", () => {
   // colon form rejects (pubid#774).
   assert.throws(() => impl.parse("IHO C-16:2 1.0.0"));
   assert.equal(impl.parse("IHO C-16 1.0.0").toHuman(), "IHO C-16 1.0.0");
-  // B/C have no guidance type code: the legacy positional emission.
-  assert.equal(impl.parse("IHO C-16 1.0.0").toUrn(), "urn:iho:c:16:ed-1.0.0");
+  // C carries its guidance code (cb) like every series.
+  assert.equal(impl.parse("IHO C-16 1.0.0").toUrn(), "urn:mrn:iho:pub:cb:c16:1.0.0");
   // Component-edition duality: supplement, part, annex and appendix
   // parse in tail order and each carries its own edition.
   assert.equal(
