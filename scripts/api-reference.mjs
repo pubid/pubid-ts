@@ -72,9 +72,14 @@ for (const child of (project.children ?? [])
   out.push(`## \`${child.name}\``, "");
   const members = (child.children ?? [])
     .filter((m) =>
-      [ReflectionKind.Method, ReflectionKind.Function].includes(m.kind) ||
-      (child.kind === ReflectionKind.Interface &&
-        m.kind === ReflectionKind.Property),
+      // Inherited members (e.g. the Error statics a surfaced error class
+      // reflects from lib.d.ts) are noise - the reference documents the
+      // API's own declarations only.
+      !m.inheritedFrom &&
+      ([ReflectionKind.Method, ReflectionKind.Function].includes(m.kind) ||
+        (child.kind !== ReflectionKind.Function &&
+          m.kind === ReflectionKind.Property &&
+          !m.flags.isPrivate)),
     )
     .sort((a, b) => a.name.localeCompare(b.name));
   for (const m of members) out.push(entry(m));

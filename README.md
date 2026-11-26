@@ -110,6 +110,41 @@ ships per flavor where the Ruby reference implements a URN parser
 (oiml today; the remaining flavors throw a clear "not yet supported"
 error naming this issue until their ports land).
 
+## The parse surface: one call per parse concern
+
+pubid/pubid-ts#226 exports the full parse surface from the package root
+so consumers — relaton-api-js first (their #176/#182/#165) — can drop
+their internal derivation entirely. Every export mirrors the Ruby
+reference's semantics; the lane keys are the corpus lanes (the goldens
+their key generator computes) and are parity-tested against them:
+
+```ts
+import { parse, parseOk, render, laneKeys, ParseError } from "@pubid/pubid";
+
+const r = parse("ISO 19115-1:2014", "iso");
+r.components;   // the structured components: the reference's canonical
+                // toHash record, every facet typed per the corpus schema
+r.canonical;    // the canonical human spelling
+r.urn;          // the URN (undefined when the flavor emits none)
+r.year; r.part; // the year and the structural part (base-inherited)
+r.keys;         // { dated: "ISO19115-1:2014", undated: "ISO19115-1",
+                //   all_parts: "ISO19115" }
+
+render("ISO 9001", "iso");    // "ISO 9001" — the canonical render
+parseOk("ISO 9001", "iso");   // true  — the verdict helper; never throws
+parseOk("garbage", "iso");    // false — rejections raise ParseError
+```
+
+The lane keys: `dated` (the norm — the canonical uppercased and
+de-spaced), `undated` (every colon-year not followed by a dash is gone,
+base and supplement alike) and `all_parts` (the parsed part stripped —
+structurally only, never by guessing). The derivation helpers
+`norm` / `undatedNorm` / `allPartsNorm` compose into them and are
+exported individually. The flavor must be named: grammar-ported flavors
+parse open-endedly; the rest resolve over the bundled corpus. `parse`
+raises `ParseError` (with `input`, `flavor` and the wrapped engine
+`cause`) on every rejection.
+
 ## Worker-safe registration: the pubid-scheme URN codec
 
 The package root (and the grammar barrel `dist/flavors/index.js` it

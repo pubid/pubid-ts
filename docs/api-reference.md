@@ -4,6 +4,9 @@
      by hand; CI fails on drift. The website assembles this file into
      the library reference. -->
 
+## `allPartsNorm`
+
+
 ## `buildArtifact`
 
 
@@ -155,13 +158,73 @@ The URN; undefined when the flavor emits none.
 ## `isReview`
 
 
+## `laneKeys`
+
+
+## `LaneKeys`
+
+### `all_parts`
+The all-parts lane: the parsed part stripped from the undated lane.
+
+### `dated`
+The dated lane: the normalized canonical (uppercased, de-spaced).
+
+### `undated`
+The undated lane: every colon-year not followed by a dash is gone
+
+
 ## `loadBundledCorpus`
 
 
 ## `loadCorpus`
 
 
+## `norm`
+
+
+## `parse`
+
+
 ## `parseArtifact`
+
+
+## `ParseError`
+
+### `flavor`
+The flavor the parse ran under, when one was named.
+
+### `input`
+The rejected input.
+
+
+## `parseOk`
+
+
+## `ParseResult`
+
+### `canonical`
+The canonical human spelling (the normalized render).
+
+### `components`
+The structured components — the reference's own canonical toHash
+
+### `flavor`
+The flavor the parse ran under.
+
+### `input`
+The input as given.
+
+### `keys`
+The dated / undated / all_parts lane keys.
+
+### `part`
+The structural part: the identifier's own part facet, else the
+
+### `urn`
+The URN; undefined when the flavor emits none.
+
+### `year`
+The year facet, string-normalized; undefined when undated.
 
 
 ## `PendingRegistry`
@@ -169,6 +232,9 @@ The URN; undefined when the flavor emits none.
 ### `has(id)`
 
 ### `static load(path)`
+
+
+## `render`
 
 
 ## `Representations`
@@ -197,6 +263,9 @@ Render/parse rounds the spelling needs to reach the canonical human;
 
 
 ## `subsetMatch`
+
+
+## `undatedNorm`
 
 
 ## `valueMatch`
