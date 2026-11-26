@@ -212,6 +212,14 @@ FACES = [
   "BS HD IEC 60364-8-81 ED1",
   # the glued letter and the part's dash in the URN
   "BS 1000A:1961", "BS 1016-107.2:1991", "BS 5550-1.3.3:1980",
+  # the corrigendum faces (the corpus consolidations are all amendments,
+  # so the C kind is constructed): the consolidated corrigendum member
+  # and the bundle over a designation trio (the bundle-level type block
+  # in the wire and the pubid URN). The STANDALONE corrigendum face is
+  # deliberately absent — the coded flavor parses "/C" as an amendment,
+  # so the two flavors' classes diverge there and the face would sit
+  # outside the byte-identity set the fixture carries.
+  "BS 10125:2014+C1:2016", "PD 5730+A1:2005",
 ].freeze
 
 faces = FACES.map do |input|
