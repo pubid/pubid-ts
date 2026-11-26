@@ -39,6 +39,7 @@ import { gostGrammarImplementation } from "./gost/index.js";
 import { evsGrammarImplementation } from "./evs/index.js";
 import { ashraeGrammarImplementation } from "./ashrae/index.js";
 import { bsiGrammarImplementation } from "./bsi/index.js";
+import { bsiPfsGrammarImplementation } from "./bsi_pfs/index.js";
 import { csaGrammarImplementation } from "./csa/index.js";
 import { asmeGrammarImplementation } from "./asme/index.js";
 import { amcaGrammarImplementation } from "./amca/index.js";
@@ -161,6 +162,8 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
       return ashraeGrammarImplementation();
     case "bsi":
       return bsiGrammarImplementation();
+    case "bsi_pfs":
+      return bsiPfsGrammarImplementation();
     case "csa":
       return csaGrammarImplementation();
     case "asme":
