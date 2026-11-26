@@ -302,8 +302,11 @@ test("iec #727: a pre-#727 stored hash still deserializes (deliberate residue)",
 // corrected answers, re-verified in-process at 2.0.35.
 const stageSlotRows: [string, string, string][] = [
   // The IS ladder's draft faces — CD was the headline divergence (the
-  // TS row claimed 30.20, the circulation slot, where the gem's :cd
-  // ladder leads 30.00).
+  // TS row led the correspondence table's 30.20 where the gem's :cd
+  // ladder led the unsourced 30.00; pubid#787 flipped the gem to the
+  // table's own CD code, so both engines now lead 30.20 — and the
+  // stage-30.00 slot decodes to the plain published IS in BOTH, the
+  // lead-equality lookup finding no row).
   ["IEC PWI 60038", "urn:iec:std:iec:60038::stage-00.00::",
     "urn:pubid:iec:is:60038:stage-pwi"],
   ["IEC NP 60038", "urn:iec:std:iec:60038::stage-10.00::",
@@ -314,7 +317,7 @@ const stageSlotRows: [string, string, string][] = [
     "urn:pubid:iec:is:60038:stage-anw"],
   ["IEC WD 60038", "urn:iec:std:iec:60038::stage-20.20::",
     "urn:pubid:iec:is:60038:stage-wd"],
-  ["IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::",
+  ["IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::",
     "urn:pubid:iec:is:60038:stage-cd"],
   ["IEC CDV 60038", "urn:iec:std:iec:60038::stage-40.00::",
     "urn:pubid:iec:is:60038:stage-cdv"],
@@ -380,7 +383,7 @@ test("iec #187: the aligned slots resolve back through parseUrn (gem parity)", (
     ["urn:iec:std:iec:60038::stage-10.20::", "IEC PNW 60038"],
     ["urn:iec:std:iec:60038::stage-10.99::", "IEC ANW 60038"],
     ["urn:iec:std:iec:60038::stage-20.20::", "IEC WD 60038"],
-    ["urn:iec:std:iec:60038::stage-30.00::", "IEC CD 60038"],
+    ["urn:iec:std:iec:60038::stage-30.20::", "IEC CD 60038"],
     ["urn:iec:std:iec:60038::stage-40.00::", "IEC CDV 60038"],
     ["urn:iec:std:iec:60038::stage-50.00::", "IEC FDIS 60038"],
     ["urn:iec:std:iec:60038::tr-stage-50.00::", "IEC DTR 60038"],
@@ -621,10 +624,10 @@ const renderFaceRows: [string, string, string, string, string | null, string][] 
   ["IEC CDV 60038-1", "IEC CDV 60038-1", "urn:iec:std:iec:60038-1::stage-40.00::", "urn:pubid:iec:is:60038:part-1:stage-cdv", "cdv", "international-standard"],
   ["IEC CDV 60038:2024", "IEC CDV 60038:2024", "urn:iec:std:iec:60038:2024:stage-40.00::", "urn:pubid:iec:is:60038:year-2024:stage-cdv", "cdv", "international-standard"],
   ["IEC CDV 60038 ED2", "IEC CDV 60038 ED2", "urn:iec:std:iec:60038::stage-40.00:ed-2:", "urn:pubid:iec:is:60038:ed-2:stage-cdv", "cdv", "international-standard"],
-  ["IEC CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC CD 60038-1", "IEC CD 60038-1", "urn:iec:std:iec:60038-1::stage-30.00::", "urn:pubid:iec:is:60038:part-1:stage-cd", "cd", "international-standard"],
-  ["IEC CD 60038:2024", "IEC CD 60038:2024", "urn:iec:std:iec:60038:2024:stage-30.00::", "urn:pubid:iec:is:60038:year-2024:stage-cd", "cd", "international-standard"],
-  ["IEC CD 60038 ED2", "IEC CD 60038 ED2", "urn:iec:std:iec:60038::stage-30.00:ed-2:", "urn:pubid:iec:is:60038:ed-2:stage-cd", "cd", "international-standard"],
+  ["IEC CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC CD 60038-1", "IEC CD 60038-1", "urn:iec:std:iec:60038-1::stage-30.20::", "urn:pubid:iec:is:60038:part-1:stage-cd", "cd", "international-standard"],
+  ["IEC CD 60038:2024", "IEC CD 60038:2024", "urn:iec:std:iec:60038:2024:stage-30.20::", "urn:pubid:iec:is:60038:year-2024:stage-cd", "cd", "international-standard"],
+  ["IEC CD 60038 ED2", "IEC CD 60038 ED2", "urn:iec:std:iec:60038::stage-30.20:ed-2:", "urn:pubid:iec:is:60038:ed-2:stage-cd", "cd", "international-standard"],
   // The published faces the drops normalize onto.
   ["IEC 60038", "IEC 60038", "urn:iec:std:iec:60038::::", "urn:pubid:iec:is:60038", null, "international-standard"],
   ["IEC 60038-1", "IEC 60038-1", "urn:iec:std:iec:60038-1::::", "urn:pubid:iec:is:60038:part-1", null, "international-standard"],
@@ -673,17 +676,18 @@ for (const [input, render, urn, purn, stage, type] of renderFaceRows) {
 // byte-for-byte against the gem in-process (to_s, class, typed stage
 // code/abbreviation/lead harmonized code, official URN, pubid URN, hash
 // round-trip, render re-parse) — the DTRM/DTSM rows at 2.0.35
-// (pubid#733), the rest at 2.0.32.
+// (pubid#733), the CD-family rows' slot at 2.0.56 (pubid#787), the rest
+// at 2.0.32.
 const parseParityRows: [string, string, string, string, string, string][] = [
   // The 2CD family decodes onto :cd.
-  ["IEC 2CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC 3CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC 4CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC 9CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC ACD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC A2CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC A9CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
-  ["IEC CDM 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.00::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC 2CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC 3CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC 4CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC 9CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC ACD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC A2CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC A9CD 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
+  ["IEC CDM 60038", "IEC CD 60038", "urn:iec:std:iec:60038::stage-30.20::", "urn:pubid:iec:is:60038:stage-cd", "cd", "international-standard"],
   // The CDV family decodes onto :cdv.
   ["IEC ACDV 60038", "IEC CDV 60038", "urn:iec:std:iec:60038::stage-40.00::", "urn:pubid:iec:is:60038:stage-cdv", "cdv", "international-standard"],
   ["IEC CCDV 60038", "IEC CDV 60038", "urn:iec:std:iec:60038::stage-40.00::", "urn:pubid:iec:is:60038:stage-cdv", "cdv", "international-standard"],
@@ -713,15 +717,15 @@ const parseParityRows: [string, string, string, string, string, string][] = [
   ["IEC DTRM 60038", "IEC DTRM 60038", "urn:iec:std:iec:60038::tr-stage-50.92::", "urn:pubid:iec:tr:60038:stage-dtrm", "dtrm", "technical-report"],
   ["IEC DTSM 60038", "IEC DTSM 60038", "urn:iec:std:iec:60038::ts-stage-50.92::", "urn:pubid:iec:ts:60038:stage-dtsm", "dtsm", "technical-specification"],
   // The two-token type faces: the per-deliverable TR ladder.
-  ["IEC CD TR 62048", "IEC CD TR 62048", "urn:iec:std:iec:62048::tr-stage-30.00::", "urn:pubid:iec:tr:62048:stage-cd_tr", "cd_tr", "technical-report"],
-  ["IEC CD TR 62048-1", "IEC CD TR 62048-1", "urn:iec:std:iec:62048-1::tr-stage-30.00::", "urn:pubid:iec:tr:62048:part-1:stage-cd_tr", "cd_tr", "technical-report"],
-  ["IEC CD TR 62048:2024", "IEC CD TR 62048:2024", "urn:iec:std:iec:62048:2024:tr-stage-30.00::", "urn:pubid:iec:tr:62048:year-2024:stage-cd_tr", "cd_tr", "technical-report"],
+  ["IEC CD TR 62048", "IEC CD TR 62048", "urn:iec:std:iec:62048::tr-stage-30.20::", "urn:pubid:iec:tr:62048:stage-cd_tr", "cd_tr", "technical-report"],
+  ["IEC CD TR 62048-1", "IEC CD TR 62048-1", "urn:iec:std:iec:62048-1::tr-stage-30.20::", "urn:pubid:iec:tr:62048:part-1:stage-cd_tr", "cd_tr", "technical-report"],
+  ["IEC CD TR 62048:2024", "IEC CD TR 62048:2024", "urn:iec:std:iec:62048:2024:tr-stage-30.20::", "urn:pubid:iec:tr:62048:year-2024:stage-cd_tr", "cd_tr", "technical-report"],
   ["IEC PWI TR 62048", "IEC PWI TR 62048", "urn:iec:std:iec:62048::tr-stage-00.00::", "urn:pubid:iec:tr:62048:stage-pwi_tr", "pwi_tr", "technical-report"],
   ["IEC NP TR 62048", "IEC NP TR 62048", "urn:iec:std:iec:62048::tr-stage-10.00::", "urn:pubid:iec:tr:62048:stage-np_tr", "np_tr", "technical-report"],
   ["IEC ANW TR 62048", "IEC ANW TR 62048", "urn:iec:std:iec:62048::tr-stage-10.99::", "urn:pubid:iec:tr:62048:stage-anw_tr", "anw_tr", "technical-report"],
   ["IEC WD TR 62048", "IEC WD TR 62048", "urn:iec:std:iec:62048::tr-stage-20.20::", "urn:pubid:iec:tr:62048:stage-wd_tr", "wd_tr", "technical-report"],
   // The TS ladder.
-  ["IEC CD TS 62048", "IEC CD TS 62048", "urn:iec:std:iec:62048::ts-stage-30.00::", "urn:pubid:iec:ts:62048:stage-cd_ts", "cd_ts", "technical-specification"],
+  ["IEC CD TS 62048", "IEC CD TS 62048", "urn:iec:std:iec:62048::ts-stage-30.20::", "urn:pubid:iec:ts:62048:stage-cd_ts", "cd_ts", "technical-specification"],
   ["IEC PWI TS 62048", "IEC PWI TS 62048", "urn:iec:std:iec:62048::ts-stage-00.00::", "urn:pubid:iec:ts:62048:stage-pwi_ts", "pwi_ts", "technical-specification"],
   ["IEC NP TS 62048", "IEC NP TS 62048", "urn:iec:std:iec:62048::ts-stage-10.00::", "urn:pubid:iec:ts:62048:stage-np_ts", "np_ts", "technical-specification"],
   ["IEC ANW TS 62048", "IEC ANW TS 62048", "urn:iec:std:iec:62048::ts-stage-10.99::", "urn:pubid:iec:ts:62048:stage-anw_ts", "anw_ts", "technical-specification"],
@@ -768,12 +772,13 @@ for (const [input, render, urn, purn, stage, type] of parseParityRows) {
 
 test("iec #191: the ladder slots resolve back through parseUrn (gem parity)", () => {
   const impl = grammarImplementation("iec")!;
-  // The gem's UrnParser answers (verified in-process at 2.0.32); each
-  // slot round-trips through both engines byte-for-byte.
+  // The gem's UrnParser answers (verified in-process; the CD rows'
+  // 30.20 slots at 2.0.56, pubid#787); each slot round-trips through
+  // both engines byte-for-byte.
   const rows: [string, string][] = [
-    ["urn:iec:std:iec:62048::tr-stage-30.00::", "IEC CD TR 62048"],
+    ["urn:iec:std:iec:62048::tr-stage-30.20::", "IEC CD TR 62048"],
     ["urn:iec:std:iec:62048::tr-stage-00.00::", "IEC PWI TR 62048"],
-    ["urn:iec:std:iec:62048::ts-stage-30.00::", "IEC CD TS 62048"],
+    ["urn:iec:std:iec:62048::ts-stage-30.20::", "IEC CD TS 62048"],
     ["urn:iec:std:iec:62975::pas-stage-00.00::", "IEC PWI PAS 62975"],
     ["urn:iec:std:iec:104::guide-stage-30.00::", "IEC CD Guide 104"],
     ["urn:iec:std:iec:104::guide-stage-40.00::", "IEC DGuide 104"],
