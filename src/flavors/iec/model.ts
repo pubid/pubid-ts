@@ -110,7 +110,12 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("pnw", "pnw", "is", "PNW", "10.20"),
   TS("anw", "anw", "is", "ANW", "10.99", ["ANW"]),
   TS("wd", "wd", "is", "WD", "20.20"),
-  TS("cd", "cd", "is", "CD", "30.00", [
+  // The CD-family rows lead the correspondence table's own CD code,
+  // 30.20 ("Draft circulated as CD", data/iec/stage-codes.md) — what the
+  // official URN stage slot carries (pubid#787, the pubid-ts#187 parity
+  // round). The gem's IS/TR/TS :cd/:cd_tr/:cd_ts rows flipped the same
+  // way; 30.00 sits in no row of the table.
+  TS("cd", "cd", "is", "CD", "30.20", [
     "CD", "2CD", "3CD", "4CD", "5CD", "6CD", "7CD", "8CD", "9CD",
     "ACD", "A2CD", "A3CD", "A4CD", "A5CD", "A6CD", "A7CD", "A8CD", "A9CD",
     "CDM",
@@ -126,7 +131,7 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("np_tr", "np", "tr", "NP TR", "10.00"),
   TS("anw_tr", "anw", "tr", "ANW TR", "10.99"),
   TS("wd_tr", "wd", "tr", "WD TR", "20.20"),
-  TS("cd_tr", "cd", "tr", "CD TR", "30.00"),
+  TS("cd_tr", "cd", "tr", "CD TR", "30.20"),
   // Plain DTR keeps the folded 50.00 ladder (the registration step); the
   // point spellings below are rows of their own, each with the exact
   // code IEC's stage-code correspondence table gives it (pubid#733, gem
@@ -144,7 +149,7 @@ export const TYPED_STAGES: TypedStage[] = [
   TS("np_ts", "np", "ts", "NP TS", "10.00"),
   TS("anw_ts", "anw", "ts", "ANW TS", "10.99"),
   TS("wd_ts", "wd", "ts", "WD TS", "20.20"),
-  TS("cd_ts", "cd", "ts", "CD TS", "30.00"),
+  TS("cd_ts", "cd", "ts", "CD TS", "30.20"),
   TS("dts", "draft", "ts", "DTS", "50.00"),
   TS("adts", "draft", "ts", "ADTS", "40.99"),
   TS("cdts", "draft", "ts", "CDTS", "50.20"),
