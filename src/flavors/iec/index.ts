@@ -748,6 +748,74 @@ function rejectStandaloneDottedSupplement(id: BaseIdentifier): void {
   }
 }
 
+// --- the un-renderable trailing-edition chain reject (pubid#788) --------
+
+// The bare consolidated chain with a trailing edition
+// ("IEC 60068:2005+AMD1:2012 ED2") parses, and then cannot render: the
+// edition rides the base member, so the composition prints it onto the
+// base designation ("IEC 60068:2005 ED2+AMD1:2012") — a face no IEC
+// source prints (0 of the 33,070 primary docidentifiers in
+// relaton-data-iec carry an edition facet on a chain) and the grammar
+// rejects, so parse(render) raises. The consolidated edition IS the CSV
+// product ("IEC 60034-18-41:2014+AMD1:2019 CSV", the OBP PDF named
+// {ed1.1}); where the printed edition appears at all it is the CSV
+// face's own facet ("IEC 60068:2005+AMD1:2012 CSV ED1" — the Vap carries
+// the edition after the deliverable code and renders back parseably).
+// So the shape is rejected at parse — the #727 ruling for unattested,
+// un-renderable faces — rather than built unrenderable. The check is the
+// SHAPE on the built object, not a grammar route (the same ruling as
+// rejectStandaloneDottedSupplement): a bare ConsolidatedIdentifier with
+// an edition on any member, found by the gem's descend_wrapper walk (a
+// node with a `base` attribute descends to it, a node with `identifiers`
+// to its first member). from_hash stays open (stored-data
+// compatibility): parse can no longer produce the shape and no stored
+// row carries it. The edition-bearing face that DOES round-trip is the
+// CSV one ("IEC 60068:2005+AMD1:2012 CSV ED1" — the edition rides the
+// Vap after the deliverable code).
+const CONSOLIDATED_EDITION_MESSAGE =
+  'the bare consolidated chain carries a trailing edition ' +
+  '(e.g. "IEC 60068:2005+AMD1:2012 ED2"): no IEC source prints one — ' +
+  "0 of the 33,070 primary docidentifiers in relaton-data-iec carry an " +
+  "edition facet on a chain — and the canonical render prints the " +
+  'edition onto the base designation ("IEC 60068:2005 ED2+AMD1:2012"), ' +
+  "which cannot be re-parsed. The consolidated edition is the CSV face " +
+  '("IEC 60034-18-41:2014+AMD1:2019 CSV", the OBP PDF named {ed1.1}); ' +
+  'where the printed edition appears it rides the CSV face ("IEC ' +
+  '60068:2005+AMD1:2012 CSV ED1"), which parses and round-trips';
+
+function rejectUnrenderableConsolidatedEdition(id: BaseIdentifier): void {
+  let node: BaseIdentifier | undefined = id;
+  while (node !== undefined) {
+    if (node.constructor.polymorphicName === "pubid:iec:consolidated-identifier") {
+      const members =
+        (node as unknown as { identifiers?: BaseIdentifier[] }).identifiers ?? [];
+      if (
+        members.some(
+          (member) =>
+            (member as unknown as Record<string, unknown>)["edition"] !== undefined &&
+            (member as unknown as Record<string, unknown>)["edition"] !== null,
+        )
+      ) {
+        throw new ParseFailed(CONSOLIDATED_EDITION_MESSAGE, 0);
+      }
+    }
+    // Ruby descend_wrapper: a node whose class declares a `base`
+    // attribute descends to it; a node with `identifiers` to its first
+    // member; a leaf ends the walk.
+    const attrs = (node.constructor as unknown as { attributes?: Record<string, unknown> })
+      .attributes;
+    if (attrs !== undefined && "base" in attrs) {
+      node = (node as unknown as Record<string, unknown>)["base"] as
+        | BaseIdentifier
+        | undefined;
+    } else if (attrs !== undefined && "identifiers" in attrs) {
+      node = (node as unknown as { identifiers?: BaseIdentifier[] }).identifiers?.[0];
+    } else {
+      node = undefined;
+    }
+  }
+}
+
 export function iecGrammarImplementation(): FlavorImplementation {
   const builder = new IecBuilder();
   return {
@@ -795,6 +863,7 @@ export function iecGrammarImplementation(): FlavorImplementation {
       // walks the base chain after ensure_base) — BSI's delegation and
       // every parse route raise through this entry; from_hash stays open.
       rejectStandaloneDottedSupplement(built as BaseIdentifier);
+      rejectUnrenderableConsolidatedEdition(built as BaseIdentifier);
       return built;
     },
   };
