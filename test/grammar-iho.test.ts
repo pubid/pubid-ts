@@ -1,11 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { grammarImplementation } from "../src/flavors/index.js";
+import { BaseIdentifier } from "../src/model/identifier.js";
 
 // The IHO S-158 series model (pubid#774) and the URN defect fixes
 // (pubid#775), reconciled against the merged gem reference (pubid#776),
 // plus the whole-flavor MRN migration to the adopted IHO MRN guidance
-// scheme (spec/per/reg for S/P/M; B/C keep the legacy emission).
+// scheme (spec/per/reg/bathy/cb — the five S-11 Part C Ed 1.0.0
+// section 1.2 groups; with all five series coded the legacy urn:iho:
+// emission is dead, the scheme stays decodable for every series), and
+// the B/C wire-type rename (gem fe2b8b1f: bibliographic ->
+// bathymetric, circular-letter -> capacity_building) with the
+// decode-only legacy-_type seams (gem c3ff8636, removable once
+// relaton-data-iho is re-crawled).
 //
 // product is the typed facet for the S-100 product number whose
 // validation checks the publication specifies. "S-158:<NNN>" is the
@@ -217,9 +224,10 @@ test("other iho part faces are untouched", () => {
 });
 
 test("the whole flavor emits the guidance scheme per series", () => {
-  // S/P/M carry guidance type codes (spec/per/reg); a component
-  // edition rides ed- right after its component, the base year keeps
-  // its year- marker, and the appendix hyphen-joins its subnumber.
+  // All five series carry guidance type codes (spec/per/reg/bathy/cb);
+  // a component edition rides ed- right after its component, the base
+  // year keeps its year- marker, and the appendix hyphen-joins its
+  // subnumber.
   assert.equal(urnOf(impl.parse("IHO S-44 5.0.0")), "urn:mrn:iho:pub:spec:s44:5.0.0");
   assert.equal(urnOf(impl.parse("IHO S-100")), "urn:mrn:iho:pub:spec:s100");
   assert.equal(urnOf(impl.parse("IHO S-100 5.0.0 Part 2 (2024)")),
@@ -247,10 +255,16 @@ test("the whole flavor emits the guidance scheme per series", () => {
   assert.equal(urnOf(impl.parse("IHO P-6 1.0.0 Vol. 2")),
     "urn:mrn:iho:pub:per:p6:1.0.0:vol-2");
   assert.equal(urnOf(impl.parse("IHO M-2 Sup 1")), "urn:mrn:iho:pub:reg:m2:sup-1");
-  // B/C have no guidance type code: the legacy positional emission.
-  assert.equal(urnOf(impl.parse("IHO B-4 2.19.0")), "urn:iho:b:4:ed-2.19.0");
-  assert.equal(urnOf(impl.parse("IHO C-13 1.0.0")), "urn:iho:c:13:ed-1.0.0");
-  assert.equal(urnOf(impl.parse("IHO B-7 Vol. 2023")), "urn:iho:b:7:vol-2023");
+  // B/C on the guidance codes (bathy/cb; S-11 Part C Ed 1.0.0
+  // section 1.2): B-12 is the CSB Guidance (iho.int pubs/bathy/),
+  // C-13 the Manual on Hydrography, C-51 the capacity-building manual
+  // (iho.int pubs/cb/); the volume rows keep their vol- segments.
+  assert.equal(urnOf(impl.parse("IHO B-4 2.19.0")), "urn:mrn:iho:pub:bathy:b4:2.19.0");
+  assert.equal(urnOf(impl.parse("IHO B-12 3.0.0")), "urn:mrn:iho:pub:bathy:b12:3.0.0");
+  assert.equal(urnOf(impl.parse("IHO C-13 1.0.0")), "urn:mrn:iho:pub:cb:c13:1.0.0");
+  assert.equal(urnOf(impl.parse("IHO C-51 6.0.0")), "urn:mrn:iho:pub:cb:c51:6.0.0");
+  assert.equal(urnOf(impl.parse("IHO C-55 6.0.0")), "urn:mrn:iho:pub:cb:c55:6.0.0");
+  assert.equal(urnOf(impl.parse("IHO B-7 Vol. 2023")), "urn:mrn:iho:pub:bathy:b7:vol-2023");
 });
 
 test("the S-4 spec citation emits its marker chain", () => {
@@ -284,7 +298,7 @@ test("the migrated MRNs re-parse to the canonical identity", () => {
   }
 });
 
-test("the legacy urn:iho: spellings stay decodable, never emitted for S/P/M", () => {
+test("the legacy urn:iho: spellings stay decodable, emitted by none", () => {
   assert.equal(impl.parse("urn:iho:s:44:ed-5.0.0").toHuman(), "IHO S-44 5.0.0");
   assert.equal(urnOf(impl.parse("urn:iho:s:44:ed-5.0.0")), "urn:mrn:iho:pub:spec:s44:5.0.0");
   // The bare member segment binds product (the #774 decode).
@@ -299,11 +313,17 @@ test("the legacy urn:iho: spellings stay decodable, never emitted for S/P/M", ()
   assert.equal(decoded.toHash()["product"], "102");
   assert.equal(decoded.toHuman(), "IHO S-158:102 0.2.0");
   assert.equal(urnOf(decoded), "urn:mrn:iho:pub:spec:s158-102:0.2.0");
-  // Unknown junk still rejects.
+  // Unknown junk still rejects (bathy is one of the five codes now).
   assert.throws(() => impl.parse("urn:mrn:iho:pub:spec:s44:junk-1"));
-  assert.throws(() => impl.parse("urn:mrn:iho:pub:bathy:s57:1.0.0"));
+  assert.throws(() => impl.parse("urn:mrn:iho:pub:bogus:s44:5.0.0"));
   assert.throws(() => impl.parse("urn:iho:s:44:nope-1"));
   assert.throws(() => impl.parse("urn:iho:x:1"));
+  // The legacy positional spellings of the coded series decode onto the
+  // guidance emission (decode-only, never emitted).
+  assert.equal(impl.parse("urn:iho:b:12:ed-3.0.0").toHuman(), "IHO B-12 3.0.0");
+  assert.equal(urnOf(impl.parse("urn:iho:b:12:ed-3.0.0")), "urn:mrn:iho:pub:bathy:b12:3.0.0");
+  assert.equal(impl.parse("urn:iho:c:51:6.0.0").toHuman(), "IHO C-51 6.0.0");
+  assert.equal(urnOf(impl.parse("urn:iho:c:51:6.0.0")), "urn:mrn:iho:pub:cb:c51:6.0.0");
 });
 
 test("from_hash unifies the draft-era part model", () => {
@@ -340,4 +360,46 @@ test("the with-year qualifier rides the S-158 member", () => {
   assert.equal(id.toHash()["year"], "2025");
   assert.equal(urnOf(id), "urn:mrn:iho:pub:spec:s158-102:1.0.0:year-2025");
   assert.equal(pubidUrnOf(id), "urn:pubid:iho:std:158:product-102:ed-1.0.0:year-2025");
+});
+
+test("the pre-rename wire names decode onto the renamed types", () => {
+  // The stored rows (relaton-data-iho v2, any snapshot crawled before
+  // the rename) still carry `pubid:iho:bibliographic` /
+  // `pubid:iho:circular-letter`. The decode re-tags canonically: the
+  // rebuilt identifier is the renamed type AND carries the renamed
+  // `_type` (equality reads `_type` — a row left carrying the old tag
+  // would never equal a parsed query). Decode-only, never emitted: the
+  // emission writes the renamed polymorphic names. Removable once
+  // relaton-data-iho is re-crawled (gem c3ff8636).
+  const b = impl.parse("IHO B-12 3.0.0");
+  const bRow = b.fromHash({
+    _type: "pubid:iho:bibliographic",
+    number: "12",
+    edition: "3.0.0",
+  });
+  assert.deepEqual(bRow.toHash(), b.toHash());
+  assert.ok(bRow.equals!(b));
+  const c = impl.parse("IHO C-51 6.0.0");
+  const cRow = c.fromHash({
+    _type: "pubid:iho:circular-letter",
+    number: "51",
+    edition: "6.0.0",
+  });
+  assert.deepEqual(cRow.toHash(), c.toHash());
+  assert.ok(cRow.equals!(c));
+  // The generic dispatcher routes the legacy names too (the gem's
+  // Pubid.from_hash through the polymorphic_type_map merge) and the
+  // round trip stays canonical.
+  const routed = BaseIdentifier.fromHash({
+    _type: "pubid:iho:bibliographic",
+    number: "12",
+    edition: "3.0.0",
+  });
+  assert.deepEqual(routed.toHash(), b.toHash());
+  const roundTripped = BaseIdentifier.fromHash(routed.toHash());
+  assert.ok(roundTripped.equals!(routed));
+  // A hash without a legacy `_type` passes through untouched (the pure
+  // function's contract).
+  const plain = { _type: "pubid:iho:standard", number: "44" };
+  assert.deepEqual(impl.parse("IHO S-44").fromHash(plain).toHash(), impl.parse("IHO S-44").toHash());
 });

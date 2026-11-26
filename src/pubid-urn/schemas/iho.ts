@@ -34,8 +34,8 @@ export const ihoSchema = define("iho", (s) => {
   s.atom("volume_edition", "voled");
   s.atom("volume_year", "voly");
 
-  s.type("pubid:iho:bibliographic", "b");
-  s.type("pubid:iho:circular-letter", "cl");
+  s.type("pubid:iho:bathymetric", "b");
+  s.type("pubid:iho:capacity_building", "cl");
   s.type("pubid:iho:identifier", "id");
   s.type("pubid:iho:miscellaneous", "m");
   s.type("pubid:iho:publication", "pub");

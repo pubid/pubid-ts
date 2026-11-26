@@ -1,7 +1,7 @@
 import { Grammar, P, match, str } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { BaseIdentifier, registerType } from "../../model/identifier.js";
+import { BaseIdentifier, registerType, registerTypeAlias } from "../../model/identifier.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
 import { extendAttributes, keyValue } from "../../model/attribute.js";
 import { BaseUrnGenerator } from "../../model/urn-generator.js";
@@ -19,10 +19,10 @@ import { BaseBuilder } from "../../model/builder.js";
  * in the human face.
  *
  * The MRN follows the adopted IHO MRN guidance (S-100WG4; the gem's
- * UrnGenerator): the series the guidance gives a publication type emit
- * urn:mrn:iho:pub:<type>:<name>[:<dotted edition>][:<trailing atoms>]
- * — spec (S), per (P), reg (M); B and C keep the legacy positional
- * urn:iho: emission until IHO assigns them a code. The name segment is
+ * UrnGenerator): every series the guidance gives a publication type
+ * emits urn:mrn:iho:pub:<type>:<name>[:<dotted edition>][:<trailing
+ * atoms>] — spec (S), per (P), reg (M), bathy (B), cb (C), the five
+ * S-11 Part C Ed 1.0.0 section 1.2 groups. The name segment is
  * the lowercase letter + number with the S-158 member hyphenated in
  * ("S-158:102" names s158-102), the base edition the bare dotted
  * segment right after the name, and every other component a lowercase
@@ -30,7 +30,7 @@ import { BaseBuilder } from "../../model/builder.js";
  * specsub-/specvar- children, annex-<A>, appendix-<B> hyphen-joining
  * its subnumber, vol-<n>, issue-<n>); a component edition rides ed-
  * right after it. The legacy urn:iho: scheme stays decodable for every
- * series, never emitted for S/P/M.
+ * series, emitted by none (all five series carry a guidance code).
  *
  * The S-158 family (pubid#774): product is the typed facet for the
  * S-100 product number whose validation checks the publication
@@ -42,14 +42,30 @@ import { BaseBuilder } from "../../model/builder.js";
  * input spelling; equality/URN are canonical).
  */
 
-type IhoKind = "standard" | "publication" | "miscellaneous" | "bibliographic" | "circular-letter";
+// The B/C wire types are the honest names (gem fe2b8b1f — the clean
+// rename, no alias kept on the emission side): `bibliographic` misnamed
+// the B Bathymetric series, `circular-letter` misnamed the C Capacity
+// Building series (C-13 is the Manual on Hydrography, not a circular
+// letter). `capacity_building` keeps the underscore spelling — the
+// domain term, the type key's own shape (the kebab derivation would
+// give "capacity-building"; the gem's polymorphic_name pin).
+type IhoKind = "standard" | "publication" | "miscellaneous" | "bathymetric" | "capacity_building";
 
 const KIND_LETTERS: Record<IhoKind, string> = {
   standard: "S",
   publication: "P",
   miscellaneous: "M",
-  bibliographic: "B",
-  "circular-letter": "C",
+  bathymetric: "B",
+  capacity_building: "C",
+};
+
+// The pre-rename B/C wire names decode onto the renamed canonical ones
+// (gem c3ff8636 — the decode-only seams, removable once relaton-data-iho
+// is re-crawled). Never emitted: the emission side writes the renamed
+// polymorphic names.
+const IHO_LEGACY_TYPE_RETAG: Record<string, IhoKind> = {
+  "pubid:iho:bibliographic": "bathymetric",
+  "pubid:iho:circular-letter": "capacity_building",
 };
 
 function buildRules(): Record<string, P> {
@@ -126,7 +142,7 @@ function buildRules(): Record<string, P> {
   // The spec number's vocabulary: the S-4 sections run 100-600 (Part C
   // 100-500), so the leaf number is 3 digits with hundreds digit 1-6 —
   // the same shape the bare citation branch leans on to keep the B
-  // Bibliographic series (B-1..B-13 style) distinct from B-4xx specs.
+  // Bathymetric series (B-1..B-13 style) distinct from B-4xx specs.
   const specShape = match("[1-6]").then(match("[0-9]").repeat(2, 2));
   // The citation letter is the spec's part (A/B/C); the builder binds
   // it into `part` and rejects a conflicting Part-rule capture.
@@ -263,8 +279,8 @@ function buildRules(): Record<string, P> {
   );
   // The bare citation branch (the entry's FIRST alternative): "B-401" /
   // "IHO B-401" — implicit S-4 anchor (the builder synthesizes series S
-  // number 4). B only: bare C-x stays the Circular Letter series, and
-  // the 3-digit [1-6]xx shape keeps the B Bibliographic series (B-12)
+  // number 4). B only: bare C-x stays the C Capacity Building series,
+  // and the 3-digit [1-6]xx shape keeps the B Bathymetric series (B-12)
   // on the main branch.
   rule("bare_spec_citation", () =>
     str("IHO").then(space).maybe()
@@ -289,6 +305,23 @@ function padEditionShorthand(value: string): string {
   const segments = value.split(".");
   while (segments.length < 3) segments.push("0");
   return segments.join(".");
+}
+
+/**
+ * The pre-rename B/C `_type` retag on the deserialization path (the
+ * gem's normalize_legacy_type, c3ff8636). A stored row carrying a
+ * legacy wire name (`pubid:iho:bibliographic`,
+ * `pubid:iho:circular-letter`) re-tags onto the renamed canonical one,
+ * so a decoded legacy row reads and compares as the renamed type
+ * (equality compares `_type`; routing alone — the registry alias —
+ * would leave the legacy tag inside the rebuilt identifier). Pure
+ * function: a hash without a legacy `_type` passes through untouched.
+ * Removable once relaton-data-iho is re-crawled.
+ */
+function normalizeLegacyType(data: Record<string, unknown>): Record<string, unknown> {
+  const canonical = IHO_LEGACY_TYPE_RETAG[String(data["_type"])];
+  if (canonical === undefined) return data;
+  return { ...data, _type: `pubid:iho:${canonical}` };
 }
 
 /**
@@ -348,7 +381,7 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
      *  of issue #775. The spelling face is NOT restored — a deserialized
      *  identifier renders the canonical colon designator. */
     static fromHash(hash: Record<string, unknown>): BaseIdentifier {
-      return super.fromHash(normalizeChecksAlias(hash));
+      return super.fromHash(normalizeChecksAlias(normalizeLegacyType(hash)));
     }
 
     static attributes = extendAttributes(BaseIdentifier, {
@@ -503,15 +536,20 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
   }
   class IhoUrnGenerator extends BaseUrnGenerator<IhoKindIdentifier> {
     // The guidance publication type per series letter (the gem's
-    // MRN_TYPES): S = Standards and Specifications -> spec, P = the
-    // periodic publications -> per, M = Miscellaneous (Base Regulatory
-    // Publications) -> reg. B and C have no guidance type code — they
-    // keep the legacy positional emission until IHO assigns one.
-    static MRN_TYPES: Record<string, string> = { S: "spec", P: "per", M: "reg" };
+    // MRN_TYPES) — the five S-11 Part C Ed 1.0.0 section 1.2 groups
+    // onto the guidance's five codes: S = Standards and Specifications
+    // -> spec, P = the periodic publications -> per, M = Miscellaneous
+    // (Base Regulatory Publications) -> reg, B = Bathymetric
+    // Publications -> bathy, C = Capacity Building Publications -> cb.
+    static MRN_TYPES: Record<string, string> = {
+      S: "spec", P: "per", M: "reg", B: "bathy", C: "cb",
+    };
 
     generate(): string {
       const mrnType = IhoUrnGenerator.MRN_TYPES[letter];
-      if (mrnType === undefined) return this.generateLegacy();
+      if (mrnType === undefined) {
+        throw new Error(`IHO: series ${letter} carries no MRN guidance type code`);
+      }
       const id = this.identifier;
       // The IHO MRN guidance (S-100WG4, the gem's generate_mrn): the
       // publications namespace urn:mrn:iho:pub:, the type token, the
@@ -569,50 +607,6 @@ function ihoClass(kind: IhoKind): IdentifierStatic {
       if (id.product !== undefined) name += `-${id.product}`;
       return name;
     }
-
-    /** The legacy positional form (the B/C emission today; the shape
-     *  every legacy urn:iho: URN decodes from). */
-    private generateLegacy(): string {
-      const id = this.identifier;
-      const parts = ["urn", "iho", letter.toLowerCase(), id.number];
-      if (id.edition !== undefined) parts.push(`ed-${id.edition}`);
-      if (id.year !== undefined) parts.push(`year-${id.year}`);
-      if (id.supplement !== undefined) {
-        parts.push(`sup-${id.supplement}`);
-        if (id.supplement_edition !== undefined) parts.push(`ed-${id.supplement_edition}`);
-        if (id.supplement_year !== undefined) parts.push(`year-${id.supplement_year}`);
-      }
-      if (id.part !== undefined) {
-        parts.push(`part-${id.part}`);
-        if (id.part_edition !== undefined) parts.push(`ed-${id.part_edition}`);
-        if (id.part_year !== undefined) parts.push(`year-${id.part_year}`);
-      }
-      if (id.spec !== undefined) {
-        parts.push(`spec-${id.spec}`);
-        if (id.spec_sub !== undefined) parts.push(`specsub-${id.spec_sub}`);
-        if (id.spec_variant !== undefined) parts.push(`specvar-${id.spec_variant}`);
-      }
-      if (id.annex !== undefined) {
-        parts.push(`annex-${id.annex}`);
-        if (id.annex_edition !== undefined) parts.push(`ed-${id.annex_edition}`);
-        if (id.annex_year !== undefined) parts.push(`year-${id.annex_year}`);
-      }
-      if (id.appendix !== undefined) {
-        parts.push(`appendix-${id.appendix}`);
-        // The subnumber is a bare child segment directly after the
-        // appendix (the legacy emission's only bare atom).
-        if (id.appendix_subnumber !== undefined) parts.push(id.appendix_subnumber);
-        if (id.appendix_edition !== undefined) parts.push(`ed-${id.appendix_edition}`);
-        if (id.appendix_year !== undefined) parts.push(`year-${id.appendix_year}`);
-      }
-      if (id.volume !== undefined) {
-        parts.push(`vol-${id.volume}`);
-        if (id.issue !== undefined) parts.push(`issue-${id.issue}`);
-        if (id.volume_edition !== undefined) parts.push(`ed-${id.volume_edition}`);
-        if (id.volume_year !== undefined) parts.push(`year-${id.volume_year}`);
-      }
-      return parts.join(":");
-    }
   }
   (IhoKindIdentifier as unknown as Record<string, unknown>).urnGenerator = IhoUrnGenerator;
   registerType(IhoKindIdentifier as unknown as IdentifierStatic);
@@ -623,9 +617,18 @@ const KIND_CLASSES: Record<IhoKind, IdentifierStatic> = {
   standard: ihoClass("standard"),
   publication: ihoClass("publication"),
   miscellaneous: ihoClass("miscellaneous"),
-  bibliographic: ihoClass("bibliographic"),
-  "circular-letter": ihoClass("circular-letter"),
+  bathymetric: ihoClass("bathymetric"),
+  capacity_building: ihoClass("capacity_building"),
 };
+
+// The pre-rename B/C wire names route onto the renamed classes (the
+// gem's polymorphic_type_map merge): Pubid.from_hash-equivalent dispatch
+// resolves a legacy `_type` row to the renamed class. Decode-only, never
+// emitted — the emission side writes the renamed polymorphic names.
+// Removable once relaton-data-iho is re-crawled.
+for (const [legacyName, kind] of Object.entries(IHO_LEGACY_TYPE_RETAG)) {
+  registerTypeAlias(legacyName, KIND_CLASSES[kind]);
+}
 
 const LETTER_TO_CLASS = new Map<string, IdentifierStatic>(
   (Object.keys(KIND_LETTERS) as IhoKind[]).map((kind) => [KIND_LETTERS[kind], KIND_CLASSES[kind]]),
