@@ -1016,88 +1016,103 @@ test("iec #195: the working document keeps its own class (the wp slot split)", (
 // and matches?(ignore:), which no TS API exposes. What TS shares with
 // the gem is the parse/render/URN/hash surface, pinned below, and the
 // trailing-edition reject, mirrored in src/flavors/iec/index.ts.
-const attestedConsolidatedRows: [string, string, string, string, string][] = [
-  // designation, render, official URN, pubid URN, type
+const attestedConsolidatedRows: [string, string, string, string, string, string][] = [
+  // designation, render, official URN, pubid URN, type, MR slug
   ["IEC 60034-18-41:2014+AMD1:2019 CSV",
     "IEC 60034-18-41:2014+AMD1:2019 CSV",
     "urn:iec:std:iec:60034-18-41:2014::csv::plus:amd:1:2019",
     "urn:pubid:iec:consol:ids-(iec:is:60034:part-18:subpart-41:year-2014),(iec:amd:1:year-2019):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.60034-18-41.2014_plus-amd.1.2019_csv"],
   ["IEC 60038:2009+AMD1:2021 CSV",
     "IEC 60038:2009+AMD1:2021 CSV",
     "urn:iec:std:iec:60038:2009::csv::plus:amd:1:2021",
     "urn:pubid:iec:consol:ids-(iec:is:60038:year-2009),(iec:amd:1:year-2021):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.60038.2009_plus-amd.1.2021_csv"],
   ["IEC 60068-2-6:1982+AMD1:1983+AMD2:1985 CSV",
     "IEC 60068-2-6:1982+AMD1:1983+AMD2:1985 CSV",
     "urn:iec:std:iec:60068-2-6:1982::csv::plus:amd:1:1983:plus:amd:2:1985",
     "urn:pubid:iec:consol:ids-(iec:is:60068:part-2:subpart-6:year-1982),(iec:amd:1:year-1983),(iec:amd:2:year-1985):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.60068-2-6.1982_plus-amd.1.1983_plus-amd.2.1985_csv"],
   ["IEC 60034-1:1969+AMD1:1977+AMD2:1979+AMD3:1980 CSV",
     "IEC 60034-1:1969+AMD1:1977+AMD2:1979+AMD3:1980 CSV",
     "urn:iec:std:iec:60034-1:1969::csv::plus:amd:1:1977:plus:amd:2:1979:plus:amd:3:1980",
     "urn:pubid:iec:consol:ids-(iec:is:60034:part-1:year-1969),(iec:amd:1:year-1977),(iec:amd:2:year-1979),(iec:amd:3:year-1980):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.60034-1.1969_plus-amd.1.1977_plus-amd.2.1979_plus-amd.3.1980_csv"],
   ["IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014",
     "IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014",
     "urn:iec:std:iec:60335-1:2010::csv::plus:amd:1:2013::cor:1:2014",
     "urn:pubid:iec:consol:ids-(iec:is:60335:part-1:year-2010),(iec:amd:1:year-2013):vi:vap-CSV:cor:1:year-2014",
-    "corrigendum"],
+    "corrigendum",
+    "iec.60335-1.2010_plus-amd.1.2013_csv_cor.1.2014"],
   ["IEC 60287-1-1:1994+AMD1:1995+AMD2:2001 CSV/COR1:2006",
     "IEC 60287-1-1:1994+AMD1:1995+AMD2:2001 CSV/COR1:2006",
     "urn:iec:std:iec:60287-1-1:1994::csv::plus:amd:1:1995:plus:amd:2:2001::cor:1:2006",
     "urn:pubid:iec:consol:ids-(iec:is:60287:part-1:subpart-1:year-1994),(iec:amd:1:year-1995),(iec:amd:2:year-2001):vi:vap-CSV:cor:1:year-2006",
-    "corrigendum"],
+    "corrigendum",
+    "iec.60287-1-1.1994_plus-amd.1.1995_plus-amd.2.2001_csv_cor.1.2006"],
   ["CISPR 11:1975+AMD1:1976 CSV",
     "CISPR 11:1975+AMD1:1976 CSV",
     "urn:iec:std:cispr:11:1975::csv::plus:amd:1:1976",
     "urn:pubid:iec:consol:ids-(iec:is:11:pub-CISPR:year-1975),(iec:amd:1:year-1976):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "cispr.11.1975_plus-amd.1.1976_csv"],
   ["CISPR 16-1-1:2006+AMD1:2006+AMD2:2007 CSV",
     "CISPR 16-1-1:2006+AMD1:2006+AMD2:2007 CSV",
     "urn:iec:std:cispr:16-1-1:2006::csv::plus:amd:1:2006:plus:amd:2:2007",
     "urn:pubid:iec:consol:ids-(iec:is:16:pub-CISPR:part-1:subpart-1:year-2006),(iec:amd:1:year-2006),(iec:amd:2:year-2007):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "cispr.16-1-1.2006_plus-amd.1.2006_plus-amd.2.2007_csv"],
   ["IEC TR 60721-4-1:2001+AMD1:2003 CSV",
     "IEC TR 60721-4-1:2001+AMD1:2003 CSV",
     "urn:iec:std:iec:60721-4-1:2001:tr:csv::plus:amd:1:2003",
     "urn:pubid:iec:consol:ids-(iec:tr:60721:part-4:subpart-1:year-2001),(iec:amd:1:year-2003):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.tr.60721-4-1.2001_plus-amd.1.2003_csv"],
   ["IEC TS 60479-1:2005+AMD1:2016 CSV",
     "IEC TS 60479-1:2005+AMD1:2016 CSV",
     "urn:iec:std:iec:60479-1:2005:ts:csv::plus:amd:1:2016",
     "urn:pubid:iec:consol:ids-(iec:ts:60479:part-1:year-2005),(iec:amd:1:year-2016):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.ts.60479-1.2005_plus-amd.1.2016_csv"],
   ["ISO/IEC 11801-1:2017+AMD1:2025 CSV",
     "ISO/IEC 11801-1:2017+AMD1:2025 CSV",
     "urn:iec:std:iso-iec:11801-1:2017::csv::plus:amd:1:2025",
     "urn:pubid:iec:consol:ids-(iec:is:11801:pub-ISO:co-IEC:part-1:year-2017),(iec:amd:1:year-2025):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iso.11801-1.2017_plus-amd.1.2025_csv"],
   ["IEC/IEEE 62209-1528:2020+AMD1:2026 CSV",
     "IEC/IEEE 62209-1528:2020+AMD1:2026 CSV",
     "urn:iec:std:iec-ieee:62209-1528:2020::csv::plus:amd:1:2026",
     "urn:pubid:iec:consol:ids-(iec:is:62209:co-IEEE:part-1528:year-2020),(iec:amd:1:year-2026):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.62209-1528.2020_plus-amd.1.2026_csv"],
   ["IEC/ASTM 62885-7:2020+AMD1:2022 CSV",
     "IEC/ASTM 62885-7:2020+AMD1:2022 CSV",
     "urn:iec:std:iec-astm:62885-7:2020::csv::plus:amd:1:2022",
     "urn:pubid:iec:consol:ids-(iec:is:62885:co-ASTM:part-7:year-2020),(iec:amd:1:year-2022):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iec.62885-7.2020_plus-amd.1.2022_csv"],
   ["ISO/IEC TR 29106:2007+AMD1:2012+AMD2:2019 CSV",
     "ISO/IEC TR 29106:2007+AMD1:2012+AMD2:2019 CSV",
     "urn:iec:std:iso-iec:29106:2007:tr:csv::plus:amd:1:2012:plus:amd:2:2019",
     "urn:pubid:iec:consol:ids-(iec:tr:29106:pub-ISO:co-IEC:year-2007),(iec:amd:1:year-2012),(iec:amd:2:year-2019):vi:vap-CSV",
-    "vap-identifier"],
+    "vap-identifier",
+    "iso.tr.29106.2007_plus-amd.1.2012_plus-amd.2.2019_csv"],
   // The bare chain (no CSV): IEC's own citation style in the records'
   // abstracts, first-class in the model since pubid v1.
   ["IEC 60601-1:2005+AMD1:2012+COR1:2012",
     "IEC 60601-1:2005+AMD1:2012+COR1:2012",
     "urn:iec:std:iec:60601-1:2005::::plus:amd:1:2012:plus:cor:1:2012",
     "urn:pubid:iec:consol:ids-(iec:is:60601:part-1:year-2005),(iec:amd:1:year-2012),(iec:cor:1:year-2012)",
-    "consolidated-identifier"],
+    "consolidated-identifier",
+    "iec.60601-1.2005_plus-amd.1.2012_plus-cor.1.2012"],
 ];
 
-for (const [input, render, urn, purn, type] of attestedConsolidatedRows) {
+for (const [input, render, urn, purn, type, mr] of attestedConsolidatedRows) {
   test(`iec #788 parses the attested consolidated face: ${input}`, () => {
     const impl = grammarImplementation("iec")!;
     const id = impl.parse(input) as unknown as IecIdentifier;
@@ -1117,6 +1132,10 @@ for (const [input, render, urn, purn, type] of attestedConsolidatedRows) {
     const back = id.fromHash(id.toHash());
     assert.ok(back.equals!(id), `from_hash(to_hash) == parse: ${input}`);
     assert.equal(back.toHuman(), render, input);
+    // The MR slug is byte-identical with the gem's to_mr_string (the
+    // plus-marked wrapper composition; verified against the gem tree row
+    // by row).
+    assert.equal(id.toMrString(), mr, input);
   });
 }
 
@@ -1209,4 +1228,166 @@ test("iec #788: the malformed chains stay rejected by the grammar", () => {
   for (const input of rejects) {
     assert.throws(() => impl.parse(input), input);
   }
+});
+
+// --- the MR wrapper slugs (the gem's to_mr_string composition, #142/#788) ---
+
+test("iec #788: the MR composition keeps the part and the chain (the collision fix)", () => {
+  const impl = grammarImplementation("iec")!;
+  // The generic flat slug read the wrapper's delegated number and dropped
+  // the part: part 1 and part 2 of IEC 60601 — two DIFFERENT documents —
+  // shared "iec.60601.2005", and the slug collided with the bare base
+  // document. The composition renders the base member (part riding on the
+  // member) and the chain behind plus- markers.
+  const part1 = impl.parse("IEC 60601-1:2005+AMD1:2012 CSV") as unknown as IecIdentifier;
+  const part2 = impl.parse("IEC 60601-2:2005+AMD1:2012 CSV") as unknown as IecIdentifier;
+  const bare = impl.parse("IEC 60601-1:2005") as unknown as IecIdentifier;
+  const standaloneChain = impl.parse("IEC 60601-1:2005/AMD1:2012") as unknown as IecIdentifier;
+
+  assert.equal(part1.toMrString(), "iec.60601-1.2005_plus-amd.1.2012_csv");
+  assert.equal(part2.toMrString(), "iec.60601-2.2005_plus-amd.1.2012_csv");
+  assert.notEqual(part1.toMrString(), part2.toMrString());
+  assert.notEqual(part1.toMrString(), bare.toMrString());
+  assert.equal(bare.toMrString(), "iec.60601-1.2005");
+  // The plus- marker keeps the consolidated slug distinct from the
+  // standalone supplement chain's ("...2005_amd.1.2012"), mirroring the
+  // CEN ruling that a consolidated form must not share a slug with the
+  // document it composes.
+  assert.equal(standaloneChain.toMrString(), "iec.60601-1.2005_amd.1.2012");
+});
+
+test("iec #788: the CSV/COR head routes through the base's own composition", () => {
+  const impl = grammarImplementation("iec")!;
+  // The corrigendum over the consolidated version
+  // ("IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014") keyed "iec.60335.2010_cor.
+  // 1.2014" — the part and the whole chain dropped behind its suffix. The
+  // supplement's head now routes through base.toMrString, so the Vap's
+  // own composition (chain + _csv) survives under the cor suffix.
+  const id = impl.parse("IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014") as unknown as IecIdentifier;
+  assert.equal(id.toMrString(), "iec.60335-1.2010_plus-amd.1.2013_csv_cor.1.2014");
+  // The standalone chain of the same shape keeps its flat suffix path.
+  const flat = impl.parse("IEC 60335-1:2010/AMD1:2013 CSV/COR1:2014") as unknown as IecIdentifier;
+  assert.equal(flat.toMrString(), "iec.60335-1.2010_csv_amd.1.2013_cor.1.2014");
+});
+
+test("iec #788: the standalone supplement chains and the flat faces keep their slugs", () => {
+  const impl = grammarImplementation("iec")!;
+  const rows: [string, string][] = [
+    // Every class without a composition override is byte-identical with
+    // what the shared renderer produced before the change.
+    ["IEC 60038-1/Amd1:2011", "iec.60038-1_amd.1.2011"],
+    ["IEC 60061:1969/COR1:1998", "iec.60061.1969_cor.1.1998"],
+    ["IEC 60038:2017 ED2", "iec.60038.2017.ed2"],
+    ["IEC 60038:2017", "iec.60038.2017"],
+    ["IEC TR 61095:1998", "iec.tr.61095.1998"],
+    ["ISO/IEC 17031-1:2020(en)", "iso.17031-1.2020.en"],
+  ];
+  for (const [input, mr] of rows) {
+    const id = impl.parse(input) as unknown as IecIdentifier;
+    assert.equal(id.toMrString(), mr, input);
+  }
+});
+
+test("iec #788: the all-parts form carries no MR slug (the ruby NotImplementedError)", () => {
+  const impl = grammarImplementation("iec")!;
+  // Ruby Pubid::AllParts#render raises NotImplementedError for the
+  // mr_string format — the all-parts TS boolean is that wrapper.
+  const id = impl.parse("IEC 60038 (all parts)") as unknown as IecIdentifier;
+  assert.throws(() => id.toMrString(), /all-parts identifier has no mr_string/);
+});
+
+// --- the supplement-peeling algebra (dropSupplements/exclude/matches) -------
+
+test("iec #788: dropSupplements peels the chain onto the bare base", () => {
+  const impl = grammarImplementation("iec")!;
+  const chain = impl.parse("IEC 60601-1:2005+AMD1:2012+COR1:2012") as unknown as IecIdentifier;
+  const base = impl.parse("IEC 60601-1:2005") as unknown as IecIdentifier;
+
+  const peeled = chain.dropSupplements();
+  assert.equal(peeled.constructor.polymorphicName, "pubid:iec:international-standard");
+  assert.equal(peeled.toHuman(), "IEC 60601-1:2005");
+  assert.ok(peeled.equals!(base), "the peeled member equals the bare base parse");
+  // The base supplements nothing: it is returned unchanged.
+  assert.ok(base.dropSupplements().equals!(base));
+});
+
+test("iec #788: exclude(:amendment) / exclude(:supplement) resolve the chain onto the base", () => {
+  const impl = grammarImplementation("iec")!;
+  const chain = impl.parse("IEC 60601-1:2005+AMD1:2012+COR1:2012") as unknown as IecIdentifier;
+  const base = impl.parse("IEC 60601-1:2005") as unknown as IecIdentifier;
+
+  for (const key of ["amendment", "supplement"]) {
+    const resolved = chain.exclude(key);
+    assert.equal(resolved.constructor.polymorphicName, "pubid:iec:international-standard", key);
+    assert.equal(resolved.toHuman(), "IEC 60601-1:2005", key);
+    assert.ok(resolved.equals!(base), key);
+  }
+  // The structural keys compose with attribute exclusions.
+  assert.equal(chain.exclude("amendment", "date").toHuman(), "IEC 60601-1");
+  // A non-supplement key is an attribute exclusion, not a peel.
+  assert.equal(base.exclude("edition").toHuman(), "IEC 60601-1:2005");
+});
+
+test("iec #788: exclude(:date) strips the dates from every chain member", () => {
+  const impl = grammarImplementation("iec")!;
+  const chain = impl.parse("IEC 60601-1:2005+AMD1:2012+COR1:2012") as unknown as IecIdentifier;
+  const base = impl.parse("IEC 60601-1:2005") as unknown as IecIdentifier;
+
+  // The rebuild recurses into the nested identifiers — the chain keeps its
+  // members, each without its date.
+  assert.equal(chain.exclude("date").toHuman(), "IEC 60601-1+AMD1+COR1");
+  assert.equal(base.exclude("date").toHuman(), "IEC 60601-1");
+});
+
+test("iec #788: matches resolves the consolidated reference onto the base record", () => {
+  const impl = grammarImplementation("iec")!;
+  const chain = impl.parse("IEC 60601-1:2005+AMD1:2012+COR1:2012") as unknown as IecIdentifier;
+  const base = impl.parse("IEC 60601-1:2005") as unknown as IecIdentifier;
+  const other = impl.parse("IEC 60601-2:2005+AMD1:2012") as unknown as IecIdentifier;
+  const csv = impl.parse("IEC 60601-1:2005+AMD1:2012 CSV") as unknown as IecIdentifier;
+  const redated = impl.parse("IEC 60601-1:2006+AMD1:2013+COR1:2013") as unknown as IecIdentifier;
+
+  // Strict: the chain is not the base document.
+  assert.equal(chain.matches(base), false);
+  // The citation strictness: ignore the supplement layer and the chain
+  // resolves onto the edition it amends.
+  assert.equal(chain.matches(base, ["amendment"]), true);
+  assert.equal(chain.matches(base, ["supplement", "date"]), true);
+  // A different document never matches, at any strictness.
+  assert.equal(chain.matches(other, ["supplement"]), false);
+  // Dates alone are fuzzable.
+  assert.equal(chain.matches(redated, ["date"]), true);
+  // The Vap keeps its layer: the CSV face is not the bare base, and the
+  // bare chain is not the CSV face (dropSupplements peels only the
+  // consolidated composition, not the Vap wrapper).
+  assert.equal(chain.matches(csv, ["supplement"]), false);
+  assert.equal(csv.matches(base, ["supplement"]), false);
+});
+
+test("iec #788: the Vap-rooted faces keep their layer under the peel", () => {
+  const impl = grammarImplementation("iec")!;
+  const vap = impl.parse("IEC 60601-1:2005+AMD1:2012 CSV") as unknown as IecIdentifier;
+  const csvcor = impl.parse("IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014") as unknown as IecIdentifier;
+
+  // No dropSupplements on the Vap or the supplement classes (the gem's
+  // override sits on the ConsolidatedIdentifier only): the peel is a
+  // no-op and the structural exclusion rebuilds the face unchanged.
+  assert.equal(vap.dropSupplements().constructor.polymorphicName, "pubid:iec:vap-identifier");
+  assert.equal(vap.dropSupplements().toHuman(), "IEC 60601-1:2005+AMD1:2012 CSV");
+  assert.equal(csvcor.dropSupplements().constructor.polymorphicName, "pubid:iec:corrigendum");
+  assert.equal(csvcor.exclude("amendment").toHuman(), "IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014");
+});
+
+test("iec #788: the peel round-trips the resolved base through hash and URN", () => {
+  const impl = grammarImplementation("iec")!;
+  const chain = impl.parse("IEC 60601-1:2005+AMD1:2012+COR1:2012") as unknown as IecIdentifier;
+  const resolved = chain.exclude("supplement");
+  // The resolved base is the ordinary single document: it re-parses,
+  // emits the bare URN and round-trips the hash. (A Vap-rooted face keeps
+  // its wrapper — the peel above covers the resolution.)
+  assert.equal(resolved.toHuman(), "IEC 60601-1:2005");
+  assert.equal(resolved.toUrn(), "urn:iec:std:iec:60601-1:2005:::");
+  assert.ok(impl.parse(resolved.toHuman()).equals!(resolved));
+  const back = resolved.fromHash(resolved.toHash());
+  assert.ok(back.equals!(resolved));
 });
