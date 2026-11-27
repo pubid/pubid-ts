@@ -17,7 +17,13 @@
  *
  * covers every flavor in a worker. The grammar-backed
  * `grammarImplementation` (open-ended parse routing) deliberately stays
- * behind the node-only barrel: it cannot load in a worker today.
+ * behind the node-only barrel — the barrel as a whole still carries the
+ * node-only parg runtime for the ten other artifact-backed flavors —
+ * but the three flavors it blocked for workers
+ * ship dedicated worker entries now (pubid/pubid-ts#232):
+ * `dist/flavors/nist/worker.js`, `dist/flavors/ieee/worker.js` and
+ * `dist/flavors/oiml/worker.js`, with no node-only module in their
+ * graphs.
  */
 import "./flavors/register-types.js";
 
