@@ -3,7 +3,11 @@ import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
 import { oimlGrammar } from "./grammar.js";
 import { buildOimlIdentifier, OimlDualPublished } from "./model.js";
 import type { BaseIdentifier } from "../../model/identifier.js";
-import { grammarImplementation } from "../index.js";
+
+// The co-published side resolver, injected: the node entry (./index.js)
+// routes through the grammar barrel, the worker entry (./worker.js)
+// routes to the parg-free iso implementation (pubid-ts#232).
+export type OimlCoPublisherRouter = (flavor: string) => FlavorImplementation | undefined;
 
 // The co-publisher prefix (only ISO confirmed so far; the gem routes via
 // Pubid.parse's prefix table).
@@ -16,7 +20,7 @@ function flavorOf(input: string): string {
  * BaseIdentifier subclasses, so they satisfy the Identifier adapter
  * directly (toHash/toHuman/toUrn/fromHash come from the model).
  */
-export function oimlGrammarImplementation(): FlavorImplementation {
+export function makeOimlGrammarImplementation(router: OimlCoPublisherRouter): FlavorImplementation {
   return {
     // Inverse of OimlUrnGenerator (lib/pubid/oiml/urn_parser.rb): strip the
     // "urn:oiml:" namespace, rebuild the human head "OIML <TYPE> <locator>",
@@ -50,7 +54,7 @@ export function oimlGrammarImplementation(): FlavorImplementation {
           if (s.toUpperCase().startsWith("OIML")) {
             return buildOimlIdentifier(parseGrammar(oimlGrammar, s)) as unknown as BaseIdentifier;
           }
-          const impl = grammarImplementation(flavorOf(s));
+          const impl = router(flavorOf(s));
           if (impl === undefined) throw new ParseFailed(`OIML: no flavor for ${s}`, 0);
           return impl.parse(s) as unknown as BaseIdentifier;
         });
