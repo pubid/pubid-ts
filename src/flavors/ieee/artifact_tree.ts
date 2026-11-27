@@ -1,4 +1,4 @@
-import { normalizeShape } from "../../parg/runtime.js";
+import { normalizeShape } from "../../parg/shape.js";
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 
 /**

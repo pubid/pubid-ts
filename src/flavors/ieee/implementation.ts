@@ -1,11 +1,27 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { ParseFailed, parseGrammar } from "../../grammar/engine.js";
-import { PubidRuntime } from "../../parg/runtime.js";
 import { artifactToBuilderTree } from "./artifact_tree.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
 import type { IdentifierStatic } from "../../model/identifier.js";
-import { grammarImplementation } from "../index.js";
 import { ieeeGrammar } from "./grammar.js";
+
+// The grammar runtime and the co-publisher routing arrive injected
+// ({@linkcode IeeeParseDeps}): the node entry (./index.js) wires the
+// fs-backed PARG runtime and the grammar barrel; the worker entry
+// (./worker.js) wires the bundled artifact over parsanol's browser
+// engine and the parg-free iec implementation (pubid-ts#232). The
+// baked artifact is the same one the gem runs, so grammar changes land
+// once and this port cannot drift. Only the preprocessor, builder,
+// model and the AIEE sub-grammar root (parseAieeDirect) remain
+// hand-written.
+export interface IeeeParseDeps {
+  /** The artifact engine's bound-parse (the parseAndBind contract). */
+  parseAndBind(input: string): unknown;
+  /** The co-published side resolver ("iec", "ansi"); undefined when
+   * the flavor is unavailable in the current environment. */
+  coPublished(flavor: string): FlavorImplementation | undefined;
+}
+
 import { preParse, preprocessIeee } from "./preprocessor.js";
 import { applyUpdateCodes } from "./update_codes.js";
 import {
@@ -74,6 +90,11 @@ const SI_STAGES: TypedStageRecord[] = [
 
 class IeeeBuilder {
   originalInput = "";
+
+  // The injected parse environment (the artifact runtime + the
+  // co-publisher routing): the builder's supplement and relationship
+  // builders re-parse base identifiers through it.
+  constructor(private env: IeeeParseEngine) {}
 
   build(parsed: Tree): Identifier {
     const d = Array.isArray(parsed) ? mergeParsedArray(parsed) : (parsed as TreeObject);
@@ -964,7 +985,7 @@ class IeeeBuilder {
     }
     return idStrings.map((idStr) => {
       try {
-        return ieeeParse(idStr);
+        return ieeeParseImpl(this.env, idStr);
       } catch {
         return new StandardClass({ parenthetical_content: idStr }) as unknown as Identifier;
       }
@@ -1052,7 +1073,7 @@ class IeeeBuilder {
   }
 
   buildCorrigendumSupplement(parsedHash: TreeObject): Identifier {
-    const base = ieeeParseSingle(this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
+    const base = ieeeParseSingle(this.env, this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
     const corNumber = extractValue(parsedHash["cor_number"]);
     const corYear = extractValue(parsedHash["cor_year"]);
     return new CorrigendumClass({
@@ -1100,6 +1121,7 @@ class IeeeBuilder {
 
   buildInterpretationSupplement(parsedHash: TreeObject): Identifier {
     const base = ieeeParseSingle(
+      this.env,
       this.reconstructBaseString(asHash(parsedHash["base"] as Tree)),
     );
     const intYear = extractValue(parsedHash["int_year"]);
@@ -1109,7 +1131,7 @@ class IeeeBuilder {
   }
 
   buildAmendmentSupplement(parsedHash: TreeObject): Identifier {
-    const base = ieeeParseSingle(this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
+    const base = ieeeParseSingle(this.env, this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
     return new AmendmentClass({
       base,
       number: extractValue(parsedHash["amd_number"]),
@@ -1118,7 +1140,7 @@ class IeeeBuilder {
   }
 
   buildConformanceSupplement(parsedHash: TreeObject): Identifier {
-    const base = ieeeParseSingle(this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
+    const base = ieeeParseSingle(this.env, this.reconstructBaseString(asHash(parsedHash["base"] as Tree)));
     return new ConformanceClass({
       base,
       number: extractValue(parsedHash["conf_number"]),
@@ -1834,7 +1856,7 @@ class IeeeBuilder {
           if (tail !== undefined && revision !== null) {
             let related: { toHuman(): string };
             try {
-              related = ieeeParseSingle(revision[1]!);
+              related = ieeeParseSingle(this.env, revision[1]!);
             } catch {
               related = { toHuman: () => revision[1]! };
             }
@@ -1999,44 +2021,53 @@ function copublishedStructured(copublishedNumber: string | undefined): Record<st
 
 // --- parse orchestration -------------------------------------------------------
 
-// The grammar runtime is the baked PARG artifact (pubid-grammar
-// artifacts/ieee.json via the parsanol engine) — the same artifact the
-// gem runs, so grammar changes land once and this port cannot drift.
-// Only the preprocessor, builder, model and the AIEE sub-grammar root
-// (parseAieeDirect) remain hand-written.
-let cachedArtifactRuntime: ReturnType<typeof PubidRuntime.load> | undefined;
-
-function parseSource(input: string): Tree {
-  cachedArtifactRuntime ??= PubidRuntime.load("ieee");
-  try {
-    // The edition-2 artifact's bindings block produces the builder-ready
-    // hash at the engine (typed scalars + raw wrappers) — the same bound
-    // tree the reference's Pubid::Parg::Model.bound hands its builder.
-    const bound = cachedArtifactRuntime.parseAndBind(input);
-    // A rejected input binds to null (the parseShape contract threw) —
-    // keep the throw so the reference's ParseFailed-keyed fallbacks fire.
-    if (bound === null || bound === undefined) throw new ParseFailed("no match", 0);
-    return artifactToBuilderTree(bound);
-  } catch (e) {
-    // The engine throws its own error class; the reference's fallback
-    // logic keys on Parslet::ParseFailed, so normalize (the messageless
-    // wasm throws included).
-    throw new ParseFailed(e instanceof Error && e.message !== "" ? e.message : String(e), 0);
-  }
+// The parse environment: the injected deps bound into the
+// error-normalizing parseSource wrapper. The node entry builds it over
+// the fs-backed PARG runtime and the grammar barrel; the worker entry
+// builds it over the bundled artifact and the parg-free iec
+// implementation.
+export interface IeeeParseEngine {
+  parseSource(input: string): Tree;
+  coPublished(flavor: string): FlavorImplementation | undefined;
 }
 
-function ieeeParseSingle(input: string): Identifier {
+export function makeIeeeParseEngine(deps: IeeeParseDeps): IeeeParseEngine {
+  return {
+    parseSource(input: string): Tree {
+      try {
+        // The edition-2 artifact's bindings block produces the
+        // builder-ready hash at the engine (typed scalars + raw
+        // wrappers) — the same bound tree the reference's
+        // Pubid::Parg::Model.bound hands its builder.
+        const bound = deps.parseAndBind(input);
+        // A rejected input binds to null (the parseShape contract
+        // threw) — keep the throw so the reference's ParseFailed-keyed
+        // fallbacks fire.
+        if (bound === null || bound === undefined) throw new ParseFailed("no match", 0);
+        return artifactToBuilderTree(bound);
+      } catch (e) {
+        // The engine throws its own error class; the reference's
+        // fallback logic keys on Parslet::ParseFailed, so normalize
+        // (the messageless wasm throws included).
+        throw new ParseFailed(e instanceof Error && e.message !== "" ? e.message : String(e), 0);
+      }
+    },
+    coPublished: deps.coPublished,
+  };
+}
+
+function ieeeParseSingle(env: IeeeParseEngine, input: string): Identifier {
   const normalized = applyUpdateCodes(input);
   // UpdateCodes may introduce the "; " double-label separator (the
   // ISO/IEC and IEEE labels of one document), but the dispatch ran on
   // the raw input - re-dispatch so the dual construction sees it.
   if (normalized !== input && normalized.includes("; ")) {
     const re = preParse(normalized);
-    if (re.dispatch === "dual_semicolon") return buildDual(re.parts);
+    if (re.dispatch === "dual_semicolon") return buildDual(env, re.parts);
   }
   const cleaned = preprocessIeee(normalized);
-  const tree = parseSource(cleaned);
-  const builder = new IeeeBuilder();
+  const tree = env.parseSource(cleaned);
+  const builder = new IeeeBuilder(env);
   builder.originalInput = input;
   return builder.build(tree);
 }
@@ -2045,9 +2076,9 @@ function ieeeParseSingle(input: string): Identifier {
 // the Ruby reference routes "AIEE …" to the AIEE sub-parser only, so an
 // update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
 // a line parse that the reference rejects.
-function ieeeParseSingleNoCodes(input: string): Identifier {
-  const tree = parseSource(preprocessIeee(input));
-  const builder = new IeeeBuilder();
+function ieeeParseSingleNoCodes(env: IeeeParseEngine, input: string): Identifier {
+  const tree = env.parseSource(preprocessIeee(input));
+  const builder = new IeeeBuilder(env);
   builder.originalInput = input;
   return builder.build(tree);
 }
@@ -2056,8 +2087,8 @@ function ieeeParseSingleNoCodes(input: string): Identifier {
 // the Ruby reference routes "AIEE …" to the AIEE sub-parser only, so an
 // update-codes rewrite (e.g. "AIEE Nos 72 and 73 - 1932") must not make
 // a line parse that the reference rejects.
-function parseAieeDirect(input: string): Identifier {
-  const builder = new IeeeBuilder();
+function parseAieeDirect(env: IeeeParseEngine, input: string): Identifier {
+  const builder = new IeeeBuilder(env);
   builder.originalInput = input;
   const tree = parseGrammar({ rules: ieeeGrammar.rules, root: "aiee_identifier" }, input);
   return builder.buildAiee(asHash(tree as Tree));
@@ -2069,49 +2100,49 @@ function normalizeIecAdoption(part: string): string {
     .replace(/\s+Edition\s+([0-9.]+)\s*$/, " ED$1");
 }
 
-function buildDual(parts: string[]): Identifier {
-  const first = ieeeParseSingle(parts[0]!);
-  const second = ieeeParseSingle(parts[1]!);
+function buildDual(env: IeeeParseEngine, parts: string[]): Identifier {
+  const first = ieeeParseSingle(env, parts[0]!);
+  const second = ieeeParseSingle(env, parts[1]!);
   return new DualPublishedClass({
     first_identifier: first,
     second_identifier: second,
   } as unknown as Record<string, unknown>) as unknown as Identifier;
 }
 
-function buildReaffirmed(input: string, reaffirmed: string): Identifier {
-  const parsed = ieeeParseSingle(input);
+function buildReaffirmed(env: IeeeParseEngine, input: string, reaffirmed: string): Identifier {
+  const parsed = ieeeParseSingle(env, input);
   (parsed as unknown as Record<string, unknown>)["reaffirmed"] = reaffirmed;
   return parsed;
 }
 
-function buildDualWithReaffirmed(parts: string[], reaffirmed: string): Identifier {
-  const ieeeId = ieeeParseSingle(parts[0]!);
+function buildDualWithReaffirmed(env: IeeeParseEngine, parts: string[], reaffirmed: string): Identifier {
+  const ieeeId = ieeeParseSingle(env, parts[0]!);
   (ieeeId as unknown as Record<string, unknown>)["reaffirmed"] = reaffirmed;
-  const ireId = ieeeParseSingle(parts[1]!);
+  const ireId = ieeeParseSingle(env, parts[1]!);
   return new DualPublishedClass({
     first_identifier: ieeeId,
     second_identifier: ireId,
   } as unknown as Record<string, unknown>) as unknown as Identifier;
 }
 
-function parseAdoptedPart(part: string): Identifier {
+function parseAdoptedPart(env: IeeeParseEngine, part: string): Identifier {
   if (part.startsWith("IEC")) {
-    const impl = grammarImplementation("iec");
+    const impl = env.coPublished("iec");
     if (impl === undefined) throw new ParseFailed("IEC implementation unavailable", 0);
     return impl.parse(normalizeIecAdoption(part));
   }
   if (part.startsWith("ANSI")) {
-    const impl = grammarImplementation("ansi");
+    const impl = env.coPublished("ansi");
     if (impl === undefined) throw new ParseFailed("ANSI implementation unavailable", 0);
     return impl.parse(part);
   }
-  return ieeeParseSingle(part);
+  return ieeeParseSingle(env, part);
 }
 
-function buildAdopted(parts: string[]): Identifier {
-  const ieeeId = ieeeParseSingle(parts[0]!);
+function buildAdopted(env: IeeeParseEngine, parts: string[]): Identifier {
+  const ieeeId = ieeeParseSingle(env, parts[0]!);
   const adoptedParts = parts[1]!.split(",").map((p) => p.trim());
-  const adoptedIds = adoptedParts.map(parseAdoptedPart);
+  const adoptedIds = adoptedParts.map((part) => parseAdoptedPart(env, part));
   const AdoptedClass = AdoptedStandardClass;
   return new AdoptedClass({
     ieee_identifier: ieeeId,
@@ -2124,17 +2155,17 @@ function buildAdopted(parts: string[]): Identifier {
 // does not resurrect it.
 class RejectedOutright extends Error {}
 
-export function ieeeParse(input: string): Identifier {
+export function ieeeParseImpl(env: IeeeParseEngine, input: string): Identifier {
   try {
-    return ieeeParseDispatched(input);
+    return ieeeParseDispatched(env, input);
   } catch (e) {
-    if (e instanceof ParseFailed && !(e instanceof RejectedOutright)) return ieeeParseSingle(input);
+    if (e instanceof ParseFailed && !(e instanceof RejectedOutright)) return ieeeParseSingle(env, input);
     if (e instanceof RejectedOutright) throw new ParseFailed(e.message, 0);
     throw e;
   }
 }
 
-function ieeeParseDispatched(input: string): Identifier {
+function ieeeParseDispatched(env: IeeeParseEngine, input: string): Identifier {
   const result = preParse(input);
   switch (result.dispatch) {
     case "aiee_simple":
@@ -2142,13 +2173,13 @@ function ieeeParseDispatched(input: string): Identifier {
       // parse_single on ParseFailed (forms the AIEE sub-grammar rejects,
       // e.g. "AIEE 15-May 1928", parse through the generic bucket).
       try {
-        return parseAieeDirect(result.input);
+        return parseAieeDirect(env, result.input);
       } catch {
         // Ruby: Aiee::Identifier.parse with no retry - an update-codes
         // rewrite must not make an AIEE-form line parse that the
         // reference rejects ("AIEE Nos 72 and 73 - 1932").
         try {
-          return ieeeParseSingleNoCodes(input);
+          return ieeeParseSingleNoCodes(env, input);
         } catch {
           throw new RejectedOutright(input);
         }
@@ -2157,23 +2188,23 @@ function ieeeParseDispatched(input: string): Identifier {
     case "dual_semicolon":
     case "dual_space_separated":
       if (result.dispatch === "dual_semicolon" || result.dispatch === "dual_space_separated") {
-        return buildDual(result.parts);
+        return buildDual(env, result.parts);
       }
       try {
-        return ieeeParseSingle(result.input);
+        return ieeeParseSingle(env, result.input);
       } catch {
-        return ieeeParseSingle(input);
+        return ieeeParseSingle(env, input);
       }
     case "dual_reaffirmed":
-      return buildReaffirmed(result.input, result.metadata["reaffirmed"] ?? "");
+      return buildReaffirmed(env, result.input, result.metadata["reaffirmed"] ?? "");
     case "dual_ire":
-      return buildDualWithReaffirmed(result.parts, result.metadata["reaffirmed"] ?? "");
+      return buildDualWithReaffirmed(env, result.parts, result.metadata["reaffirmed"] ?? "");
     case "dual_and":
     case "dual_ampersand":
-      return buildDual(result.parts);
+      return buildDual(env, result.parts);
     case "aiee_asa_adoption": {
-      const aieeId = ieeeParseSingle(result.parts[0]!);
-      const asaId = ieeeParseSingle(result.parts[1]!);
+      const aieeId = ieeeParseSingle(env, result.parts[0]!);
+      const asaId = ieeeParseSingle(env, result.parts[1]!);
       const AdoptedClass = AdoptedStandardClass;
       return new AdoptedClass({
         ieee_identifier: aieeId,
@@ -2181,20 +2212,20 @@ function ieeeParseDispatched(input: string): Identifier {
       } as unknown as Record<string, unknown>) as unknown as Identifier;
     }
     case "adopted":
-      return buildAdopted(result.parts);
+      return buildAdopted(env, result.parts);
     default:
       try {
-        return ieeeParseSingle(result.input);
+        return ieeeParseSingle(env, result.input);
       } catch {
-        return ieeeParseSingle(input);
+        return ieeeParseSingle(env, input);
       }
   }
 }
 
-export function ieeeGrammarImplementation(): FlavorImplementation {
+export function makeIeeeGrammarImplementation(env: IeeeParseEngine): FlavorImplementation {
   return {
     parse(input: string): Identifier {
-      return ieeeParse(input);
+      return ieeeParseImpl(env, input);
     },
   };
 }
