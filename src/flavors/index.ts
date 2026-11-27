@@ -1,6 +1,6 @@
 import type { FlavorImplementation, Identifier } from "../conformance/implementation.js";
 import { lookupUrnParser, parseUrnFor } from "../urn/parsers.js";
-import { oimlGrammarImplementation } from "./oiml/implementation.js";
+import { oimlGrammarImplementation } from "./oiml/index.js";
 import { xsfGrammarImplementation } from "./xsf/index.js";
 import { doiGrammarImplementation } from "./doi/index.js";
 import { doiPfsGrammarImplementation } from "./doi_pfs/index.js";

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { loadCorpus } from "../src/corpus/loader.js";
 import { checkCase, runFlavor } from "../src/conformance/runner.js";
 import { PendingRegistry } from "../src/conformance/pending.js";
-import { oimlGrammarImplementation } from "../src/flavors/oiml/implementation.js";
+import { oimlGrammarImplementation } from "../src/flavors/oiml/index.js";
 import { grammarImplementation } from "../src/flavors/index.js";
 import { parseGrammar } from "../src/grammar/engine.js";
 import { oimlGrammar } from "../src/flavors/oiml/grammar.js";
