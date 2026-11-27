@@ -165,15 +165,89 @@ With the manifest loaded, `PubidUrn.fromSlug` covers all 41 flavors
 that resolve identifier types (nist, ieee and oiml included — the three
 the barrel could not reach from a worker). `grammarImplementation`
 (open-ended parse routing) deliberately stays behind the node-only
-barrel: it cannot load in a worker today. The invariants are pinned by
+barrel: the barrel as a whole still carries the node-only parg runtime
+for the ten other artifact-backed flavors. The invariants are pinned by
 `test/register-types.test.ts`: the manifest registers exactly the
 barrel's type set, and no node-only module is reachable from the worker
 entry's import graph.
+
+## Worker-safe parse: nist / ieee / oiml (pubid-ts#232)
+
+The three flavors the barrel could not serve in a worker now ship
+dedicated worker entries with no `node:*` module in their import graph:
+
+- **nist / ieee** run the baked PARG artifact over parsanol's wasm
+  engine. Their implementations are environment-agnostic; the node
+  entries (`dist/flavors/<flavor>/index.js`) keep the lazy `node:fs`
+  artifact load they always had (zero regression), while the worker
+  entries build the same implementations over `parsanol/browser` and
+  the artifact bundled at build time (`dist/parg/artifacts/` — the same
+  checksummed payloads `vendor/parg/` ships, re-emitted by
+  `npm run artifact` so the two cannot drift). The ~2.7 MB wasm loads
+  lazily on the first entry call, once per isolate; the parse calls
+  themselves stay synchronous.
+- **oiml** never needed the artifact — its grammar is the pure-TS
+  parslet port. It lacked a flavor index; it now has one
+  (`dist/flavors/oiml/index.js`, the node barrel surface), and the
+  worker entry routes its co-published ISO side to the parg-free iso
+  implementation. No wasm at all.
+
+A Cloudflare Worker consumes them like this (`relaton-api-js`'s
+`engine.ts`; `NO_WORKER_ENGINE = {nist, ieee, oiml}` dissolves). The
+wasm argument is whatever `parsanol/browser`'s `initialize()` takes —
+URL (the lazy path: a one-time R2/CDN fetch on the first parse), a
+CompiledWasm module (bundled), or raw bytes:
+
+```ts
+// Lazy (the ~2.7 MB wasm fetches once, on the first nist/ieee entry call):
+const WASM_URL = "https://assets.example.com/parsanol/parsanol_bg.wasm";
+
+import { nistWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/nist/worker.js";
+import { ieeeWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/ieee/worker.js";
+import { oimlWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/oiml/worker.js";
+
+const nist = await nistWorkerGrammarImplementation(WASM_URL);
+const ieee = await ieeeWorkerGrammarImplementation({ wasm: WASM_URL });
+const oiml = oimlWorkerGrammarImplementation(); // sync — no wasm at all
+
+nist.parse("NIST SP 800-53r5");
+ieee.parse("IEEE Std 802.3-2022");
+oiml.parse("OIML R 49-1:2024"); // and "ISO 4064-1:2024|OIML R 49-1:2024"
+```
+
+Bundled instead of fetched: vendor the wasm (its `exports` map does not
+expose the vendored file as a subpath, so copy
+`node_modules/parsanol/vendor/parsanol-web/parsanol_bg.wasm` into your
+repo) and declare wrangler's CompiledWasm rule:
+
+```toml
+# wrangler.toml — workerd compiles it at bundle load, no dynamic codegen:
+rules = [{ type = "CompiledWasm", globs = ["**/parsanol_bg.wasm"], fallthrough = true }]
+```
+
+```ts
+import parsanolWasm from "../vendor/parsanol_bg.wasm"; // WebAssembly.Module
+const nist = await nistWorkerGrammarImplementation(parsanolWasm);
+```
+
+The ieee worker entry routes its co-published iec side
+through the parg-free iec implementation; the ansi side has no worker
+implementation yet and rejects with the same "ANSI implementation
+unavailable" the node router produces for an unknown flavor — inject
+your own via `ieeeWorkerGrammarImplementation({ coPublished })`.
+
+The receipts are pinned in CI: `npm run test:worker` runs
+`test/worker/worker-parse.test.ts` inside workerd with NO
+`nodejs_compat` (vitest-pool-workers), and `worker-graph.test.ts`
+walks the compiled import graphs (no `node:*` module, nothing beyond
+`parsanol/browser`) and bundles every entry with
+`esbuild --platform=neutral` and no node externals.
 
 ## Development
 
 ```sh
 npm ci
 npm test            # builds + runs the corpus harness tests
+npm run test:worker # the worker gate: parse inside workerd, no nodejs_compat
 npm run conformance # prints the quadrant report for the pinned corpus
 ```

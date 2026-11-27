@@ -112,6 +112,19 @@ jobs:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
           PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
 
+  # The worker gate (pubid-ts#232): the nist/ieee/oiml worker entries
+  # parse inside workerd with NO nodejs_compat, and their import graphs
+  # stay node-free (worker-graph.test.ts runs in the shard above).
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: npm ci
+      - run: npm run test:worker
+
   conformance:
     runs-on: ubuntu-latest
     steps:

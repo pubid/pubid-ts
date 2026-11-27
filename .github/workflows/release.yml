@@ -102,6 +102,10 @@ jobs:
         env:
           TESTSUITE_DIR: ${{ github.workspace }}/pubid-testsuite/tests
           PARG_ARTIFACT_DIR: ${{ github.workspace }}/pubid-grammar/artifacts
+      # Never publish a package whose worker entries fail the workerd
+      # gate (pubid-ts#232): the nist/ieee/oiml worker receipts and the
+      # node-free import graphs.
+      - run: npm run test:worker
       - name: Set version from workflow input (patch release)
         if: github.event_name == 'workflow_dispatch'
         run: |

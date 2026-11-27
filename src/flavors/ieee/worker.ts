@@ -2,7 +2,7 @@
 //! implementation the node entry runs, over the bundled artifact and
 //! parsanol's browser engine. No node:* module appears in this graph.
 //! The wasm engine loads lazily — the first
-//! `ieeeWorkerGrammarImplementation()` call pays the ~2.4 MB
+//! `ieeeWorkerGrammarImplementation()` call pays the ~2.7 MB
 //! fetch/instantiate; the parse calls stay synchronous after the await.
 //!
 //! Co-published routing: the iec side goes through the parg-free iec
@@ -13,11 +13,10 @@
 //! implementation can inject it via `coPublished`.
 //!
 //!     import { ieeeWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/ieee/worker.js";
-//!     const ieee = await ieeeWorkerGrammarImplementation();
+//!     const ieee = await ieeeWorkerGrammarImplementation(wasmOrUrl);
 //!     ieee.parse("IEEE Std 802.3-2022");
 
-import { workerPargRuntime } from "../../parg/worker.js";
-import type { WorkerWasmInput } from "../../parg/worker.js";
+import { workerPargRuntime, type WorkerWasmInput } from "../../parg/worker.js";
 import type { FlavorImplementation } from "../../conformance/implementation.js";
 import { iecGrammarImplementation } from "../iec/index.js";
 import {

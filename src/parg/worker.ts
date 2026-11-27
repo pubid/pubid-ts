@@ -44,5 +44,3 @@ export async function workerPargRuntime(
   }
   return new PargRuntime(artifact);
 }
-
-export { PargRuntime as WorkerPargRuntime };

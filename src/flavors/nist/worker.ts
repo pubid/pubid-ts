@@ -2,20 +2,19 @@
 //! implementation the node entry runs, over the bundled artifact and
 //! parsanol's browser engine. No node:* module appears in this graph.
 //! The wasm engine loads lazily — the first `nistWorkerGrammarImplementation()`
-//! call pays the ~2.4 MB fetch/instantiate; the parse calls stay
+//! call pays the ~2.7 MB fetch/instantiate; the parse calls stay
 //! synchronous after the await.
 //!
 //!     import { nistWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/nist/worker.js";
-//!     const nist = await nistWorkerGrammarImplementation();
+//!     const nist = await nistWorkerGrammarImplementation(wasmOrUrl);
 //!     nist.parse("NIST SP 800-53r5");
 //!
-//! Workers that import the wasm as a CompiledWasm module (wrangler
-//! `rules = [{ type = "CompiledWasm", ... }]`) pass it through:
-//! `await nistWorkerGrammarImplementation(wasmModule)`.
+//! The wasm argument is whatever `parsanol/browser`'s `initialize()`
+//! takes: an R2/CDN URL (the lazy fetch path), a CompiledWasm module
+//! (wrangler `rules = [{ type = "CompiledWasm", ... }]`), or raw bytes.
 
-import { workerPargRuntime } from "../../parg/worker.js";
+import { workerPargRuntime, type WorkerWasmInput } from "../../parg/worker.js";
 import type { FlavorImplementation } from "../../conformance/implementation.js";
-import type { WorkerWasmInput } from "../../parg/worker.js";
 import { makeNistGrammarImplementation } from "./implementation.js";
 
 export async function nistWorkerGrammarImplementation(
