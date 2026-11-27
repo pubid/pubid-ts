@@ -1,5 +1,5 @@
-import type { FlavorImplementation, Identifier } from "../conformance/implementation.js";
-import { lookupUrnParser, parseUrnFor } from "../urn/parsers.js";
+import type { FlavorImplementation } from "../conformance/implementation.js";
+import { withUrnRouting } from "./urn-routing.js";
 import { oimlGrammarImplementation } from "./oiml/implementation.js";
 import { xsfGrammarImplementation } from "./xsf/index.js";
 import { doiGrammarImplementation } from "./doi/index.js";
@@ -61,25 +61,7 @@ import { wmoGrammarImplementation } from "./wmo/index.js";
 export function grammarImplementation(flavor: string): FlavorImplementation | undefined {
   const impl = grammarImplementationSwitch(flavor);
   if (impl === undefined) return undefined;
-  // "urn:" inputs route to the flavor's URN parser where the reference
-  // implements one (impl.parseUrn or the registry in src/urn/parsers.ts
-  // mirroring lib/pubid/<flavor>/urn_parser.rb); flavors without one whose
-  // own grammar accepts URN spellings keep parsing them natively
-  // (pubid/pubid-ts#1).
-  const urnDef = lookupUrnParser(flavor);
-  if (impl.parseUrn === undefined && urnDef === undefined) return impl;
-  return {
-    parse(input: string): Identifier {
-      if (/^urn:/i.test(input)) {
-        if (impl.parseUrn) return impl.parseUrn(input);
-        return parseUrnFor(urnDef!, input, impl.parse);
-      }
-      return impl.parse(input);
-    },
-    ...(impl.parseUrn
-      ? { parseUrn: impl.parseUrn }
-      : { parseUrn: (urn: string) => parseUrnFor(urnDef!, urn, impl.parse) }),
-  };
+  return withUrnRouting(flavor, impl);
 }
 
 function grammarImplementationSwitch(flavor: string): FlavorImplementation | undefined {

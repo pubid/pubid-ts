@@ -163,12 +163,61 @@ const id = PubidUrn.fromSlug("iso/is/9001/year-2015"); // resolves
 
 With the manifest loaded, `PubidUrn.fromSlug` covers all 41 flavors
 that resolve identifier types (nist, ieee and oiml included — the three
-the barrel could not reach from a worker). `grammarImplementation`
-(open-ended parse routing) deliberately stays behind the node-only
-barrel: it cannot load in a worker today. The invariants are pinned by
+the barrel could not reach from a worker). The invariants are pinned by
 `test/register-types.test.ts`: the manifest registers exactly the
 barrel's type set, and no node-only module is reachable from the worker
 entry's import graph.
+
+## Worker-safe parsing: the artifact-backed flavors
+
+Twelve grammars parse through a baked PARG artifact on the parsanol
+wasm engine: ansi, arxiv, bsi_pfs, calconnect_pfs, ccsds, cen_pfs,
+doi_pfs, etsi_pfs, eu, ieee, nist and wmo (`PARG_GRAMMARS`). In node the
+engine loads its wasm and the artifacts (`vendor/parg`) from disk. The
+runtime (`dist/parg/runtime.js`) has no static `node:*` import, so the
+grammar barrel also loads in a worker. In a worker the consumer supplies
+the wasm and the artifacts:
+
+```ts
+import wasm from "@pubid/pubid/dist/parg/parsanol_bg.wasm";
+import { nistWorkerImplementation } from "@pubid/pubid/dist/flavors/nist/worker.js";
+import { ieeeWorkerImplementation } from "@pubid/pubid/dist/flavors/ieee/worker.js";
+import { oimlGrammarImplementation } from "@pubid/pubid/dist/flavors/oiml/index.js";
+
+const nist = await nistWorkerImplementation(wasm); // inits the engine once
+nist.parse("NIST SP 800-53r5");
+(await ieeeWorkerImplementation(wasm)).parse("IEEE Std 802.3-2018"); // + the ansi artifact
+oimlGrammarImplementation().parse("OIML R 60-1:2021"); // a TS grammar: no wasm
+```
+
+For any other artifact flavor, use the general entry:
+
+```ts
+import { initPargEngine, registerArtifact, grammarImplementation } from "@pubid/pubid/dist/worker.js";
+import ccsds from "@pubid/pubid/dist/parg/artifacts/ccsds.js";
+
+await initPargEngine(wasm);
+registerArtifact("ccsds", ccsds);
+grammarImplementation("ccsds")!.parse("CCSDS 133.0-B-2");
+```
+
+- **Size.** `parsanol_bg.wasm` is 2.6 MB: parsanol's web build, copied
+  from the pinned parsanol at build time (parsanol's `exports` map does
+  not expose it). The artifact modules (`dist/parg/artifacts/*.js`) total
+  about 0.7 MB; nist is 188 KB and ieee is 348 KB.
+- **Lazy load.** Nothing compiles the wasm until `initPargEngine` (or a
+  per-flavor entry) is awaited. Call it on the first parse of an artifact
+  flavor. Later calls return the same promise.
+- **Errors.** A load of a grammar that is not registered (and has no
+  file to read) throws `PargArtifactUnavailable` with `grammar`.
+- **Bundle size.** The ieee entry, and the bsi, gost, csa and
+  cen_cenelec flavors, import the grammar barrel for co-publisher
+  routing, so their bundles carry every flavor's TS grammar.
+- The artifact modules are generated from `vendor/parg` by
+  `npm run artifact:modules` (part of `npm run artifact`);
+  `test/worker-entry.test.ts` fails while one is stale. The bundle check
+  (`test/worker-bundle.test.ts`) bundles each entry with the
+  workerd/worker/browser conditions and fails on any `node:*` import.
 
 ## Development
 

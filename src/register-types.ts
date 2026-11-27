@@ -15,9 +15,11 @@
  *
  *     import { PubidUrn } from "@pubid/pubid/register-types.js";
  *
- * covers every flavor in a worker. The grammar-backed
- * `grammarImplementation` (open-ended parse routing) deliberately stays
- * behind the node-only barrel: it cannot load in a worker today.
+ * covers every flavor in a worker. Since pubid-ts#232 the parg runtime
+ * itself is worker-safe, so the barrel loads in a worker too; this entry
+ * stays the light path (no parsanol, no parse grammars). The grammar-backed
+ * `grammarImplementation` (open-ended parse routing) has its own worker
+ * entry, `dist/worker.js` (src/worker.ts).
  */
 import "./flavors/register-types.js";
 

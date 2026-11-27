@@ -8,10 +8,10 @@
  * module when the flavor has one, the implementation entry otherwise.
  * The grammar barrel (`./index.js`) reaches the same modules
  * transitively — but it also statically imports the nist, ieee and
- * doi_pfs implementations, which pull `../parg/runtime.js`, whose
- * module scope walks up to a package.json through node:fs. That is
- * impossible in a worker bundle, so a worker cannot import the barrel
- * to populate the registry.
+ * doi_pfs implementations, which pull `../parg/runtime.js` and the
+ * parsanol engine. (Before pubid-ts#232 that runtime imported node:fs at
+ * module scope; it is worker-safe now, but the barrel still carries every
+ * parse grammar and the engine, so registration keeps this light path.)
  *
  * This manifest imports the registration modules DIRECTLY, bypassing
  * every parg-tainted path:
