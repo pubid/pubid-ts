@@ -11,6 +11,8 @@
 // bundles must match the pinned refs.
 import { writeFileSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
+import { execSync } from "node:child_process";
+import { join } from "node:path";
 import { loadCorpus } from "../dist/corpus/loader.js";
 import { buildArtifact } from "../dist/corpus/artifact.js";
 import { artifactsDir } from "../dist/parg/runtime.js";
@@ -39,3 +41,10 @@ console.log(
   `${(json.length / 1048576).toFixed(1)} MB json -> ${(gz.length / 1048576).toFixed(1)} MB gz; ` +
   `vendored ${vendored} grammar artifacts from ${artifacts}`,
 );
+
+// The worker-safe artifact modules bundle the SAME vendored payloads —
+// re-emit so the bundled strings cannot drift from vendor/parg
+// (pubid/pubid-ts#232).
+execSync(`node ${JSON.stringify(join("scripts", "emit-parg-artifacts.mjs"))}`, {
+  stdio: "inherit",
+});

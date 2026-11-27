@@ -1,0 +1,19 @@
+{
+  // The TEST-harness worker config for the pubid-ts#232 worker gate
+  // (vitest.worker.config.mts). Not the package's deploy config: it
+  // exists so the wasm rides the OFFICIAL CompiledWasm module rule —
+  // the same rule a production Workers consumer declares in its own
+  // wrangler config (see the README worker section).
+  "name": "pubid-worker-parse-test",
+  "main": "test/worker/worker-parse.test.ts",
+  "compatibility_date": "2025-01-01",
+  // Deliberately NO nodejs_compat: the deliverable is a parse that
+  // works without it.
+  "rules": [
+    {
+      "type": "CompiledWasm",
+      "globs": ["**/parsanol_bg.wasm"],
+      "fallthrough": true
+    }
+  ]
+}
