@@ -397,6 +397,153 @@ export abstract class IecIdentifier extends BaseIdentifier {
     if (this.languages.length === 0) return "";
     return `(${this.languages.map((l) => l.code).join(",")})`;
   }
+
+  // --- MR string (ruby to_mr_string, Renderers::MrString) ---------------------
+
+  /** The supplement/wrapper suffix hook (ruby Identifier#mr_supplement_suffix):
+   *  `{type}.{number}.{year}` for supplements, nil for every other class. The
+   *  base returns nil; the IEC supplement class carries the override. */
+  mrSupplementSuffix(): string | undefined {
+    return undefined;
+  }
+
+  /** The machine-readable slug (ruby Identifier#to_mr_string): the flat MR
+   *  segments joined with ".". Wrapper classes override to compose their
+   *  chain (Consolidated/Vap/Supplement); every other class takes this path,
+   *  which is byte-identical with what the shared renderer produces for it.
+   *  The all-parts form has no MR (ruby Pubid::AllParts#render raises
+   *  NotImplementedError — the all-parts TS boolean is that wrapper). */
+  toMrString(): string {
+    if (this.all_parts === true) {
+      throw new Error("an all-parts identifier has no mr_string form yet");
+    }
+    return [
+      this.mrPublisher(),
+      this.mrType(),
+      this.mrNumberWithPart(),
+      this.mrYear(),
+      this.mrEdition(),
+      this.mrLanguages(),
+    ]
+      .filter((segment): segment is string => segment !== undefined)
+      .join(".");
+  }
+
+  /** Ruby Identifier#mr_publisher: the publisher, lowercased, "/" dash-joined
+   *  ("iso-iec"). The copublishers are a separate attribute and contribute no
+   *  segment (the shared hook reads the publisher only). */
+  protected mrPublisher(): string | undefined {
+    return this.publisher?.toLowerCase().replaceAll("/", "-");
+  }
+
+  /** Ruby Identifier#mr_type: the typed stage's type code, lowercased; nil for
+   *  the international standard (the default face carries no type token). */
+  protected mrType(): string | undefined {
+    const code = this.typedStage?.typeCode;
+    return code === undefined || code === "is" ? undefined : code.toLowerCase();
+  }
+
+  /** Ruby Identifier#mr_number_with_part: number-part-subpart, dash-joined,
+   *  lowercased; nil without a number (a hook returning "" would gain a blank
+   *  segment and a double dot in the slug). */
+  protected mrNumberWithPart(): string | undefined {
+    if (this.number === undefined) return undefined;
+    return [this.number, this.part, this.subpart]
+      .filter((v) => v !== undefined)
+      .join("-")
+      .toLowerCase();
+  }
+
+  /** Ruby Identifier#mr_year: the year, month/day dash-extended; "--" when the
+   *  date is undated; nil without a date. */
+  protected mrYear(): string | undefined {
+    const date = this.date;
+    if (date === undefined) return undefined;
+    if (date.undated) return "--";
+    if (date.year === undefined || date.year === "") return undefined;
+    let result = String(date.year);
+    if (date.month !== undefined && date.month !== "") result += `-${date.month}`;
+    if (date.day !== undefined && date.day !== "") result += `-${date.day}`;
+    return result;
+  }
+
+  /** Ruby Identifier#mr_edition: "ed{number}" — the IEC edition is the
+   *  Components::Edition component, and the hook reads its number. */
+  protected mrEdition(): string | undefined {
+    return this.edition === undefined ? undefined : `ed${this.edition}`;
+  }
+
+  /** Ruby Identifier#mr_languages: the language codes, hyphen-joined, no
+   *  parens (parens are shell-/URL-unsafe). */
+  protected mrLanguages(): string | undefined {
+    if (this.languages.length === 0) return undefined;
+    return this.languages.map((l) => l.code.toLowerCase()).join("-");
+  }
+
+  // --- the supplement-peeling algebra (ruby Identifier#drop_supplements /
+  //     #exclude / #matches?, the relaton-api-js citation-validation primitive)
+
+  /** The standard this identifier supplements, dropping its own supplement
+   *  layer (one level). The base supplements nothing, so it is returned
+   *  unchanged; the consolidated chain overrides to yield its leading member. */
+  dropSupplements(): IecIdentifier {
+    return this;
+  }
+
+  /** Excluded attributes are dropped; every other value passes through
+   *  excludeFromNested so the exclusion also propagates into nested
+   *  identifiers (wrapper types store their identity on an inner member).
+   *  :amendment / :supplement are structural, not attributes — they reduce a
+   *  supplemented identifier to the standard it wraps (#dropSupplements). */
+  exclude(...args: string[]): IecIdentifier {
+    const supplementKeys = args.filter((a): a is "amendment" | "supplement" =>
+      a === "amendment" || a === "supplement",
+    );
+    if (supplementKeys.length > 0) {
+      return this.dropSupplements().exclude(
+        ...args.filter((a) => !supplementKeys.includes(a as "amendment" | "supplement")),
+      );
+    }
+    const excluded = new Set<string>(args);
+    // Map :year to :date (year-in-date flavors), but ALSO keep :year so a
+    // flavor that models the edition as a plain `year` attribute has it
+    // excluded too (ruby's own comment).
+    if (excluded.has("year")) excluded.add("date");
+    const attrs: Record<string, unknown> = {};
+    for (const [name] of Object.entries(
+      (this.constructor as unknown as { attributes: Record<string, unknown> }).attributes,
+    )) {
+      const value = excluded.has(name)
+        ? undefined
+        : (this as unknown as Record<string, unknown>)[name];
+      attrs[name] = excludeFromNested(value, args);
+    }
+    const rebuilt = new (this.constructor as unknown as new (a?: Record<string, unknown>) => IecIdentifier)(attrs);
+    // The runtime typed stage is not an attribute (ruby's rebuild carries it
+    // as one), so it rides the copy explicitly.
+    rebuilt.typedStage = this.typedStage;
+    return rebuilt;
+  }
+
+  /** Fuzz-level equality: two identifiers match when they are equal after
+   *  excluding the given aspects. `ignore` accepts the same symbols as
+   *  #exclude (e.g. "date", "edition", "amendment"). The primitive relaton
+   *  uses to match a reference against catalogue hits at varying strictness. */
+  matches(other: IecIdentifier, ignore: string[] = []): boolean {
+    return this.exclude(...ignore).equals(other.exclude(...ignore));
+  }
+}
+
+/** Propagate an #exclude into a nested attribute value: recurse when it is
+ *  (or contains) another identifier, otherwise return it unchanged. Passes
+ *  the original args so nested identifiers re-apply the same :year->:date
+ *  mapping themselves (ruby Identifier#exclude_from_nested). */
+function excludeFromNested(value: unknown, args: string[]): unknown {
+  if (value instanceof BaseIdentifier) {
+    return (value as IecIdentifier).exclude(...args);
+  }
+  if (Array.isArray(value)) return value.map((item) => excludeFromNested(item, args));
+  return value;
 }
 
 function iecSingleClass(kind: IecTypeCode): IdentifierStatic {
@@ -694,6 +841,38 @@ function iecSupplementClass(kind: "amendment" | "corrigendum" | "interpretation-
       return " ";
     }
 
+    /** Ruby IEC SupplementIdentifier#mr_supplement_suffix:
+     *  `/{type}.{number}.{year}` (e.g. "/amd.1.2016") — the segments the
+     *  MrString renderer and the consolidated composition append so the
+     *  full supplement chain round-trips losslessly (gem issue #142). */
+    mrSupplementSuffix(): string | undefined {
+      const segments: string[] = [];
+      const type = this.mrType();
+      if (type !== undefined) segments.push(type);
+      if (this.number !== undefined) segments.push(String(this.number));
+      const year = this.date?.year;
+      if (year !== undefined && year !== "") segments.push(String(year));
+      return segments.length === 0 ? undefined : segments.join(".");
+    }
+
+    /** Ruby IEC SupplementIdentifier#to_mr_string: the chain head routes
+     *  through the BASE's own #toMrString, not a flat renderer recursion —
+     *  the flat path renders the wrapped document without a wrapper class's
+     *  own composition, so a corrigendum over a consolidated version
+     *  ("IEC 60335-1:2010+AMD1:2013 CSV/COR1:2014") dropped the part and the
+     *  whole chain behind its suffix. For every class without a #toMrString
+     *  override the base's own path produces the string the renderer would,
+     *  so the standalone supplement chains are unchanged; where a wrapper
+     *  carries one (the Vap) the full chain survives. */
+    toMrString(): string {
+      const suffix = this.mrSupplementSuffix();
+      if (suffix === undefined) return super.toMrString();
+      const base = this.base;
+      if (base === undefined) return suffix;
+      const head = base.toMrString();
+      return head === "" ? suffix : `${head}_${suffix}`;
+    }
+
     static fromHash(hash: Record<string, unknown>): BaseIdentifier {
       // The supplement restores its type's published stage when no stage
       // code rode the hash (ruby restores Amendment -> Amd — the glued
@@ -756,6 +935,25 @@ function iecVapClass(): IdentifierStatic {
       if (this.edition !== undefined) result += ` ED${this.edition}`;
       return result;
     }
+
+    /** Ruby VapIdentifier#to_mr_string: the wrapped chain's MR with the VAP
+     *  code (or codes — the multi-deliverable face prints `EXV-CMV`) appended
+     *  as the final segment. Without it the VAP renders the generic flat slug
+     *  through its delegated number, which drops the part and shares one slug
+     *  with the bare base document ("IEC 60601-1:2005+AMD1:2012 CSV" keyed
+     *  "iec.60601.2005", the same slug as the part 2 chain and — for a
+     *  part-less base — the base itself; the #142 collision one layer down).
+     *  The corrigendum-over-VAP face composes on top of this through the
+     *  supplement's base-routed head. */
+    toMrString(): string {
+      const head = this.base?.toMrString();
+      if (head === undefined || head === "") return "";
+      const codes = this.vap
+        .map((code) => code.toLowerCase().trim())
+        .filter((code) => code !== "")
+        .join("-");
+      return codes === "" ? head : `${head}_${codes}`;
+    }
   }
   registerType(IecVapIdentifier as unknown as IdentifierStatic);
   return IecVapIdentifier as unknown as IdentifierStatic;
@@ -770,6 +968,40 @@ function iecConsolidatedClass(): IdentifierStatic {
     static mappings = keyValue({ wire: "identifiers", to: "identifiers" });
 
     declare readonly identifiers: IecIdentifier[];
+
+    /** Dropping the supplement layer yields the leading member — the base
+     *  standard alone (the CEN counterpart's shape). This is what makes the
+     *  structural exclusions reach a consolidated chain: exclude("amendment")
+     *  / exclude("supplement") and their matches(ignore) forms peel the
+     *  composition to the document it supplements, so a consolidated
+     *  reference matches the bare base record (the primitive
+     *  relaton-api-js's citation-validation uses to resolve a consolidated
+     *  docid onto the edition it amends). */
+    dropSupplements(): IecIdentifier {
+      return this.identifiers[0] ?? this;
+    }
+
+    /** Ruby ConsolidatedIdentifier#to_mr_string: the base member's own MR
+     *  (its part/subpart ride on the member, so the slug keeps the full
+     *  designation), then each supplement member behind a `plus-` marker —
+     *  the CEN counterpart's composition. Without it the chain rendered the
+     *  generic flat slug, which both dropped the part and shared one slug
+     *  with the bare base document ("IEC 60601-1:2005+AMD1:2012 CSV" keyed
+     *  "iec.60601.2005", colliding with the part-less rendering of the
+     *  part 2 chain and with the base itself). The `plus-` marker keeps the
+     *  consolidated slug distinct from the standalone supplement chain's
+     *  ("iec.60601-1.2005_amd.1.2012"), mirroring the CEN ruling that a
+     *  consolidated form must not share a slug with the document it composes. */
+    toMrString(): string {
+      const [base, ...supplements] = this.identifiers;
+      if (base === undefined) return "";
+      const parts = [base.toMrString()];
+      for (const member of supplements) {
+        const suffix = member.mrSupplementSuffix();
+        if (suffix !== undefined) parts.push(`plus-${suffix}`);
+      }
+      return parts.join("_");
+    }
 
     render(): string {
       return this.identifiers
