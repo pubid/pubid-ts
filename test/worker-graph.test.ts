@@ -50,7 +50,20 @@ const WORKER_ENTRIES = [
   "flavors/nist/worker.js",
   "flavors/ieee/worker.js",
   "flavors/oiml/worker.js",
+  // The shared-builder family (pubid-ts#236): pure-TS parslet ports
+  // over the worker-safe foreign resolver — no engine at all.
+  "flavors/bsi/worker.js",
+  "flavors/cen_cenelec/worker.js",
+  "flavors/csa/worker.js",
+  "flavors/gost/worker.js",
+  "flavors/evs/worker.js",
 ];
+
+// The entries that need no wasm engine: the pure-TS parslet ports
+// (oiml and the shared-builder family). Their graph is relative-only.
+const PURE_ENTRIES = WORKER_ENTRIES.filter((entry) =>
+  /^(flavors\/(oiml|bsi|cen_cenelec|csa|gost|evs)\/worker\.js)$/.test(entry),
+);
 
 test("the worker entries' import graphs carry no node module", () => {
   for (const entry of WORKER_ENTRIES) {
@@ -62,9 +75,9 @@ test("the worker entries' import graphs carry no node module", () => {
       `${entry} must not reach any node:* module`,
     );
     // The only allowed bare specifier is parsanol's browser engine (the
-    // oiml entry needs no engine at all — its grammar is the pure-TS
-    // parslet port).
-    const allowed = entry.startsWith("flavors/oiml") ? [] : ["parsanol/browser"];
+    // parg entries ride it; the pure-TS parslet ports need no engine at
+    // all).
+    const allowed = PURE_ENTRIES.includes(entry) ? [] : ["parsanol/browser"];
     assert.deepEqual(
       [...externals].sort(),
       allowed,

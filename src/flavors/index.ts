@@ -147,7 +147,7 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
     case "ieee":
       return ieeeGrammarImplementation();
     case "cen_cenelec":
-      return cenCenelecGrammarImplementation();
+      return cenCenelecGrammarImplementation(grammarImplementation);
     case "cen_pfs":
       return cenPfsGrammarImplementation();
     case "astm":
@@ -155,17 +155,17 @@ function grammarImplementationSwitch(flavor: string): FlavorImplementation | und
     case "idf":
       return idfGrammarImplementation();
     case "gost":
-      return gostGrammarImplementation();
+      return gostGrammarImplementation(grammarImplementation);
     case "evs":
-      return evsGrammarImplementation();
+      return evsGrammarImplementation(grammarImplementation);
     case "ashrae":
       return ashraeGrammarImplementation();
     case "bsi":
-      return bsiGrammarImplementation();
+      return bsiGrammarImplementation(grammarImplementation);
     case "bsi_pfs":
       return bsiPfsGrammarImplementation();
     case "csa":
-      return csaGrammarImplementation();
+      return csaGrammarImplementation(grammarImplementation);
     case "asme":
       return asmeGrammarImplementation();
     case "amca":

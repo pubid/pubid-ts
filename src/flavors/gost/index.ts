@@ -1,7 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { grammarImplementation } from "../index.js";
+import type { ForeignResolver } from "../foreign-resolver.js";
 import { gostGrammar } from "./grammar.js";
 import { PREFIX_ROUTES } from "./prefix_routes.js";
 import {
@@ -59,11 +59,11 @@ function flatten(tree: Tree): TreeObject {
   return Array.isArray(tree) ? (Object.assign({}, ...tree) as TreeObject) : (tree as TreeObject);
 }
 
-function buildIdentifier(tree: Tree): Identifier {
-  return buildFrom(flatten(tree)) as unknown as Identifier;
+function buildIdentifier(tree: Tree, resolveForeign: ForeignResolver): Identifier {
+  return buildFrom(flatten(tree), resolveForeign) as unknown as Identifier;
 }
 
-function buildFrom(d: TreeObject): GostIdentifier {
+function buildFrom(d: TreeObject, resolveForeign: ForeignResolver): GostIdentifier {
   const russian = d["scope_r"] !== undefined;
   const [copublisher, subtype] = splitPrefix(str(d["prefix_text"]));
   const [number, year] = splitNumberYear(str(d["raw"]));
@@ -75,23 +75,35 @@ function buildFrom(d: TreeObject): GostIdentifier {
     ...(number !== undefined ? { number } : {}),
     ...(year !== undefined ? { year } : {}),
   });
-  return withForeignAdoption(base, d);
+  return withForeignAdoption(base, d, resolveForeign);
 }
 
-function withForeignAdoption(base: GostIdentifier, d: TreeObject): GostIdentifier {
-  return wrapHarmonized(wrapIdenticalAdoption(base, d), d);
+function withForeignAdoption(
+  base: GostIdentifier,
+  d: TreeObject,
+  resolveForeign: ForeignResolver,
+): GostIdentifier {
+  return wrapHarmonized(wrapIdenticalAdoption(base, d, resolveForeign), d, resolveForeign);
 }
 
-function wrapIdenticalAdoption(base: GostIdentifier, d: TreeObject): GostIdentifier {
+function wrapIdenticalAdoption(
+  base: GostIdentifier,
+  d: TreeObject,
+  resolveForeign: ForeignResolver,
+): GostIdentifier {
   const adoptedRaw = str(d["adopted_raw"]);
   if (adoptedRaw === undefined) return base;
 
-  const adopted = parseForeign(adoptedRaw);
+  const adopted = parseForeign(adoptedRaw, resolveForeign);
   const klass = IdenticalAdoption as unknown as GostCtor;
   return new klass({ base, adopted });
 }
 
-function wrapHarmonized(base: GostIdentifier, d: TreeObject): GostIdentifier {
+function wrapHarmonized(
+  base: GostIdentifier,
+  d: TreeObject,
+  resolveForeign: ForeignResolver,
+): GostIdentifier {
   const referenceRaw = str(d["adopted_reference_raw"]);
   if (referenceRaw === undefined) return base;
 
@@ -99,13 +111,13 @@ function wrapHarmonized(base: GostIdentifier, d: TreeObject): GostIdentifier {
     .split(",")
     .map((s) => s.trim())
     .map(normalizeForeign)
-    .map(adoptIdentifier);
+    .map((raw) => adoptIdentifier(raw, resolveForeign));
   const klass = Harmonized as unknown as GostCtor;
   return new klass({ base, adoptedIdentifiers: adopted });
 }
 
-function adoptIdentifier(raw: string): GostIdentifier {
-  return parseForeign(raw) ?? new (ForeignReference as unknown as GostCtor)({ raw });
+function adoptIdentifier(raw: string, resolveForeign: ForeignResolver): GostIdentifier {
+  return parseForeign(raw, resolveForeign) ?? new (ForeignReference as unknown as GostCtor)({ raw });
 }
 
 function splitPrefix(text: string | undefined): [string | undefined, string | undefined] {
@@ -159,8 +171,12 @@ function prefixOwner(raw: string): string | undefined {
   return owners.length === 1 ? owners[0] : undefined;
 }
 
-function tryParse(flavor: string, raw: string): GostIdentifier | undefined {
-  const impl = grammarImplementation(flavor);
+function tryParse(
+  flavor: string,
+  raw: string,
+  resolveForeign: ForeignResolver,
+): GostIdentifier | undefined {
+  const impl = resolveForeign(flavor);
   if (impl === undefined) return undefined;
   try {
     return impl.parse(raw) as unknown as GostIdentifier;
@@ -169,24 +185,26 @@ function tryParse(flavor: string, raw: string): GostIdentifier | undefined {
   }
 }
 
-function parseForeign(raw: string): GostIdentifier | undefined {
+function parseForeign(raw: string, resolveForeign: ForeignResolver): GostIdentifier | undefined {
   const owner = prefixOwner(raw);
   if (owner !== undefined) {
-    const parsed = tryParse(owner, raw);
+    const parsed = tryParse(owner, raw, resolveForeign);
     if (parsed !== undefined) return parsed;
   }
   for (const flavor of FOREIGN_FALLBACK_ORDER) {
-    const parsed = tryParse(flavor, raw);
+    const parsed = tryParse(flavor, raw, resolveForeign);
     if (parsed !== undefined) return parsed;
   }
   return undefined;
 }
 
-export function gostGrammarImplementation(): FlavorImplementation {
+export function gostGrammarImplementation(
+  resolveForeign: ForeignResolver,
+): FlavorImplementation {
   return {
     parse(input: string): Identifier {
       const tree = parseGrammar(gostGrammar, input.trim());
-      return buildIdentifier(tree);
+      return buildIdentifier(tree, resolveForeign);
     },
   };
 }

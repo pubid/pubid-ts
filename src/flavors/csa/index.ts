@@ -1,7 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { grammarImplementation } from "../index.js";
+import type { ForeignResolver } from "../foreign-resolver.js";
 import { csaGrammar, normalizeCsa, csaPublisherPrefix } from "./grammar.js";
 import {
   BundledClass,
@@ -44,8 +44,12 @@ function flatten(data: Tree): TreeObject {
 type Ctor = new (attrs?: Record<string, unknown>) => CsaIdentifier;
 const ctor = (klass: IdentifierStatic): Ctor => klass as unknown as Ctor;
 
-function tryForeign(flavor: string, raw: string): Identifier | undefined {
-  const impl = grammarImplementation(flavor);
+function tryForeign(
+  flavor: string,
+  raw: string,
+  resolveForeign: ForeignResolver,
+): Identifier | undefined {
+  const impl = resolveForeign(flavor);
   if (impl === undefined) return undefined;
   try {
     return impl.parse(raw);
@@ -204,14 +208,14 @@ function buildCec(dataIn: TreeObject): CsaSingleIdentifier {
 
 // --- The builder dispatch ---------------------------------------------------------------
 
-function buildTree(parsed: TreeObject): Identifier {
+function buildTree(parsed: TreeObject, resolveForeign: ForeignResolver): Identifier {
   const data = parsed as Record<string, unknown>;
 
   if (data["publisher_prefix"] !== undefined
     && ["CAN/CSA-", "CAN3-"].includes(strv(data["publisher_prefix"]) ?? "")) {
     return buildCanadianAdopted(data);
   }
-  if ("adoption_number" in data) return buildAdoption(data);
+  if ("adoption_number" in data) return buildAdoption(data, resolveForeign);
   if ("series_type" in data) return buildSeries(parsed);
   if ("cec_part" in data) return buildCec(parsed);
   if ("package_portion" in data) return buildPackage(parsed);
@@ -231,17 +235,21 @@ function buildPackage(data: Record<string, unknown>): Identifier {
   }) as unknown as Identifier;
 }
 
-function parseAdoptionBase(adoptionOrg: string, baseStr: string): Identifier {
+function parseAdoptionBase(
+  adoptionOrg: string,
+  baseStr: string,
+  resolveForeign: ForeignResolver,
+): Identifier {
   if (adoptionOrg.startsWith("ISO") || adoptionOrg.startsWith("CEI")) {
-    return tryForeign("iso", baseStr)!;
+    return tryForeign("iso", baseStr, resolveForeign)!;
   }
   if (adoptionOrg.startsWith("IEC")) {
-    return tryForeign("iec", baseStr)!;
+    return tryForeign("iec", baseStr, resolveForeign)!;
   }
-  return tryForeign("iso", baseStr) ?? tryForeign("iec", baseStr)!;
+  return tryForeign("iso", baseStr, resolveForeign) ?? tryForeign("iec", baseStr, resolveForeign)!;
 }
 
-function buildAdoption(data: Record<string, unknown>): Identifier {
+function buildAdoption(data: Record<string, unknown>, resolveForeign: ForeignResolver): Identifier {
   let adoptionOrg = strv(data["adoption_org"]) ?? "";
   const adoptionNumber = strv(data["adoption_number"]) ?? "";
   const adoptionYear = strv(data["adoption_year"]) ?? "";
@@ -255,13 +263,13 @@ function buildAdoption(data: Record<string, unknown>): Identifier {
     const amendmentYear = strv(data["adoption_amendment_year"]) ?? "";
     const wrappedAmendmentYear = amendmentYear.length === 2 ? `20${amendmentYear}` : amendmentYear;
     const amendmentStr = `${baseStr}/Amd ${strv(data["adoption_amendment"])}:${wrappedAmendmentYear}`;
-    base = parseAdoptionBase(adoptionOrg, amendmentStr);
+    base = parseAdoptionBase(adoptionOrg, amendmentStr, resolveForeign);
   } else {
     let wrappedIdStr = `${adoptionOrg} ${adoptionNumber}${yearSep}${wrappedYear}`;
     if (adoptionOrg === "CEI/IEC") {
       wrappedIdStr = wrappedIdStr.replace("CEI/IEC", "IEC");
     }
-    base = parseAdoptionBase(adoptionOrg, wrappedIdStr);
+    base = parseAdoptionBase(adoptionOrg, wrappedIdStr, resolveForeign);
   }
 
   const self: Record<string, unknown> = { base };
@@ -395,9 +403,9 @@ function parseTree(input: string): TreeObject {
 
 // --- Identifier.parse (identifier.rb) ------------------------------------------------------
 
-function tryParse(input: string): Identifier | undefined {
+function tryParse(input: string, resolveForeign: ForeignResolver): Identifier | undefined {
   try {
-    return parseCsa(input);
+    return parseCsa(input, resolveForeign);
   } catch {
     return undefined;
   }
@@ -432,23 +440,23 @@ function setPublisherPrefix(obj: CsaIdentifier, prefix: string): void {
   }
 }
 
-function parseExternalStandard(input: string): Identifier | undefined {
+function parseExternalStandard(input: string, resolveForeign: ForeignResolver): Identifier | undefined {
   if (/^(ISO\/IEC|ISO|IEC|CEI|CEI\/IEC)\s/.test(input)) {
-    return tryForeign("iso", input.replace(/^CEI\/IEC/, "IEC"));
+    return tryForeign("iso", input.replace(/^CEI\/IEC/, "IEC"), resolveForeign);
   }
   // The catalogue also prints the IWA designation without the ISO
   // keyword ("CAN/CSA-IWA 18:17" beside "CAN/CSA-ISO IWA 18:17"); the
   // ISO parser wants the ISO/ prefix.
   if (/^IWA\s/.test(input)) {
-    return tryForeign("iso", input.replace(/^IWA\s/, "ISO/IWA "));
+    return tryForeign("iso", input.replace(/^IWA\s/, "ISO/IWA "), resolveForeign);
   }
   if (/^CISPR\s/.test(input)) {
-    return tryForeign("iec", input);
+    return tryForeign("iec", input, resolveForeign);
   }
   return undefined;
 }
 
-function parseCsa(input: string): Identifier {
+function parseCsa(input: string, resolveForeign: ForeignResolver): Identifier {
   if (input.startsWith("#")) {
     throw new Error(`Not a CSA identifier (comment): ${input}`);
   }
@@ -467,7 +475,7 @@ function parseCsa(input: string): Identifier {
       let normalized = wrappedInput0.replace(/^CSA-/, "CSA ");
       normalized = normalized.replaceAll("CAN/CSA-", "CSA ").replaceAll("CAN3-", "CSA ");
       normalized = normalized.replaceAll(/\s+/g, " ").trim();
-      const result = buildTree(parseTree(normalized));
+      const result = buildTree(parseTree(normalized), resolveForeign);
       setPublisherPrefix(result as CsaIdentifier, "CAN/CSA-");
       const rMatch = /\(R(\d{4})\)/.exec(wrappedInput0);
       if (rMatch !== null) {
@@ -483,7 +491,7 @@ function parseCsa(input: string): Identifier {
         ? "CSA"
         : undefined;
     const normalized = stripped.replace(/^CSA-/, "CSA ");
-    const base = parseCsa(normalized);
+    const base = parseCsa(normalized, resolveForeign);
     const baseSelf = base as unknown as Record<string, unknown>;
     // Only the single-document types and CsaAdopted declare
     // publisher_prefix; the containers (Combined/Bundled/Package) keep
@@ -510,7 +518,7 @@ function parseCsa(input: string): Identifier {
     const wrapped0 = input.replace(/^CAN3-/, "CSA ");
     const hasDashYear = /-\d{2}\b/.test(wrapped0);
     const { year: reaffirmYear, was4digit, rest: stripped } = extractReaffirmation(wrapped0);
-    const base = parseCsa(stripped);
+    const base = parseCsa(stripped, resolveForeign);
     const baseSelf = base as unknown as Record<string, unknown>;
     if (hasDashYear) {
       baseSelf["year_format"] = "dash";
@@ -556,7 +564,7 @@ function parseCsa(input: string): Identifier {
         return `/Amd ${num}${sep}${full}`;
       },
     );
-    const base = parseExternalStandard(wrapped);
+    const base = parseExternalStandard(wrapped, resolveForeign);
     if (base === undefined) {
       throw new Error(`Unparseable adopted standard: ${input}`);
     }
@@ -615,7 +623,7 @@ function parseCsa(input: string): Identifier {
       for (const token of tokens) {
         if (/^PACKAGE$/i.test(token)) break;
         const testInput = acc === "" ? token : `${acc} ${token}`;
-        if (tryParse(testInput) === undefined) break;
+        if (tryParse(testInput, resolveForeign) === undefined) break;
         acc = testInput;
       }
       baseInput = acc;
@@ -630,7 +638,7 @@ function parseCsa(input: string): Identifier {
       throw new Error(`Unparseable package base: ${input}`);
     }
 
-    const base = parseCsa(baseInput);
+    const base = parseCsa(baseInput, resolveForeign);
     return new (ctor(PackageClass))({
       base,
       package_keyword: "PACKAGE",
@@ -643,7 +651,7 @@ function parseCsa(input: string): Identifier {
 
   // Plain path with parser-level normalization and prefix injection.
   const hasDashYear = /-\d{2}\b/.test(input);
-  const result = buildTree(parseTree(input));
+  const result = buildTree(parseTree(input), resolveForeign);
   const self = result as unknown as Record<string, unknown>;
   if (hasDashYear && self["year_format"] === undefined) {
     self["year_format"] = "dash";
@@ -651,10 +659,12 @@ function parseCsa(input: string): Identifier {
   return result;
 }
 
-export function csaGrammarImplementation(): FlavorImplementation {
+export function csaGrammarImplementation(
+  resolveForeign: ForeignResolver,
+): FlavorImplementation {
   return {
     parse(input: string): Identifier {
-      return parseCsa(input);
+      return parseCsa(input, resolveForeign);
     },
   };
 }

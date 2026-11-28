@@ -192,6 +192,52 @@ dedicated worker entries with no `node:*` module in their import graph:
   worker entry routes its co-published ISO side to the parg-free iso
   implementation. No wasm at all.
 
+## Worker-safe parse: the shared-builder family (pubid-ts#236)
+
+Five more flavors were unreachable in a worker for a different reason:
+**bsi, cen_cenelec, csa** and **gost** build on the central
+`grammarImplementation` (the node barrel) for their adopted-identifier
+routing, and the barrel statically imports the parg-backed flavors —
+so importing the flavor reached `node:fs` even though the flavor's own
+grammar is the pure-TS parslet port. **evs** composes the CEN/CENELEC
+builder, so it dragged the same graph transitively.
+
+They now take their foreign-flavor resolution as a parameter
+(`src/flavors/foreign-resolver.ts`): the node barrel wires the full
+central registry (node behavior unchanged), and the worker entries
+wire `workerForeignResolver()` (`src/flavors/worker-registry.ts`) — a
+registry over the worker-available subset (the pure-TS parslet ports
+plus oiml/iso/iec). The gost-style fallback walks then run over the
+worker-available flavors only, which is the honest answer in a worker:
+a flavor whose worker implementation does not exist yet answers
+`undefined` there, exactly like an unknown flavor does in the node
+barrel. Widen the set by merging the parg worker entries in:
+
+```ts
+import { bsiWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/bsi/worker.js";
+import { cenCenelecWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/cen_cenelec/worker.js";
+import { csaWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/csa/worker.js";
+import { gostWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/gost/worker.js";
+import { evsWorkerGrammarImplementation } from "@pubid/pubid/dist/flavors/evs/worker.js";
+
+// Sync — no wasm, no artifact: the grammars are pure TS.
+const bsi = bsiWorkerGrammarImplementation();
+const cen = cenCenelecWorkerGrammarImplementation();
+const csa = csaWorkerGrammarImplementation();
+const gost = gostWorkerGrammarImplementation();
+const evs = evsWorkerGrammarImplementation();
+
+bsi.parse("BS EN ISO 105-B06:2020"); // adopted → worker iso
+cen.parse("EN ISO 11140-3:2009");
+csa.parse("CSA ISO/IEC 8824-1:22");
+gost.parse("GOST 31425.2-2025/ISO 9902-2:2001"); // adoption → worker iso
+evs.parse("EVS-EN ISO 14001:2026"); // → worker cen → worker iso
+```
+
+Each entry accepts a resolver to widen or narrow the foreign set —
+`workerForeignResolverWith({ ieee: await ieeeWorkerGrammarImplementation(wasm) })`
+puts the parg-backed ieee worker entry into gost's fallback walk.
+
 A Cloudflare Worker consumes them like this (`relaton-api-js`'s
 `engine.ts`; `NO_WORKER_ENGINE = {nist, ieee, oiml}` dissolves). The
 wasm argument is whatever `parsanol/browser`'s `initialize()` takes —
@@ -238,7 +284,9 @@ your own via `ieeeWorkerGrammarImplementation({ coPublished })`.
 
 The receipts are pinned in CI: `npm run test:worker` runs
 `test/worker/worker-parse.test.ts` inside workerd with NO
-`nodejs_compat` (vitest-pool-workers), and `worker-graph.test.ts`
+`nodejs_compat` (vitest-pool-workers) — the nist/ieee/oiml entries and
+the five shared-builder entries all parse their attested corpus
+examples there — and `worker-graph.test.ts`
 walks the compiled import graphs (no `node:*` module, nothing beyond
 `parsanol/browser`) and bundles every entry with
 `esbuild --platform=neutral` and no node externals.
