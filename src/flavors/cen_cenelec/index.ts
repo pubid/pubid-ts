@@ -1,7 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { parseGrammar, ParseFailed } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { grammarImplementation } from "../index.js";
+import type { ForeignResolver } from "../foreign-resolver.js";
 import { cenCenelecGrammar, preprocessCenCenelec } from "./grammar.js";
 import {
   AdoptedEuropeanNormClass,
@@ -44,6 +44,15 @@ function flattenArray(data: Tree[]): TreeObject {
 }
 
 class CenBuilder {
+  /** The foreign-flavor resolver for the adopted identifiers
+   * (pubid-ts#236): the node barrel wires the central registry, the
+   * worker entry wires the worker-available subset. */
+  readonly #resolveForeign: ForeignResolver;
+
+  constructor(resolveForeign: ForeignResolver) {
+    this.#resolveForeign = resolveForeign;
+  }
+
   build(data: Tree): Identifier {
     const d = Array.isArray(data) ? flattenArray(data as TreeObject[]) : (data as TreeObject);
 
@@ -170,12 +179,12 @@ class CenBuilder {
 
   private parseAdoptedString(adoptedStr: string): Identifier | undefined {
     if (adoptedStr.startsWith("ISO/IEC") || adoptedStr.includes("ISO/IEC") || adoptedStr.startsWith("ISO")) {
-      const impl = grammarImplementation("iso");
+      const impl = this.#resolveForeign("iso");
       if (impl === undefined) throw new Error("iso implementation unavailable");
       return impl.parse(adoptedStr);
     }
     if (adoptedStr.startsWith("IEC")) {
-      const impl = grammarImplementation("iec");
+      const impl = this.#resolveForeign("iec");
       if (impl === undefined) throw new Error("iec implementation unavailable");
       return impl.parse(adoptedStr);
     }
@@ -224,7 +233,7 @@ class CenBuilder {
     if (!/^\d{1,6}$/.test(numStr)) return undefined;
     const num = Number.parseInt(numStr, 10);
     if (!(num >= 60000 && num <= 79999)) return undefined;
-    const impl = grammarImplementation("iec");
+    const impl = this.#resolveForeign("iec");
     if (impl === undefined) return undefined;
     return new AdoptedEuropeanNormClass({
       publisher: "EN",
@@ -320,12 +329,17 @@ class CenBuilder {
 import { PubidDate as PubidDateRef } from "../../model/component.js";
 
 /** The tree → identifier pipeline, shared with composed flavors (evs). */
-export function buildCenIdentifier(tree: Tree): Identifier {
-  return new CenBuilder().build(tree);
+export function buildCenIdentifier(
+  tree: Tree,
+  resolveForeign: ForeignResolver,
+): Identifier {
+  return new CenBuilder(resolveForeign).build(tree);
 }
 
-export function cenCenelecGrammarImplementation(): FlavorImplementation {
-  const builder = new CenBuilder();
+export function cenCenelecGrammarImplementation(
+  resolveForeign: ForeignResolver,
+): FlavorImplementation {
+  const builder = new CenBuilder(resolveForeign);
   return {
     parse(input: string): Identifier {
       const cleaned = preprocessCenCenelec(input);

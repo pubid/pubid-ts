@@ -1,7 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
-import { grammarImplementation } from "../index.js";
+import type { ForeignResolver } from "../foreign-resolver.js";
 import { bsiGrammar, preprocessBsi } from "./grammar.js";
 import { PubidDate, Publisher } from "../../model/component.js";
 import { AdoptedEuropeanNormClass as CenAdoptedEuropeanNormClass } from "../cen_cenelec/model.js";
@@ -81,8 +81,12 @@ function pub(body: string): Publisher {
 // The adopted routing mirrors the gem: a routed branch that fails to
 // parse RAISES through (build_adopted_identifier calls the foreign
 // parser directly), which is what rejects e.g. "BS HD 629.1 S3:2019".
-function tryForeign(flavor: string, raw: string): Identifier | undefined {
-  const impl = grammarImplementation(flavor);
+function tryForeign(
+  flavor: string,
+  raw: string,
+  resolveForeign: ForeignResolver,
+): Identifier | undefined {
+  const impl = resolveForeign(flavor);
   if (impl === undefined) return undefined;
   return impl.parse(raw);
 }
@@ -245,11 +249,14 @@ function assignAttributes(data: TreeObject): Record<string, unknown> {
 
 // --- The builder ---------------------------------------------------------------------
 
-export function buildBsiIdentifier(tree: Tree): Identifier {
-  return buildTree(flatten(tree));
+export function buildBsiIdentifier(
+  tree: Tree,
+  resolveForeign: ForeignResolver,
+): Identifier {
+  return buildTree(flatten(tree), resolveForeign);
 }
 
-function buildTree(data: TreeObject): Identifier {
+function buildTree(data: TreeObject, resolveForeign: ForeignResolver): Identifier {
   const original = { ...data };
 
   if (data["standalone_amendment"] !== undefined || data["parenthesized_amd"] !== undefined) {
@@ -286,29 +293,29 @@ function buildTree(data: TreeObject): Identifier {
     return buildAerospaceIdentifier(flatten(data["aerospace_identifier"] as Tree));
   }
   if (data["supplement_document"] !== undefined) {
-    return buildSupplementDocument(flatten(data["supplement_document"] as Tree));
+    return buildSupplementDocument(flatten(data["supplement_document"] as Tree), resolveForeign);
   }
   if (data["addendum_document"] !== undefined) {
-    return buildAddendumDocument(flatten(data["addendum_document"] as Tree));
+    return buildAddendumDocument(flatten(data["addendum_document"] as Tree), resolveForeign);
   }
   if (data["bundled_parts"] !== undefined || data["bundled_list"] !== undefined) {
-    return buildBundledIdentifier(data);
+    return buildBundledIdentifier(data, resolveForeign);
   }
   if (data["set"] !== undefined) {
-    return buildSetData(data["set"]);
+    return buildSetData(data["set"], resolveForeign);
   }
 
   const supplementsData = extractSupplements(data);
 
   if (data["pdf_format"] !== undefined || data["tc_format"] !== undefined || data["book_format"] !== undefined) {
-    return buildValueAddedPublication(data, supplementsData);
+    return buildValueAddedPublication(data, supplementsData, resolveForeign);
   }
 
   if (data["na_prefix"] !== undefined) {
-    return buildNationalAnnex(data, supplementsData);
+    return buildNationalAnnex(data, supplementsData, resolveForeign);
   }
   if (data["adopted_string"] !== undefined) {
-    const adopted = buildAdoptedIdentifier(data, original);
+    const adopted = buildAdoptedIdentifier(data, original, resolveForeign);
     if (adopted !== undefined) return adopted;
   }
 
@@ -505,7 +512,7 @@ function buildCommitteeDocument(data: TreeObject): Identifier {
   return new (ctor(CommitteeDocumentClass))(attrs) as unknown as Identifier;
 }
 
-function buildValueAddedPublication(data: TreeObject, _supplements: SuppData[]): Identifier {
+function buildValueAddedPublication(data: TreeObject, _supplements: SuppData[], resolveForeign: ForeignResolver): Identifier {
   const format = data["pdf_format"] !== undefined
     ? "PDF"
     : data["tc_format"] !== undefined
@@ -517,18 +524,18 @@ function buildValueAddedPublication(data: TreeObject, _supplements: SuppData[]):
   delete baseData["pdf_format"];
   delete baseData["tc_format"];
   delete baseData["book_format"];
-  const baseId = buildTree(baseData);
+  const baseId = buildTree(baseData, resolveForeign);
   return new (ctor(ValueAddedPublicationClass))({
     base: baseId as BsiIdentifier,
     format,
   }) as unknown as Identifier;
 }
 
-function buildNationalAnnex(data: TreeObject, _supplements: SuppData[]): Identifier {
+function buildNationalAnnex(data: TreeObject, _supplements: SuppData[], resolveForeign: ForeignResolver): Identifier {
   const baseData = { ...data };
   delete baseData["na_prefix"];
   delete baseData["na_supplements"];
-  const baseId = buildTree(baseData);
+  const baseId = buildTree(baseData, resolveForeign);
 
   const naPrefix = isObj(data["na_prefix"]) ? (data["na_prefix"] as TreeObject) : undefined;
   const naSuppRaw = naPrefix !== undefined && naPrefix["na_supplements"] !== undefined
@@ -575,7 +582,7 @@ function iterationOf(v: unknown): string | undefined {
   return undefined;
 }
 
-function buildSupplementDocument(data: TreeObject): Identifier {
+function buildSupplementDocument(data: TreeObject, resolveForeign: ForeignResolver): Identifier {
   const publisherVal = strv(data["publisher"]);
   // The grammar nests the parts under a "parts" key inside the parts
   // subtree; unwrap before extracting part/subpart.
@@ -600,7 +607,7 @@ function buildSupplementDocument(data: TreeObject): Identifier {
   } else if (data["year"] !== undefined) {
     baseData["year"] = data["year"];
   }
-  const baseId = buildTree(baseData as TreeObject);
+  const baseId = buildTree(baseData as TreeObject, resolveForeign);
 
   const suppType = strv(data["supp_no_prefix"]) === "No."
     ? "No."
@@ -618,7 +625,7 @@ function buildSupplementDocument(data: TreeObject): Identifier {
   }) as unknown as Identifier;
 }
 
-function buildAddendumDocument(data: TreeObject): Identifier {
+function buildAddendumDocument(data: TreeObject, resolveForeign: ForeignResolver): Identifier {
   const publisherVal = strv(data["publisher"]);
   // The grammar nests the parts under a "parts" key inside the
   // "parts" subtree; unwrap before extracting part/subpart.
@@ -634,7 +641,7 @@ function buildAddendumDocument(data: TreeObject): Identifier {
     ...(data["flex_prefix"] !== undefined ? { flex_prefix: strv(data["flex_prefix"]) } : {}),
   };
   if (data["base_year"] !== undefined) baseData["year"] = data["base_year"];
-  const baseId = buildTree(baseData as TreeObject);
+  const baseId = buildTree(baseData as TreeObject, resolveForeign);
 
   const addType = strv(data["add_no_prefix"]) === "No."
     ? "No."
@@ -655,7 +662,7 @@ function buildAddendumDocument(data: TreeObject): Identifier {
   }) as unknown as Identifier;
 }
 
-function buildBundleItem(itemData: unknown, defaultPublisher: string, defaultPrefix: string | undefined): BsiIdentifier {
+function buildBundleItem(itemData: unknown, defaultPublisher: string, defaultPrefix: string | undefined, resolveForeign: ForeignResolver): BsiIdentifier {
   if (isObj(itemData)) {
     const d = itemData;
     const hasExplicitPublisher = d["publisher"] !== undefined;
@@ -686,7 +693,7 @@ function buildBundleItem(itemData: unknown, defaultPublisher: string, defaultPre
   return new BsiIdentifier({ number: strv(itemData) });
 }
 
-function buildBundledIdentifier(data: TreeObject): Identifier {
+function buildBundledIdentifier(data: TreeObject, resolveForeign: ForeignResolver): Identifier {
   if (data["bundled_parts"] !== undefined) {
     const partsData = flatten(data["bundled_parts"] as Tree);
     const baseNumber = strv(partsData["number"]) ?? "";
@@ -715,7 +722,7 @@ function buildBundledIdentifier(data: TreeObject): Identifier {
   const separators: string[] = [];
 
   if (firstElem["bundle_item"] !== undefined) {
-    items.push(buildBundleItem(firstElem["bundle_item"], publisherVal, prefixVal));
+    items.push(buildBundleItem(firstElem["bundle_item"], publisherVal, prefixVal, resolveForeign));
   }
 
   for (const rawElem of listArray.slice(1)) {
@@ -731,7 +738,7 @@ function buildBundledIdentifier(data: TreeObject): Identifier {
       else if (elem["sep_semicolon"] !== undefined) sep = "; ";
       else if (elem["sep_comma"] !== undefined) sep = ",";
       separators.push(sep);
-      items.push(buildBundleItem(elem["bundle_item"], publisherVal, prefixVal));
+      items.push(buildBundleItem(elem["bundle_item"], publisherVal, prefixVal, resolveForeign));
     }
   }
 
@@ -745,7 +752,7 @@ function buildBundledIdentifier(data: TreeObject): Identifier {
   }) as unknown as Identifier;
 }
 
-function buildSetData(setRaw: unknown): Identifier {
+function buildSetData(setRaw: unknown, resolveForeign: ForeignResolver): Identifier {
   const itemsArray = Array.isArray(setRaw) ? (setRaw as unknown[]).flat(Infinity as 10) : [setRaw];
   const identifiers: Identifier[] = [];
 
@@ -772,7 +779,7 @@ function buildSetData(setRaw: unknown): Identifier {
     if (itemData["year"] !== undefined) idStr += `:${strv(itemData["year"])}`;
 
     if (idStr.trim() === "") continue;
-    const parsed = parseBsi(idStr);
+    const parsed = parseBsi(idStr, resolveForeign);
     if (parsed !== undefined) identifiers.push(parsed);
   }
 
@@ -784,7 +791,11 @@ function buildSetData(setRaw: unknown): Identifier {
 
 // --- Adopted identifiers ---------------------------------------------------------------
 
-function buildAdoptedIdentifier(dataIn: TreeObject, originalIn: TreeObject): Identifier | undefined {
+function buildAdoptedIdentifier(
+  dataIn: TreeObject,
+  originalIn: TreeObject,
+  resolveForeign: ForeignResolver,
+): Identifier | undefined {
   const data = dataIn as Record<string, unknown>;
   const original = originalIn as Record<string, unknown>;
   const adoptedRaw = data["adopted_string"];
@@ -903,11 +914,11 @@ function buildAdoptedIdentifier(dataIn: TreeObject, originalIn: TreeObject): Ide
     const isoIecStr = adoptedStr.replace(/^EN\s+/, "");
     let parsed: Identifier | undefined;
     if (isoIecStr.startsWith("ISO/IEC") || isoIecStr.includes("ISO/IEC")) {
-      parsed = tryForeign("iso", isoIecStr);
+      parsed = tryForeign("iso", isoIecStr, resolveForeign);
     } else if (isoIecStr.startsWith("ISO")) {
-      parsed = tryForeign("iso", isoIecStr);
+      parsed = tryForeign("iso", isoIecStr, resolveForeign);
     } else if (isoIecStr.startsWith("IEC")) {
-      parsed = tryForeign("iec", isoIecStr);
+      parsed = tryForeign("iec", isoIecStr, resolveForeign);
     }
     // Wrap the ISO/IEC identifier in a CEN EN adoption.
     if (parsed !== undefined) {
@@ -916,18 +927,18 @@ function buildAdoptedIdentifier(dataIn: TreeObject, originalIn: TreeObject): Ide
         adopted: parsed,
       });
     } else {
-      adoptedId = tryForeign("cen_cenelec", adoptedStr);
+      adoptedId = tryForeign("cen_cenelec", adoptedStr, resolveForeign);
     }
   } else if (adoptedStr.startsWith("ISO/IEC") || adoptedStr.includes("ISO/IEC")) {
-    adoptedId = tryForeign("iso", adoptedStr);
+    adoptedId = tryForeign("iso", adoptedStr, resolveForeign);
   } else if (adoptedStr.startsWith("ISO")) {
-    adoptedId = tryForeign("iso", adoptedStr);
+    adoptedId = tryForeign("iso", adoptedStr, resolveForeign);
   } else if (adoptedStr.startsWith("IEC")) {
-    adoptedId = tryForeign("iec", adoptedStr);
+    adoptedId = tryForeign("iec", adoptedStr, resolveForeign);
   } else if (/^(EN|CEN|CLC|CR|ES|ENV|HD|CWA)/.test(adoptedStr)) {
-    adoptedId = tryForeign("cen_cenelec", adoptedStr);
+    adoptedId = tryForeign("cen_cenelec", adoptedStr, resolveForeign);
   } else if (adoptedStr.startsWith("CISPR")) {
-    adoptedId = tryForeign("iec", adoptedStr);
+    adoptedId = tryForeign("iec", adoptedStr, resolveForeign);
   }
 
   if (isBare && adoptedId !== undefined) return adoptedId;
@@ -964,17 +975,22 @@ function buildAdoptedIdentifier(dataIn: TreeObject, originalIn: TreeObject): Ide
 
 // --- The parse entry -------------------------------------------------------------------
 
-function parseBsi(input: string): Identifier | undefined {
+function parseBsi(
+  input: string,
+  resolveForeign: ForeignResolver,
+): Identifier | undefined {
   const cleaned = preprocessBsi(input);
   try {
     const tree = parseGrammar(bsiGrammar, cleaned);
-    return buildBsiIdentifier(tree);
+    return buildBsiIdentifier(tree, resolveForeign);
   } catch {
     return undefined;
   }
 }
 
-export function bsiGrammarImplementation(): FlavorImplementation {
+export function bsiGrammarImplementation(
+  resolveForeign: ForeignResolver,
+): FlavorImplementation {
   return {
     parse(input: string): Identifier {
       // Delegate to IEC for bare IEC identifiers with VAP suffixes or
@@ -983,10 +999,11 @@ export function bsiGrammarImplementation(): FlavorImplementation {
         && (/\s+(CSV|CMV|RLV|SER|EXV|PAC|PRV)\b/.test(input)
           || /\+AMD\d+:/.test(input)
           || /\+COR\d+:/.test(input))) {
-        const iec = grammarImplementation("iec");
-        return iec!.parse(input);
+        const iec = resolveForeign("iec");
+        if (iec === undefined) throw new Error("iec implementation unavailable");
+        return iec.parse(input);
       }
-      const parsed = parseBsi(input);
+      const parsed = parseBsi(input, resolveForeign);
       if (parsed === undefined) {
         throw new Error("Failed to parse BSI identifier");
       }

@@ -1,6 +1,7 @@
 import type { Tree, TreeObject } from "../../grammar/engine.js";
 import { parseGrammar } from "../../grammar/engine.js";
 import type { FlavorImplementation, Identifier } from "../../conformance/implementation.js";
+import type { ForeignResolver } from "../foreign-resolver.js";
 import { evsGrammar } from "./grammar.js";
 import { buildCenIdentifier } from "../cen_cenelec/index.js";
 import { EstonianStandard, InternationalAdoption, NationalAdoption } from "./model.js";
@@ -15,7 +16,11 @@ import { EstonianStandard, InternationalAdoption, NationalAdoption } from "./mod
 
 const LANGUAGE_TAIL = / (et-en|et|en)$/
 
-function buildIdentifier(tree: Tree, language: string | undefined): Identifier {
+function buildIdentifier(
+  tree: Tree,
+  language: string | undefined,
+  resolveForeign: ForeignResolver,
+): Identifier {
   const d = Array.isArray(tree)
     ? (Object.assign({}, ...tree) as TreeObject)
     : (tree as TreeObject);
@@ -34,7 +39,7 @@ function buildIdentifier(tree: Tree, language: string | undefined): Identifier {
       ? (Object.fromEntries(Object.entries(adoptedData).filter(([k]) => k !== "type")) as TreeObject)
       : adoptedData;
     id = new NationalAdoption({
-      base: buildCenIdentifier(cenTree as Tree),
+      base: buildCenIdentifier(cenTree as Tree, resolveForeign),
       separator, draft_prefix: draft,
     }) as unknown as Identifier;
   } else if (d["intl"] !== undefined) {
@@ -86,13 +91,15 @@ function attachSupplement(id: Record<string, unknown>, d: TreeObject): void {
   }
 }
 
-export function evsGrammarImplementation(): FlavorImplementation {
+export function evsGrammarImplementation(
+  resolveForeign: ForeignResolver,
+): FlavorImplementation {
   return {
     parse(input: string): Identifier {
       const language = LANGUAGE_TAIL.exec(input)?.[1];
       const body = language !== undefined ? input.slice(0, input.length - language.length - 1) : input;
       const tree = parseGrammar(evsGrammar, body);
-      return buildIdentifier(tree, language);
+      return buildIdentifier(tree, language, resolveForeign);
     },
   };
 }
